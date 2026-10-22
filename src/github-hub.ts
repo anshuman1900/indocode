@@ -51,9 +51,9 @@ export const glyph = (name: keyof typeof GLYPHS, cls = '') => `<svg class="gh-gl
 
 export function mountGithubHub(root: HTMLElement, host: HubHost): HubView {
   let repos: HubRepo[] | null = null, reposError = '';
-  let selected = stored('pandacode.githubRepo');
-  let tab = (stored('pandacode.githubTab') as Tab) || 'threads';
-  let otherOpen = stored('pandacode.githubOther') === 'open';
+  let selected = stored('indocode.githubRepo');
+  let tab = (stored('indocode.githubTab') as Tab) || 'threads';
+  let otherOpen = stored('indocode.githubOther') === 'open';
   if (!TABS.some(item => item.id === tab)) tab = 'threads';
   let repoFilter = '', query = '', cloning = '', disposed = false;
   let mapping = new Map<string, string>();
@@ -257,7 +257,7 @@ export function mountGithubHub(root: HTMLElement, host: HubHost): HubView {
     await host.startTask({ projectId: project.id, prompt: workflowCheckPrompt(name), title: WORKFLOW_CHECK_TITLE, send: true });
   }
   function showTab(next: Tab): void {
-    tab = next; store('pandacode.githubTab', tab); renderTabs(); renderBody(); cascade(root.querySelectorAll<HTMLElement>('.gh-body .gh-row'), 14, 120);
+    tab = next; store('indocode.githubTab', tab); renderTabs(); renderBody(); cascade(root.querySelectorAll<HTMLElement>('.gh-body .gh-row'), 14, 120);
   }
   function filterRunsBy(pull: number): void { runFilter = { ...runFilter, pull }; showTab('actions'); }
   async function toggleRun(run: HubRun): Promise<void> {
@@ -278,7 +278,7 @@ export function mountGithubHub(root: HTMLElement, host: HubHost): HubView {
 
   function select(name: string): void {
     if (name === selected) return;
-    selected = name; store('pandacode.githubRepo', name); query = '';
+    selected = name; store('indocode.githubRepo', name); query = '';
     $<HTMLInputElement>('[data-gh-filter="items"]').value = '';
     render(); cascade(root.querySelectorAll<HTMLElement>('.gh-body .gh-row'), 14, 120);
     void loadItems();
@@ -296,7 +296,7 @@ export function mountGithubHub(root: HTMLElement, host: HubHost): HubView {
     if ('ghRunClear' in data) { runFilter = { event: '', pull: 0, latest: false }; renderBody(); return; }
     if (data.ghTask) { host.openTask(data.ghTask); return; }
     if (data.gh === 'refresh') { void loadRepos(true); return; }
-    if (data.gh === 'other') { otherOpen = target.getAttribute('aria-expanded') !== 'true'; store('pandacode.githubOther', otherOpen ? 'open' : 'closed'); renderRepos(); root.querySelector<HTMLElement>('[data-gh="other"]')?.focus(); return; }
+    if (data.gh === 'other') { otherOpen = target.getAttribute('aria-expanded') !== 'true'; store('indocode.githubOther', otherOpen ? 'open' : 'closed'); renderRepos(); root.querySelector<HTMLElement>('[data-gh="other"]')?.focus(); return; }
     if (data.gh === 'clone') { void ensureLocal(); return; }
     const pull = pulls.get(selected)?.items?.find(item => item.number === number);
     const issue = issues.get(selected)?.items?.find(item => item.number === number);

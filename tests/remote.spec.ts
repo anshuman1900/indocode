@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/* PandaCode Connect on the preview's sample account (src/preview-remote.ts): sign in, allow
+/* Indocode Connect on the preview's sample account (src/preview-remote.ts): sign in, allow
  * remote control, then start a new task on another computer from the context bar. */
 async function openRemoteSettings(page: Page) {
   await page.goto('/');
@@ -133,12 +133,12 @@ test('GitHub behind this computer asks first: Cancel keeps the draft, Continue s
 test('a project without a GitHub remote cannot start on another computer', async ({ page }) => {
   await signedInNewTask(page);
   await page.locator('#composer-area').getByRole('button', { name: 'Change task project', exact: true }).click();
-  await page.getByRole('dialog', { name: 'Choose project', exact: true }).getByRole('option', { name: /^pandacode — / }).click();
+  await page.getByRole('dialog', { name: 'Choose project', exact: true }).getByRole('option', { name: /^indocode — / }).click();
   await chooseStudio(page);
   const prompt = page.getByRole('textbox', { name: 'Message your coding agent' });
   await prompt.fill('Try it there');
   await page.getByRole('button', { name: 'Send message' }).click();
-  await expect(page.locator('#toast')).toContainText('pandacode has no GitHub remote, so it can’t run on another computer.');
+  await expect(page.locator('#toast')).toContainText('indocode has no GitHub remote, so it can’t run on another computer.');
   await expect(prompt).toHaveValue('Try it there');
   expect(await page.evaluate(() => (window as any).__remoteStarts)).toBeUndefined();
 });
@@ -186,7 +186,7 @@ test('picking another computer limits the picker to its catalog, and local is re
 });
 
 test('a model missing on the chosen computer is swapped, with a notice', async ({ page }) => {
-  await page.addInitScript(() => { localStorage.setItem('pandacode.defaultProvider', 'kimi'); localStorage.setItem('pandacode.provider', 'kimi'); });
+  await page.addInitScript(() => { localStorage.setItem('indocode.defaultProvider', 'kimi'); localStorage.setItem('indocode.provider', 'kimi'); });
   await signedInNewTask(page);
   await chooseStudio(page);
   await expect(page.locator('#toast')).toContainText('Studio iMac doesn’t have Kimi Code. Using Claude Code.');

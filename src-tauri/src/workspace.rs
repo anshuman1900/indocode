@@ -640,13 +640,13 @@ pub fn worktree_branch_name(branch: &str) -> Result<String, String> {
         );
     }
     // Keep explicitly named historical branches intact when creating worktrees.
-    Ok(if branch.starts_with("pandacode/")
-        || branch.starts_with("kingcode/")
+    Ok(if branch.starts_with("indocode/")
+        || branch.starts_with("indocode/")
         || branch.starts_with("codex/")
     {
         branch.to_string()
     } else {
-        format!("pandacode/{branch}")
+        format!("indocode/{branch}")
     })
 }
 
@@ -1172,8 +1172,8 @@ pub fn legacy_worktree_parent(path: &Path, registered: &[PathBuf]) -> Option<Pat
     for _ in 0..16 {
         let leaf = checkout.file_name()?.to_str()?;
         // Existing installations may still have either historical prefix on disk.
-        if !leaf.starts_with("pandacode-")
-            && !leaf.starts_with("kingcode-")
+        if !leaf.starts_with("indocode-")
+            && !leaf.starts_with("indocode-")
             && !leaf.starts_with("codex-")
         {
             return None;
@@ -1353,7 +1353,7 @@ mod tests {
     impl Fixture {
         fn new(repo: bool) -> Self {
             let base =
-                std::env::temp_dir().join(format!("pandacode-workspace-{}", uuid::Uuid::new_v4()));
+                std::env::temp_dir().join(format!("indocode-workspace-{}", uuid::Uuid::new_v4()));
             let root = base.join("project");
             fs::create_dir_all(&root).unwrap();
             let this = Self {
@@ -1655,7 +1655,7 @@ mod tests {
         let path = create_worktree(&f.root, "feature-one".into()).unwrap();
         assert!(path.starts_with(f.base.join("project-worktrees")));
         assert!(!path.starts_with(&f.root));
-        assert_eq!(git_status(&path).unwrap().branch, "pandacode/feature-one");
+        assert_eq!(git_status(&path).unwrap().branch, "indocode/feature-one");
         assert!(create_worktree(&f.root, "feature-one".into()).is_err());
         assert!(create_worktree(&f.root, "../../escape".into()).is_err());
     }
@@ -1673,7 +1673,7 @@ mod tests {
         // The project checkout moves to main for the merge and gains the commit.
         f.git(&["switch", "-c", "elsewhere"]);
         let merged = merge_worktree(&f.root, &path).unwrap();
-        assert_eq!((merged.branch.as_str(), merged.target.as_str(), merged.commits), ("pandacode/fast", "main", 1));
+        assert_eq!((merged.branch.as_str(), merged.target.as_str(), merged.commits), ("indocode/fast", "main", 1));
         assert_eq!(merged.switched_from.as_deref(), Some("elsewhere"));
         assert_eq!(fs::read_to_string(f.root.join("speed.txt")).unwrap(), "faster");
         assert!(worktree_status(&f.root, &path, None).unwrap().merged);
@@ -1728,7 +1728,7 @@ mod tests {
 
         // A start point is honored, an existing branch can be reused, and a duplicate is explained.
         let created = create_worktree_with(&f.root, "lifecycle", Some(&branches.current), false).unwrap();
-        assert_eq!(created.branch, "pandacode/lifecycle");
+        assert_eq!(created.branch, "indocode/lifecycle");
         let duplicate = create_worktree_with(&f.root, "lifecycle", None, false).unwrap_err();
         assert!(duplicate.contains("already exists"), "{duplicate}");
         assert!(create_worktree_with(&f.root, "lifecycle", None, true).is_err(), "branch is checked out");
@@ -1737,7 +1737,7 @@ mod tests {
 
         let status = worktree_status(&f.root, &created.path, Some(&created.branch)).unwrap();
         assert!(status.exists && status.clean && status.merged && !status.has_upstream);
-        assert_eq!(status.branch, "pandacode/lifecycle");
+        assert_eq!(status.branch, "indocode/lifecycle");
 
         // Dirty checkouts are never removed; the status says why.
         fs::write(created.path.join("wip.txt"), "unsaved").unwrap();
@@ -1752,21 +1752,21 @@ mod tests {
         git_stage(&created.path, vec!["feature.txt".into()], true).unwrap();
         git_commit(&created.path, "Feature commit".into()).unwrap();
         assert!(!worktree_status(&f.root, &created.path, None).unwrap().merged);
-        let removal = remove_worktree(&f.root, &created.path, Some("pandacode/lifecycle"), true).unwrap();
+        let removal = remove_worktree(&f.root, &created.path, Some("indocode/lifecycle"), true).unwrap();
         assert!(removal.removed && !removal.branch_deleted);
         assert!(removal.note.contains("kept"), "{}", removal.note);
         assert!(!created.path.exists());
-        assert!(ref_exists(&f.root, "refs/heads/pandacode/lifecycle").unwrap());
+        assert!(ref_exists(&f.root, "refs/heads/indocode/lifecycle").unwrap());
 
         // The branch can come back at the same path, then go for good once merged.
-        let restored = recreate_worktree(&f.root, &created.path, Some("pandacode/lifecycle")).unwrap();
+        let restored = recreate_worktree(&f.root, &created.path, Some("indocode/lifecycle")).unwrap();
         assert_eq!(restored, created.path);
-        assert_eq!(git_status(&restored).unwrap().branch, "pandacode/lifecycle");
-        checked(run_git(&f.root, &["merge", "--no-edit", "pandacode/lifecycle"], 16 * 1024, false).unwrap()).unwrap();
+        assert_eq!(git_status(&restored).unwrap().branch, "indocode/lifecycle");
+        checked(run_git(&f.root, &["merge", "--no-edit", "indocode/lifecycle"], 16 * 1024, false).unwrap()).unwrap();
         assert!(worktree_status(&f.root, &restored, None).unwrap().merged);
         let removal = remove_worktree(&f.root, &restored, None, true).unwrap();
         assert!(removal.removed && removal.branch_deleted && removal.note.is_empty());
-        assert!(!ref_exists(&f.root, "refs/heads/pandacode/lifecycle").unwrap());
+        assert!(!ref_exists(&f.root, "refs/heads/indocode/lifecycle").unwrap());
         assert!(remove_worktree(&f.root, &f.root, None, false).is_err());
     }
 
@@ -1775,29 +1775,29 @@ mod tests {
         let f = Fixture::new(true);
         let created = create_worktree_with(&f.root, "vanished", None, false).unwrap();
         let registered = worktree_entry(&f.root, &created.path).unwrap().unwrap();
-        assert_eq!(registered.branch.as_deref(), Some("pandacode/vanished"));
+        assert_eq!(registered.branch.as_deref(), Some("indocode/vanished"));
         assert!(!registered.prunable);
         fs::remove_dir_all(&created.path).unwrap();
         let registered = worktree_entry(&f.root, &created.path).unwrap().unwrap();
-        assert_eq!(registered.branch.as_deref(), Some("pandacode/vanished"));
+        assert_eq!(registered.branch.as_deref(), Some("indocode/vanished"));
         assert!(registered.prunable);
         let unrelated = f.base.join("unrelated").join(created.path.file_name().unwrap());
         assert!(worktree_entry(&f.root, &unrelated).unwrap().is_none());
         let status = worktree_status(&f.root, &created.path, None).unwrap();
         assert!(!status.exists);
-        assert_eq!(status.branch, "pandacode/vanished", "branch comes from git worktree list");
+        assert_eq!(status.branch, "indocode/vanished", "branch comes from git worktree list");
         let restored = recreate_worktree(&f.root, &created.path, None).unwrap();
         assert!(restored.join(".git").is_file());
         let removal = remove_worktree(&f.root, &restored, None, false).unwrap();
         assert!(removal.removed && !removal.branch_deleted);
-        assert!(ref_exists(&f.root, "refs/heads/pandacode/vanished").unwrap());
+        assert!(ref_exists(&f.root, "refs/heads/indocode/vanished").unwrap());
     }
 
     #[test]
     fn worktree_preserves_explicit_current_and_legacy_prefixes() {
         let f = Fixture::new(true);
         // Historical branch and path prefixes remain supported after a rename.
-        for prefix in ["pandacode", "kingcode", "codex"] {
+        for prefix in ["indocode", "indocode", "codex"] {
             let branch = format!("{prefix}/existing-convention");
             let path = create_worktree(&f.root, branch.clone()).unwrap();
             assert_eq!(git_status(&path).unwrap().branch, branch);
@@ -1888,7 +1888,7 @@ mod tests {
             );
             assert_eq!(
                 git_status(&worktree_root).unwrap().branch,
-                "pandacode/isolated-task"
+                "indocode/isolated-task"
             );
             assert_eq!(git_status(&main_root).unwrap().branch, "main");
             git_stage(&worktree_root, vec!["checkout.txt".into()], true).unwrap();
@@ -1994,7 +1994,7 @@ mod tests {
         assert_eq!(store.lock().unwrap().sessions().unwrap().len(), 2);
         assert!(!fixture
             .base
-            .join("project-worktrees/pandacode-missing-parent")
+            .join("project-worktrees/indocode-missing-parent")
             .exists());
     }
 
@@ -2002,8 +2002,8 @@ mod tests {
     fn legacy_worktree_projects_migrate_without_losing_history_or_touching_files() {
         use crate::storage::Store;
         let fixture = Fixture::new(true);
-        let first_path = create_worktree(&fixture.root, "kingcode/legacy-task".into()).unwrap();
-        let empty_path = create_worktree(&fixture.root, "kingcode/empty-task".into()).unwrap();
+        let first_path = create_worktree(&fixture.root, "indocode/legacy-task".into()).unwrap();
+        let empty_path = create_worktree(&fixture.root, "indocode/empty-task".into()).unwrap();
         fs::write(first_path.join("unsaved.txt"), "keep uncommitted work").unwrap();
         let database = fixture.base.join("legacy.sqlite");
         let (main, task, legacy_id);
@@ -2067,7 +2067,7 @@ mod tests {
             );
             assert_eq!(
                 git_status(&empty_path).unwrap().branch,
-                "kingcode/empty-task"
+                "indocode/empty-task"
             );
         }
         let reopened = Store::open(&database).unwrap();
@@ -2082,8 +2082,8 @@ mod tests {
         for old_version in [3, 4] {
             for reverse_order in [false, true] {
                 let fixture = Fixture::new(true);
-                let new_path = create_worktree(&fixture.root, "kingcode/New".into()).unwrap();
-                let yo_path = create_worktree(&new_path, "kingcode/Yo".into()).unwrap();
+                let new_path = create_worktree(&fixture.root, "indocode/New".into()).unwrap();
+                let yo_path = create_worktree(&new_path, "indocode/Yo".into()).unwrap();
                 fs::write(yo_path.join("draft.txt"), "preserve nested changes").unwrap();
                 let database = fixture.base.join("nested.sqlite");
                 let (main, new_task, yo_task);
@@ -2208,7 +2208,7 @@ mod tests {
         assert!(
             legacy_worktree_parent(&nested_custom, std::slice::from_ref(&fixture.root)).is_none()
         );
-        let unrelated = fixture.base.join("project-worktrees/kingcode-unrelated");
+        let unrelated = fixture.base.join("project-worktrees/indocode-unrelated");
         let other = Fixture::new(true);
         other.git(&[
             "worktree",

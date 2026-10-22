@@ -1,7 +1,7 @@
 //! Skills library and rules registry (issues #15 and #45). Skills and rules live as files under
 //! the app data folder: `skills/<id>/SKILL.md` (or `RULE.md`) plus `skills/<id>.json` with their
 //! source, content hash and activations. Activation writes them where each harness reads them
-//! (`skills/adapter.rs`), never over a file PandaCode did not write, and reports drift.
+//! (`skills/adapter.rs`), never over a file Indocode did not write, and reports drift.
 mod adapter;
 mod github;
 mod safety;
@@ -476,7 +476,7 @@ impl Library {
                 if let Surface::Folder(dir) = adapter::surface(harness, Kind::Skill, *scope, base) {
                     for (name, path) in adapter::skill_folders(&dir) {
                         if !managed.contains(&name.as_str()) {
-                            let detail = if metas.iter().any(|m| m.id == name) { "Same name as a library skill, not written by PandaCode." } else { "Not in the library." };
+                            let detail = if metas.iter().any(|m| m.id == name) { "Same name as a library skill, not written by Indocode." } else { "Not in the library." };
                             unmanaged.push(Unmanaged { scope: *scope, kind: Kind::Skill, path: path.to_string_lossy().into_owned(), detail: detail.into() });
                         }
                     }
@@ -486,10 +486,10 @@ impl Library {
                         let (ids, other) = adapter::blocks_in(&text);
                         let path = file.to_string_lossy().into_owned();
                         for id in ids.iter().filter(|id| !managed.contains(&id.as_str())) {
-                            unmanaged.push(Unmanaged { scope: *scope, kind: Kind::Rule, path: path.clone(), detail: format!("Has a PandaCode block for {id} that the library does not track.") });
+                            unmanaged.push(Unmanaged { scope: *scope, kind: Kind::Rule, path: path.clone(), detail: format!("Has a Indocode block for {id} that the library does not track.") });
                         }
                         if other {
-                            unmanaged.push(Unmanaged { scope: *scope, kind: Kind::Rule, path, detail: "Has instructions PandaCode does not manage.".into() });
+                            unmanaged.push(Unmanaged { scope: *scope, kind: Kind::Rule, path, detail: "Has instructions Indocode does not manage.".into() });
                         }
                     }
                 }

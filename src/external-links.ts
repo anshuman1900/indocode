@@ -1,4 +1,4 @@
-/** Opens external web links from PandaCode's WebViews in the operating system browser. */
+/** Opens external web links from Indocode's WebViews in the operating system browser. */
 export function mountExternalLinks(
   document: Document,
   openExternalUrl: (url: string) => Promise<unknown>,

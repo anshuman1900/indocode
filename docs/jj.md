@@ -27,7 +27,7 @@ Basic support for [Jujutsu](https://github.com/jj-vcs/jj) checkouts (issue #36).
   `tests/jj.spec.ts` mounts the panel against the mock.
 
 Not yet: bookmarks create/move, push/fetch (`jj git push`), rebase/squash, conflict resolution UI, and
-`jj workspace` checkouts as PandaCode worktrees. The panel needs jj 0.22+ (bookmark template names).
+`jj workspace` checkouts as Indocode worktrees. The panel needs jj 0.22+ (bookmark template names).
 
 ## Wiring
 
@@ -95,14 +95,14 @@ Register them in the main window's `tauri::generate_handler![…]` right after `
  import { mountExternalLinks } from './external-links';
  import { bindMessageActions, messageActionsHtml } from './message-actions';
 @@ -84,7 +85,7 @@
-   projectFilter: localStorage.getItem('pandacode.projectFilter') ?? '', collapsedFolders: readCollapsed(localStorage, 'pandacode.collapsedFolders'), expandedFolders: new Set<string>(),
+   projectFilter: localStorage.getItem('indocode.projectFilter') ?? '', collapsedFolders: readCollapsed(localStorage, 'indocode.collapsedFolders'), expandedFolders: new Set<string>(),
    /** Follow-ups typed while an agent works, per task, in delivery order; mirrored from native storage. */
    queues: new Map<string, QueuedMessage[]>(), queueHolds: new Map<string, HoldReason>(), queueEditing: '', queueBusy: new Set<string>(),
 -  git: null as GitStatus | null, files: [] as FileEntry[], filePath: '', gitError: '', filesError: '', inspectorLoading: false,
 +  git: null as GitStatus | null, jj: null as JjStatus | null, files: [] as FileEntry[], filePath: '', gitError: '', filesError: '', inspectorLoading: false,
    selectedFile: '', selectedContent: '', selectedKind: '' as '' | 'diff' | 'file', selectedStaged: false, filePreviewLoading: false,
    browserUrl: '',
-   attachments: [] as string[], drafts: new Map<string, string>(), defaultProvider: (localStorage.getItem('pandacode.defaultProvider') ?? localStorage.getItem('pandacode.provider') ?? 'claude') as ProviderId,
+   attachments: [] as string[], drafts: new Map<string, string>(), defaultProvider: (localStorage.getItem('indocode.defaultProvider') ?? localStorage.getItem('indocode.provider') ?? 'claude') as ProviderId,
 @@ -2434,15 +2435,16 @@
  async function refreshInspector(): Promise<void> {
    void projectRunner.refresh();

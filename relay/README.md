@@ -1,4 +1,4 @@
-# PandaCode Connect relay
+# Indocode Connect relay
 
 A Cloudflare Worker with one SQLite-backed Durable Object per account. It signs devices in with
 GitHub, keeps the device list, and forwards end-to-end encrypted frames between an account's
@@ -7,7 +7,7 @@ devices. It stores no task content. The contract is in [docs/remote-access.md](.
 ## Deploy
 
 1. Create a GitHub OAuth App (Settings → Developer settings → OAuth Apps) and tick **Enable Device Flow**.
-   Generate a client secret too: the relay uses it only to check that a sign-in token was issued to this app (`POST /applications/{client_id}/token`). The desktop app never sees it. The client ID also goes into the desktop build as `PANDACODE_GITHUB_CLIENT_ID`.
+   Generate a client secret too: the relay uses it only to check that a sign-in token was issued to this app (`POST /applications/{client_id}/token`). The desktop app never sees it. The client ID also goes into the desktop build as `INDOCODE_GITHUB_CLIENT_ID`.
 2. From this folder:
    ```sh
    npm install
@@ -19,7 +19,7 @@ devices. It stores no task content. The contract is in [docs/remote-access.md](.
    Each `secret put` takes the secret's name and asks for its value (paste the OAuth App's client ID,
    then its client secret). Run them one line at a time.
    The deploy creates the `Account` Durable Object (SQLite migration `v1`) and the `AUTH_LIMITER` (10/min per IP) and `ACCOUNT_LIMITER` (30/min per account) rate-limit bindings.
-3. Build the desktop app with `PANDACODE_RELAY_URL` set to the Worker URL (or set it as an environment variable at run time).
+3. Build the desktop app with `INDOCODE_RELAY_URL` set to the Worker URL (or set it as an environment variable at run time).
 
 Rotating `SESSION_SECRET` signs everyone out.
 

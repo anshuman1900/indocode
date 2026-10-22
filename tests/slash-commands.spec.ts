@@ -4,7 +4,7 @@ const draft = (page: Page) => page.locator('#slash-fixture');
 const menu = (page: Page) => page.locator('.slash-menu:not([aria-hidden="true"])');
 const commands = [
   { id: 'review', name: '/review', description: 'Review changes in this project', argumentHint: '[instructions]', kind: 'prompt', source: 'Project' },
-  { id: 'clear', name: '/clear', description: 'Start a fresh conversation', kind: 'action', source: 'PandaCode' },
+  { id: 'clear', name: '/clear', description: 'Start a fresh conversation', kind: 'action', source: 'Indocode' },
   { id: 'login', name: '/login', description: 'Sign in', kind: 'unsupported', source: 'Claude Code', reason: 'Sign in from the terminal.' },
 ];
 

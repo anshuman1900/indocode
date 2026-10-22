@@ -2,7 +2,7 @@
 //!
 //! Not telemetry: a check is a plain anonymous GET of each agent vendor's public
 //! release metadata (npm, PyPI, Homebrew, GitHub or the vendor's release URL).
-//! No identifier, usage, workspace or account data is sent, and no PandaCode
+//! No identifier, usage, workspace or account data is sent, and no Indocode
 //! server is involved.
 use crate::Result;
 use serde::Serialize;
@@ -45,7 +45,7 @@ pub(crate) fn reserve_install(state: &crate::AppState) -> Result<InstallGuard> {
         .lock()
         .map_err(|_| "Agent state is unavailable.")?;
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is shutting down.".into());
+        return Err("Indocode is shutting down.".into());
     }
     if crate::jev::is_busy() {
         return Err("Finish Jev browser tests and setup before updating an agent.".into());
@@ -355,7 +355,7 @@ async fn latest(source: &str) -> Result<Version> {
         .redirect(reqwest::redirect::Policy::none())
         .timeout(Duration::from_secs(10))
         .connect_timeout(Duration::from_secs(4))
-        .user_agent("PandaCode agent update checker")
+        .user_agent("Indocode agent update checker")
         .build()
         .map_err(|_| "Could not create the release checker.")?;
     let mut response = client
@@ -751,7 +751,7 @@ mod tests {
     #[test]
     fn shared_claude_launcher_merges_aliases_but_pinned_mimo_stays_separate() {
         let dir =
-            std::env::temp_dir().join(format!("pandacode-update-groups-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-update-groups-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
         let pinned = dir.join("2.1.280");
         let launcher = dir.join("claude");

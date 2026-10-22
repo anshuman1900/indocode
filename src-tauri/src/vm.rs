@@ -61,11 +61,11 @@ pub fn parse_vnc_url(url: &str) -> Result<(Option<String>, SocketAddr), String> 
     let password = credentials.and_then(|c| c.split_once(':').map(|(_, p)| p.to_string())).filter(|p| !p.is_empty());
     let address: SocketAddr = host.trim_end_matches('/').parse().map_err(|_| "The VNC address is not host:port.")?;
     if !address.ip().is_loopback() {
-        return Err("PandaCode only connects to VM screens on this Mac.".into());
+        return Err("Indocode only connects to VM screens on this Mac.".into());
     }
     Ok((password, address))
 }
-/// VM names PandaCode creates: lowercase letters, digits and dashes.
+/// VM names Indocode creates: lowercase letters, digits and dashes.
 pub fn valid_name(name: &str) -> bool {
     !name.is_empty() && name.len() <= 64 && name.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-') && !name.starts_with('-')
 }
@@ -91,13 +91,13 @@ pub struct Vms {
 pub struct VmStatus {
     pub name: String,
     pub running: bool,
-    /// Started by PandaCode, so its screen and idle handling are available.
+    /// Started by Indocode, so its screen and idle handling are available.
     pub attached: bool,
     pub os: String,
     pub memory_mb: u64,
     pub cpus: u64,
     pub size_gb: u64,
-    /// `installing` while PandaCode adds a desktop, `failed` if that did not work.
+    /// `installing` while Indocode adds a desktop, `failed` if that did not work.
     pub desktop: Option<&'static str>,
     pub desktop_error: Option<String>,
 }
@@ -157,7 +157,7 @@ impl Vms {
         }).collect())
     }
 
-    /// The named VM, else the one PandaCode shows, else the only running one.
+    /// The named VM, else the one Indocode shows, else the only running one.
     pub fn resolve(&self, name: Option<&str>) -> Result<String, String> {
         if let Some(name) = name.filter(|n| !n.is_empty()) {
             return Ok(name.to_string());
@@ -195,7 +195,7 @@ impl Vms {
         let listed = tart::list()?;
         let vm = listed.iter().find(|vm| vm.name == name).ok_or_else(|| format!("No VM named {name}."))?;
         if vm.running {
-            return Err(format!("{name} is running outside PandaCode. Stop it there, then start it here to see its screen."));
+            return Err(format!("{name} is running outside Indocode. Stop it there, then start it here to see its screen."));
         }
         let macos = tart::details(name)?.os == "darwin";
         let mut child = tart::spawn_run(&tart::run_arguments(name, macos, share))?;
@@ -241,7 +241,7 @@ impl Vms {
     /// agent or user activity; the panel merely watching does not keep a VM awake.
     pub fn with_screen<T>(&self, name: &str, used: bool, mut action: impl FnMut(&mut Rfb) -> Result<T, String>) -> Result<T, String> {
         let mut sessions = self.lock()?;
-        let session = sessions.get_mut(name).ok_or_else(|| format!("{name} is not running in PandaCode. Start it with vm_manage first."))?;
+        let session = sessions.get_mut(name).ok_or_else(|| format!("{name} is not running in Indocode. Start it with vm_manage first."))?;
         if used {
             session.used = Instant::now();
         }
@@ -282,7 +282,7 @@ impl Vms {
             released.ok().map(|_| name)
         }).collect()
     }
-    /// On quit, VMs PandaCode started are suspended or stopped so they free their memory.
+    /// On quit, VMs Indocode started are suspended or stopped so they free their memory.
     pub fn shutdown(&self) {
         self.release_idle(Duration::ZERO);
     }
@@ -350,7 +350,7 @@ mod tests {
         assert!(IMAGES.iter().filter(|i| i.os == "linux").all(|i| i.memory_mb <= 2048));
         assert!(IMAGES.iter().all(|i| i.source.starts_with("ghcr.io/cirruslabs/")));
         assert!(image("ubuntu").is_ok() && image("windows").is_err());
-        assert!(valid_name("pandacode-ubuntu-2") && !valid_name("Ubuntu") && !valid_name("-x") && !valid_name("a b") && !valid_name(""));
+        assert!(valid_name("indocode-ubuntu-2") && !valid_name("Ubuntu") && !valid_name("-x") && !valid_name("a b") && !valid_name(""));
     }
     #[cfg(unix)]
     #[test]
@@ -371,11 +371,11 @@ mod live {
     use super::*;
 
     /// The manager's whole life cycle on a stopped VM:
-    /// `PANDACODE_VM=name cargo test --lib -- --ignored vm::live`
+    /// `INDOCODE_VM=name cargo test --lib -- --ignored vm::live`
     #[test]
     #[ignore]
     fn starts_looks_runs_and_releases_an_idle_vm() {
-        let name = std::env::var("PANDACODE_VM").unwrap();
+        let name = std::env::var("INDOCODE_VM").unwrap();
         let vms = Vms::default();
         let started = Instant::now();
         vms.start(&name, None).unwrap();
@@ -399,11 +399,11 @@ mod live {
 mod live_panel {
     use super::*;
 
-    /// Polls frames the way the VM panel does: `PANDACODE_VM=name cargo test --lib -- --ignored vm::live_panel --nocapture`
+    /// Polls frames the way the VM panel does: `INDOCODE_VM=name cargo test --lib -- --ignored vm::live_panel --nocapture`
     #[test]
     #[ignore]
     fn frames_keep_coming_like_the_panel_asks() {
-        let name = std::env::var("PANDACODE_VM").unwrap();
+        let name = std::env::var("INDOCODE_VM").unwrap();
         let vms = Vms::default();
         vms.start(&name, None).unwrap();
         let mut sizes = Vec::new();
@@ -411,7 +411,7 @@ mod live_panel {
             let started = Instant::now();
             let shot = vms.with_screen(&name, false, |rfb| screen::screenshot(rfb, 70));
             eprintln!("frame {round}: {:?} in {:?}", shot.as_ref().map(|s| (s.width, s.height, s.jpeg.len())), started.elapsed());
-            if let Ok(shot) = &shot { sizes.push(shot.jpeg.len()); std::fs::write(std::env::temp_dir().join("pandacode-panel.jpg"), &shot.jpeg).unwrap(); }
+            if let Ok(shot) = &shot { sizes.push(shot.jpeg.len()); std::fs::write(std::env::temp_dir().join("indocode-panel.jpg"), &shot.jpeg).unwrap(); }
             std::thread::sleep(Duration::from_millis(220));
         }
         vms.stop(&name).unwrap();

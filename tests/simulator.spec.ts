@@ -137,7 +137,7 @@ test('the device wears its launch finish and remembers another', async ({ page }
   await finish.click();
   await page.getByRole('menuitemradio', { name: 'Silver' }).click();
   await expect(finish).toHaveAccessibleName('Device finish: Silver');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pandacode.simulatorFinish') ?? '{}'))).toEqual({ 'iPhone-17-Pro': 'silver' });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('indocode.simulatorFinish') ?? '{}'))).toEqual({ 'iPhone-17-Pro': 'silver' });
   await page.reload();
   await showSimulator(page);
   await expect(page.getByRole('button', { name: /Device finish/ })).toHaveAccessibleName('Device finish: Silver');
@@ -306,7 +306,7 @@ test('rapid pose changes keep the window responsive and end in the last pose', a
   await expect(panel.locator('.sim-stage')).not.toHaveAttribute('aria-busy');
 });
 
-test('iPhone Duo follows a pose changed outside PandaCode', async ({ page }) => {
+test('iPhone Duo follows a pose changed outside Indocode', async ({ page }) => {
   await open(page);
   await showSimulator(page);
   const panel = page.locator('#simulator-panel');

@@ -1,4 +1,4 @@
-/* Generative UI views in threads. Adopted into each <pandacode-ui> shadow root (with
+/* Generative UI views in threads. Adopted into each <indocode-ui> shadow root (with
  * rich-markdown.css for charts), so only theme tokens cross in: no literal accent colours. */
 :host{display:block;margin:10px 0;max-width:100%;color:var(--text);font:inherit;line-height:1.5}
 *{box-sizing:border-box}

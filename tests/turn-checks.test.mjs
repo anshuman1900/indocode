@@ -20,7 +20,7 @@ test('the toggle stays off until the user turns it on', () => {
 
 test('one repair per run: a queued repair, then silence until a manual send', async () => {
   memory.clear();
-  memory.set('pandacode.turnChecks', 'true');
+  memory.set('indocode.turnChecks', 'true');
   const calls = [];
   const queued = [];
   const context = id => ({
@@ -63,7 +63,7 @@ test('one repair per run: a queued repair, then silence until a manual send', as
 
 test('guards: off, teams, bots, running tasks and occupied queues never run checks', async () => {
   memory.clear();
-  memory.set('pandacode.turnChecks', 'true');
+  memory.set('indocode.turnChecks', 'true');
   const base = { call: async () => failed, task: { id: 't' }, isTeam: false, isBot: false, isRunning: false, queued: 0, onQueued: () => {}, onError: () => { throw new Error('unexpected'); } };
   const seen = [];
   await checks.afterRun('t', { ...base, call: async command => { if (command === 'run_turn_checks') seen.push('run'); return failed; } });
@@ -81,7 +81,7 @@ test('guards: off, teams, bots, running tasks and occupied queues never run chec
     assert.deepEqual(seen, [], JSON.stringify(broken));
   }
 
-  memory.set('pandacode.turnChecks', 'false');
+  memory.set('indocode.turnChecks', 'false');
   seen.length = 0;
   await checks.afterRun('t', base);
   assert.deepEqual(seen, [], 'the toggle off skips everything');
@@ -105,14 +105,14 @@ test('shouldRepair is the pure gate behind the flow', () => {
 
 test('late results are dropped when the task moved on during the check', async () => {
   memory.clear();
-  memory.set('pandacode.turnChecks', 'true');
+  memory.set('indocode.turnChecks', 'true');
   for (const [label, change] of [
     ['running', state => { state.running = true; }],
     ['queued', state => { state.queued = 1; }],
-    ['setting off', () => memory.set('pandacode.turnChecks', 'false')],
+    ['setting off', () => memory.set('indocode.turnChecks', 'false')],
     ['manual send', () => checks.noteManualSend('late')],
   ]) {
-    memory.set('pandacode.turnChecks', 'true');
+    memory.set('indocode.turnChecks', 'true');
     const state = { running: false, queued: 0 };
     const calls = [];
     await checks.afterRun('late', {
@@ -127,7 +127,7 @@ test('late results are dropped when the task moved on during the check', async (
 
 test('plan and read-only tasks are never checked, including a mode change mid-check', async () => {
   memory.clear();
-  memory.set('pandacode.turnChecks', 'true');
+  memory.set('indocode.turnChecks', 'true');
   const base = { task: { id: 'p' }, isTeam: false, isBot: false, isRunning: false, queued: 0, onQueued: () => {}, onError: error => { throw error; } };
   for (const mode of ['plan', 'read-only']) {
     const calls = [];

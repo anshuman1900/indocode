@@ -90,7 +90,7 @@ impl Rfb {
         if self.u32()? != 0 {
             return Err("VNC rejected the password.".into());
         }
-        // Shared session, so PandaCode's panel and the agent can look at once.
+        // Shared session, so Indocode's panel and the agent can look at once.
         self.send(&[1])?;
         let init = self.read::<24>()?;
         let name_length = u32::from_be_bytes([init[20], init[21], init[22], init[23]]) as usize;

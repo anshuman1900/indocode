@@ -3,7 +3,7 @@
 Completed turns show a compact file summary below the response in Conversation,
 the Board task panel, and architect worker history. Expand folders to see file
 names and added/deleted line counts. **Open diff** opens immutable saved patches;
-**Run** appears when the checkout contains `pandacode-run.sh` (see
+**Run** appears when the checkout contains `indocode-run.sh` (see
 [Run and preview](run-project.md)). Empty captures do not add a card or claim that
 no files changed. Older whole-checkout snapshots are retained in storage but are
 not presented as task-owned changes: their authorship cannot be reconstructed.
@@ -19,7 +19,7 @@ Tracking captures only named file writes from the task, using its actual checkou
 or worktree. The runner never uses Git status or a whole-folder diff as evidence
 of task ownership. Unchanged pre-existing edits and unrelated paths are excluded.
 
-The stable `pandacode_track_files` tool gives agents a pre-write handshake: `begin`
+The stable `indocode_track_files` tool gives agents a pre-write handshake: `begin`
 with exact relative paths captures baseline bytes; `complete` with that capture ID
 and the subset actually edited freezes the result. The instructions request this
 for each write batch, including shell scripts. Codex, Claude, and ACP edit events

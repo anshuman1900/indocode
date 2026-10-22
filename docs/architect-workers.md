@@ -18,7 +18,7 @@ output as data rather than instructions.
 The architect and each worker can independently use Claude Code, Codex, Kimi
 Code, OpenCode, GLM through Claude Code, or Antigravity. Model and effort choices come from the existing harness catalog; configured
 custom model IDs remain available. A model must be supported by the selected
-harness and the user's account. PandaCode does not supply inference or API credits.
+harness and the user's account. Indocode does not supply inference or API credits.
 
 ## Saved setups and profiles
 
@@ -44,7 +44,7 @@ the task's existing approval behavior is preserved.
 
 Open **Team**, or the composer's model label while a team is enabled, choose a
 saved profile, and select **Apply setup**. Models and limits remain editable while
-the team runs. If the architect is responding, PandaCode queues the setup until
+the team runs. If the architect is responding, Indocode queues the setup until
 that turn finishes; the composer shows **queued** and reopening the picker shows
 the pending selection. Choosing another setup replaces it, and choosing the
 effective setup cancels the queued change. If only workers are running, the new
@@ -57,14 +57,14 @@ Limits cannot fall below rounds or assignments already used. Pending selections
 survive a restart and apply when you explicitly resume the interrupted team.
 
 Changing the architect model within the same harness preserves its native
-conversation. Changing harnesses uses PandaCode's saved-history handoff (up to the
+conversation. Changing harnesses uses Indocode's saved-history handoff (up to the
 latest 200 messages and 64 KiB); the full visible transcript remains unchanged.
 
 ## Execution
 
 - Worker profiles are reusable model choices, not permanently running processes.
   The architect creates named assignments from those profiles as needed.
-- PandaCode imposes no global limit on simultaneous agents. New team setups use
+- Indocode imposes no global limit on simultaneous agents. New team setups use
   **Unlimited** parallel workers; existing finite team preferences remain saved.
   A team with a finite limit queues excess assignments until a slot is available.
   Each worker has its own persistent harness session and conversation.
@@ -120,14 +120,14 @@ different harnesses. This is local team coordination, not a public A2A network
 endpoint. Open **Workers → Team messages** to inspect questions and handoffs.
 Select a worker to see its latest progress checkpoint alongside its transcript.
 
-- `pandacode_team_directory` returns teammate IDs, status, and advisory file scopes.
-- `pandacode_send_team_message` sends a bounded message to the architect or one
+- `indocode_team_directory` returns teammate IDs, status, and advisory file scopes.
+- `indocode_send_team_message` sends a bounded message to the architect or one
   worker. Stable request keys deduplicate retried sends; different content cannot
   reuse the same key.
-- `pandacode_read_team_mailbox` reads only messages addressed to the calling agent,
+- `indocode_read_team_mailbox` reads only messages addressed to the calling agent,
   with a cursor for incremental reads. Agent identities are bound by the host;
   agents cannot supply another team or sender identity.
-- `pandacode_checkpoint_worker` saves a worker's progress summary, concrete next
+- `indocode_checkpoint_worker` saves a worker's progress summary, concrete next
   steps, and optional blocker. It returns the worker's recent incoming messages.
   Checkpoints survive app restarts and are included in resumed worker prompts and
   compact architect reviews. They report progress; they do not mark work complete.
@@ -142,7 +142,7 @@ eighth turn so a compacted conversation never loses them for long.
 A new message to an idle architect, or a new blocker, can wake it while workers
 continue. Notification turns use the same round budget, reserving the final round
 for settled-result review. Workers check their mailbox at meaningful work
-boundaries; PandaCode does not interrupt a running model response or restart a
+boundaries; Indocode does not interrupt a running model response or restart a
 completed worker to deliver a message. The architect uses a follow-up assignment
 when a completed worker needs to do more work.
 
@@ -197,7 +197,7 @@ endpoint, using Claude's MCP configuration or ACP HTTP MCP negotiation. The endp
 rejects browser origins, bounds requests and results, and closes with its provider
 run. It adds no Node/Python server, permanent configuration file, or resident
 service. ACP harnesses must advertise HTTP MCP support. Existing user integrations remain
-configured; this bridge does not grant access to PandaCode's broader app tools.
+configured; this bridge does not grant access to Indocode's broader app tools.
 Team tools (dispatch, list, read, follow up, cancel, finish, directory,
 messages and checkpoints) run without a Claude permission prompt: they only
 change this team's state and every call is checked against the caller's team,

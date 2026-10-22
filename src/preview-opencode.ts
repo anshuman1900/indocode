@@ -11,7 +11,7 @@ export const openCodePreviewModels: ProviderModel[] = [
   {id:'zai/glm-5',name:'GLM-5',description:'zai/glm-5',contextWindow:200000},
   {id:'xai/grok-4',name:'Grok 4',description:'xai/grok-4',contextWindow:256000},
 ];
-export const openCodePreviewKey = 'pandacode.preview.opencode-models';
+export const openCodePreviewKey = 'indocode.preview.opencode-models';
 export function previewOpenCodeSelection(): string[] {
   try {
     const stored = JSON.parse(localStorage.getItem(openCodePreviewKey) || '[]');

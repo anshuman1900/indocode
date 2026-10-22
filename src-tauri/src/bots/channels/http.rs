@@ -174,7 +174,7 @@ async fn route(app: &tauri::AppHandle, request: Request) -> Response {
         ["api", "chat", channel, action] => web::api(app, channel, action, &request).await,
         ["whatsapp", channel] => whatsapp::webhook(app, channel, &request).await,
         ["assets", "md4c.js"] => Response::markdown_engine(),
-        [""] => Response::text(200, "PandaCode bots are running on this computer."),
+        [""] => Response::text(200, "Indocode bots are running on this computer."),
         _ => Response::text(404, "Not found."),
     }
 }

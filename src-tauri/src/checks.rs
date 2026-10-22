@@ -109,7 +109,7 @@ mod tests {
     struct Scratch(PathBuf);
     impl Scratch {
         fn new(name: &str) -> Self {
-            let path = std::env::temp_dir().join(format!("pandacode-turn-checks-{name}"));
+            let path = std::env::temp_dir().join(format!("indocode-turn-checks-{name}"));
             let _ = fs::remove_dir_all(&path);
             fs::create_dir_all(&path).unwrap();
             Self(path)
@@ -181,7 +181,7 @@ mod tests {
         assert_eq!(report["checked"], false);
         assert!(report["reason"].as_str().unwrap().contains("no fast check"));
 
-        let plan = Plan { name: "npm test".into(), program: "/nonexistent/pandacode-npm".into(), args: vec![] };
+        let plan = Plan { name: "npm test".into(), program: "/nonexistent/indocode-npm".into(), args: vec![] };
         let report = run(temp.path(), &plan).unwrap_err();
         assert!(report.contains("Could not start"), "{report}");
     }

@@ -13,7 +13,7 @@ Report it privately through GitHub Security Advisories: open the repository's
 [Security tab](https://github.com/aicodeking/pandacode/security) and click
 **Report a vulnerability**. Include:
 
-- the PandaCode version, OS and architecture (Settings → About can copy these),
+- the Indocode version, OS and architecture (Settings → About can copy these),
 - what an attacker can do and the steps to reproduce,
 - any proof of concept, logs or screenshots (remove secrets and personal data).
 
@@ -28,6 +28,6 @@ IPC boundary, local servers such as the bots web chat, credential storage) and
 the release workflow.
 
 Out of scope: vulnerabilities in third-party coding CLIs or provider services
-that PandaCode launches or connects to — report those to their vendors. Actions
+that Indocode launches or connects to — report those to their vendors. Actions
 an agent takes after you grant it Full access, or approve them, are expected
 behavior.

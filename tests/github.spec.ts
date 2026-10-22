@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // GitHub runs through the preview's sample `gh`: one connected repository with three
 // open issues and one pull request. Nothing here reaches the network.
-const previewBody = (source: string) => source + '\nwindow.__pandacodePreviewUrl = import.meta.url;\n';
+const previewBody = (source: string) => source + '\nwindow.__indocodePreviewUrl = import.meta.url;\n';
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent' });
 const menu = (page: Page) => page.locator('.file-mention-menu:not([aria-hidden="true"])');
 const calls = (page: Page, command: string): Promise<any[]> => page.evaluate(command => ((window as any).__githubCalls ?? []).filter((entry: any) => entry.command === command), command);
@@ -84,7 +84,7 @@ test('the GitHub switch hides mentions, imports, and pull requests without runni
   await expect(page.getByRole('button', { name: 'Import from GitHub', exact: true })).toBeHidden();
   await expect(page.locator('.link-chip')).toHaveCount(0);
   // Turning it back on restores the chips already stored on tasks.
-  await page.evaluate(() => localStorage.removeItem('pandacode.github'));
+  await page.evaluate(() => localStorage.removeItem('indocode.github'));
   await page.reload();
   await expect(page.getByRole('button', { name: 'Board view', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Board view', exact: true }).click();
@@ -152,7 +152,7 @@ test('push & open pull request refuses a dirty tree, then links the PR to the ta
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
   // Commit the sample changes through the Changes tab, then try again.
   await page.evaluate(async () => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     await invoke('git_stage', { projectId: 'project-1', sessionId: 'session-1', paths: ['src/components/search.ts', 'src/lib/search-index.ts', 'src/components/search.test.ts'], staged: true });
     await invoke('git_commit', { projectId: 'project-1', sessionId: 'session-1', message: 'Instant search' });
   });

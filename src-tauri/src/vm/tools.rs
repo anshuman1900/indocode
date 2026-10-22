@@ -18,10 +18,10 @@ use crate::providers::ToolHost;
 
 /// The screen settles this long after an action before the follow-up screenshot.
 const SETTLE: Duration = Duration::from_millis(700);
-const READ_ONLY: [&str; 2] = ["pandacode_vm_list", "pandacode_vm_screenshot"];
+const READ_ONLY: [&str; 2] = ["indocode_vm_list", "indocode_vm_screenshot"];
 
 pub fn catalog() -> Vec<Value> {
-    let name = json!({"type":"string","maxLength":128,"description":"VM name from vm_list. Omit for the VM shown in PandaCode, else the only running one."});
+    let name = json!({"type":"string","maxLength":128,"description":"VM name from vm_list. Omit for the VM shown in Indocode, else the only running one."});
     let int = |description: &str| json!({"type":"integer","description":description});
     vec![
         spec("vm_list", "List machines agents can use: local virtual machines (macOS and Linux guests on this Mac) and cloud sandboxes from connected providers (IDs like daytona:…). Shows state, OS, whether each has a screen, the images and providers you can create from, and what is set up.", json!({}), &[]),
@@ -37,7 +37,7 @@ pub fn catalog() -> Vec<Value> {
             "command":{"type":"string","maxLength":8192},
             "timeoutSeconds":int("1–1800, default 120"),
             "name":name}), &["command"]),
-        spec("vm_manage", "Manage machines: create a local VM from an image (ubuntu, debian, fedora, macos-tahoe, macos-sequoia; first use downloads it: Linux about 5 GB, macOS about 30 GB; Linux VMs get a desktop installed automatically the first time they start, which takes a few minutes, but commands work right away) or a cloud sandbox: daytona (a Linux desktop billed by Daytona), cloudflare (a commands-only Linux container in the user's Cloudflare account), aws-linux or aws-windows (an EC2 desktop in the user's AWS account, billed while running; Windows takes about 10 minutes to be ready), or agentcore (an AWS AgentCore code interpreter for commands, ending after an hour); start, stop, suspend (local macOS only), delete, show it in PandaCode's VM panel, or install_desktop on a console-only local Linux VM. Idle local VMs are suspended or stopped after 10 minutes. Creating or starting cloud sandboxes can cost money: confirm with the user first.", json!({
+        spec("vm_manage", "Manage machines: create a local VM from an image (ubuntu, debian, fedora, macos-tahoe, macos-sequoia; first use downloads it: Linux about 5 GB, macOS about 30 GB; Linux VMs get a desktop installed automatically the first time they start, which takes a few minutes, but commands work right away) or a cloud sandbox: daytona (a Linux desktop billed by Daytona), cloudflare (a commands-only Linux container in the user's Cloudflare account), aws-linux or aws-windows (an EC2 desktop in the user's AWS account, billed while running; Windows takes about 10 minutes to be ready), or agentcore (an AWS AgentCore code interpreter for commands, ending after an hour); start, stop, suspend (local macOS only), delete, show it in Indocode's VM panel, or install_desktop on a console-only local Linux VM. Idle local VMs are suspended or stopped after 10 minutes. Creating or starting cloud sandboxes can cost money: confirm with the user first.", json!({
             "action":{"type":"string","enum":["create","start","stop","suspend","delete","show","install_desktop"]},
             "provider":{"type":"string","enum":["local","daytona","cloudflare","aws-linux","aws-windows","agentcore"],"description":"create: where the machine runs (default local). daytona, aws-linux and aws-windows have desktops; cloudflare and agentcore are commands-only."},
             "image":{"type":"string","enum":super::IMAGES.iter().map(|i| i.id).collect::<Vec<_>>()},
@@ -74,7 +74,7 @@ pub fn action(args: &Value) -> Result<screen::Action, String> {
 fn look(vms: &Vms, name: &str, note: &str) -> Result<Value, String> {
     let shot = if crate::cloud::split(name).is_some() { cloud::screenshot(name)? } else { vms.with_screen(name, true, |rfb| screen::screenshot(rfb, 80))? };
     let scale = if shot.width == shot.screen_width { String::new() } else { format!(" (screen {}×{}, scaled)", shot.screen_width, shot.screen_height) };
-    Ok(json!({"_pandacodeImage":{"mimeType":"image/jpeg","data":STANDARD.encode(&shot.jpeg),
+    Ok(json!({"_indocodeImage":{"mimeType":"image/jpeg","data":STANDARD.encode(&shot.jpeg),
         "text":format!("{note}VM {name}: {}×{} pixels{scale}; use these pixels as vm_control coordinates.", shot.width, shot.height)}}))
 }
 
@@ -109,14 +109,14 @@ fn manage(app: &tauri::AppHandle, session_id: &str, vms: &Vms, args: &Value) -> 
     let provider = string(args, "provider").unwrap_or_else(|| "local".into());
     let report = match action.as_str() {
         "create" if provider != "local" => {
-            let name = string(args, "name").unwrap_or_else(|| format!("pandacode-{}", &uuid::Uuid::new_v4().simple().to_string()[..6]));
+            let name = string(args, "name").unwrap_or_else(|| format!("indocode-{}", &uuid::Uuid::new_v4().simple().to_string()[..6]));
             let machine = cloud::create(&provider, &name)?;
             vms.show(Some(machine.id.clone()));
             format!("Created {} ({}). It may take a minute to start; check with vm_list.", machine.id, machine.detail)
         }
         "create" => {
             let image = string(args, "image").ok_or("Missing argument: image")?;
-            let name = string(args, "name").unwrap_or_else(|| format!("pandacode-{image}"));
+            let name = string(args, "name").unwrap_or_else(|| format!("indocode-{image}"));
             vms.create(&image, &name)?;
             vms.show(Some(name.clone()));
             vms.start(&name, None)?;
@@ -127,7 +127,7 @@ fn manage(app: &tauri::AppHandle, session_id: &str, vms: &Vms, args: &Value) -> 
         _ if string(args, "name").as_deref().is_some_and(|n| crate::cloud::split(n).is_some()) => {
             let id = string(args, "name").unwrap_or_default();
             match action.as_str() {
-                "show" => { vms.show(Some(id.clone())); format!("Showing {id} in PandaCode's VM panel.") }
+                "show" => { vms.show(Some(id.clone())); format!("Showing {id} in Indocode's VM panel.") }
                 "start" | "stop" | "delete" => { cloud::power(&id, &action)?; format!("{id}: {action} requested.") }
                 "suspend" => { cloud::power(&id, "stop")?; format!("{id} is stopping; cloud sandboxes stop rather than suspend.") }
                 _ => return Err("That action is for local VMs.".into()),
@@ -141,12 +141,12 @@ fn manage(app: &tauri::AppHandle, session_id: &str, vms: &Vms, args: &Value) -> 
                     vms.start(&name, share.as_deref())?;
                     vms.show(Some(name.clone()));
                     super::desktop::ensure_in_background(app.clone(), name.clone());
-                    format!("{name} is running and shown in PandaCode.{}", if share.is_some() { " The project is shared read-only." } else { "" })
+                    format!("{name} is running and shown in Indocode.{}", if share.is_some() { " The project is shared read-only." } else { "" })
                 }
                 "stop" => { vms.stop(&name)?; format!("{name} is stopped.") }
                 "suspend" => { vms.suspend(&name)?; format!("{name} is suspended.") }
                 "delete" => { vms.delete(&name)?; format!("{name} is deleted.") }
-                "show" => { vms.show(Some(name.clone())); format!("Showing {name} in PandaCode's VM panel.") }
+                "show" => { vms.show(Some(name.clone())); format!("Showing {name} in Indocode's VM panel.") }
                 _ => return Err("Unknown VM action.".into()),
             }
         }
@@ -159,7 +159,7 @@ fn list(vms: &Vms) -> Result<Value, String> {
     let status = super::commands::status(vms)?;
     let cloud = cloud::machines();
     Ok(json!({
-        "engine": if !status.supported { "Local VMs need an Apple silicon Mac" } else if status.installed { "Tart installed" } else { "Tart missing: ask the user to set up VMs in PandaCode's VM panel" },
+        "engine": if !status.supported { "Local VMs need an Apple silicon Mac" } else if status.installed { "Tart installed" } else { "Tart missing: ask the user to set up VMs in Indocode's VM panel" },
         "shown": status.shown,
         "vms": status.vms,
         "cloud": cloud.machines,
@@ -174,9 +174,9 @@ async fn dispatch(app: tauri::AppHandle, session_id: String, name: String, args:
         let vms = app.state::<Vms>();
         let target = || vms.resolve(string(&args, "name").as_deref());
         match name.as_str() {
-            "pandacode_vm_list" => list(&vms),
-            "pandacode_vm_screenshot" => look(&vms, &target()?, ""),
-            "pandacode_vm_control" => {
+            "indocode_vm_list" => list(&vms),
+            "indocode_vm_screenshot" => look(&vms, &target()?, ""),
+            "indocode_vm_control" => {
                 let vm = target()?;
                 let report = if crate::cloud::split(&vm).is_some() { cloud::act(&vm, &action(&args)?)? } else { vms.with_screen(&vm, true, |rfb| screen::act(rfb, &action(&args)?))? };
                 if args["screenshot"].as_bool() == Some(false) {
@@ -185,9 +185,9 @@ async fn dispatch(app: tauri::AppHandle, session_id: String, name: String, args:
                 std::thread::sleep(SETTLE);
                 look(&vms, &vm, &format!("{report} Now: "))
             }
-            "pandacode_vm_exec" => exec(&vms, &target()?, &args),
-            "pandacode_vm_manage" => manage(&app, &session_id, &vms, &args),
-            _ => Err("Unknown PandaCode tool.".into()),
+            "indocode_vm_exec" => exec(&vms, &target()?, &args),
+            "indocode_vm_manage" => manage(&app, &session_id, &vms, &args),
+            _ => Err("Unknown Indocode tool.".into()),
         }
     })
     .await
@@ -218,10 +218,10 @@ pub fn with_vm(base: Option<ToolHost>, app: tauri::AppHandle, session_id: String
                 if stopped.load(Ordering::SeqCst) {
                     return Err("Task has stopped.".into());
                 }
-                if !name.starts_with("pandacode_vm_") {
+                if !name.starts_with("indocode_vm_") {
                     return match base {
                         Some(base) => (base.handler)(name, args).await,
-                        None => Err("Unknown PandaCode tool.".into()),
+                        None => Err("Unknown Indocode tool.".into()),
                     };
                 }
                 validate_spec(&catalog(), &name, &args)?;
@@ -239,12 +239,12 @@ mod tests {
     fn the_catalog_validates_and_keeps_looking_free() {
         let tools = catalog();
         assert_eq!(tools.len(), 5);
-        assert!(validate_spec(&tools, "pandacode_vm_control", &json!({"action":"click","x":10,"y":20})).is_ok());
-        assert!(validate_spec(&tools, "pandacode_vm_control", &json!({"action":"hover"})).is_err());
-        assert!(validate_spec(&tools, "pandacode_vm_exec", &json!({"command":"uname -a","timeoutSeconds":30})).is_ok());
-        assert!(validate_spec(&tools, "pandacode_vm_manage", &json!({"action":"create","image":"windows"})).is_err());
+        assert!(validate_spec(&tools, "indocode_vm_control", &json!({"action":"click","x":10,"y":20})).is_ok());
+        assert!(validate_spec(&tools, "indocode_vm_control", &json!({"action":"hover"})).is_err());
+        assert!(validate_spec(&tools, "indocode_vm_exec", &json!({"command":"uname -a","timeoutSeconds":30})).is_ok());
+        assert!(validate_spec(&tools, "indocode_vm_manage", &json!({"action":"create","image":"windows"})).is_err());
         assert!(READ_ONLY.iter().all(|name| tools.iter().any(|t| t["name"] == *name)));
-        assert!(!READ_ONLY.contains(&"pandacode_vm_exec"));
+        assert!(!READ_ONLY.contains(&"indocode_vm_exec"));
     }
     #[test]
     fn parses_every_action_and_requires_its_fields() {
@@ -262,11 +262,11 @@ mod tests {
         assert!(script.contains("autologin-user") && script.contains("xset s off -dpms"));
     }
 
-    /// Against a VM started by the app or `tart run`: `PANDACODE_VM=name cargo test --lib -- --ignored vm::tools::tests::live`
+    /// Against a VM started by the app or `tart run`: `INDOCODE_VM=name cargo test --lib -- --ignored vm::tools::tests::live`
     #[test]
     #[ignore]
     fn live_exec_runs_in_the_guest() {
-        let name = std::env::var("PANDACODE_VM").expect("set PANDACODE_VM");
+        let name = std::env::var("INDOCODE_VM").expect("set INDOCODE_VM");
         let out = tart::exec(&name, false, "echo $((6*7)) && whoami", Duration::from_secs(30)).unwrap();
         assert_eq!(out.code, Some(0));
         assert_eq!(out.stdout, "42\nadmin\n");

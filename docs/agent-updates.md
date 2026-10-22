@@ -1,17 +1,17 @@
 # Agent updates
 
 Open **Settings → Agents → Agent updates → Check updates** to see the agents
-PandaCode finds on this computer. PandaCode checks public release metadata in the
+Indocode finds on this computer. Indocode checks public release metadata in the
 background every six hours and shows a popup when a newer version is available.
 **Later** dismisses that release; a newer release can appear again.
 
 Checking does not install anything. An installation starts only after choosing
 **Update**. Finish running agents and Jev work, pause goals and teams, and close
-terminals first. PandaCode checks the selected executable again before updating and
+terminals first. Indocode checks the selected executable again before updating and
 reads its version afterward. A successful updater exit alone does not mean that
 the selected executable was updated.
 
-**Manual update** means PandaCode cannot establish a supported update route for
+**Manual update** means Indocode cannot establish a supported update route for
 that installation. Use its **Guide** link and the package manager or installer that
 owns it. This includes custom wrappers, executables selected directly from a
 version directory, and unrecognized package-manager installations. A network or
@@ -21,7 +21,7 @@ Claude Code, GLM Coding Plan, and MiMo can use the same Claude installation. Upd
 that installation once. A relay configured to use a separate or pinned executable
 still needs its own installation checked.
 
-## Supported PandaCode routes
+## Supported Indocode routes
 
 Every route also requires a recognized stable launcher or package-manager receipt.
 The executable's name alone is insufficient.
@@ -37,13 +37,13 @@ The executable's name alone is insufficient.
 Kimi npm/Homebrew installs, OpenCode v2, non-core Homebrew taps, other package
 managers, and unrecognized custom locations need manual updates. Antigravity
 shows its official guide without probing its ACP server version or checking an
-update feed. PandaCode never substitutes the separate `agy` CLI updater.
+update feed. Indocode never substitutes the separate `agy` CLI updater.
 
 Codex's optional background-update marker is not required for an explicit update.
-Direct paths into a version directory stay manual; PandaCode never installs a
+Direct paths into a version directory stay manual; Indocode never installs a
 newer version in the background.
 
-PandaCode reads the latest Kimi version from the canonical CDN's plain-text
+Indocode reads the latest Kimi version from the canonical CDN's plain-text
 `https://cdn.kimi.com/kimi-code/latest` feed but does not implement
 Kimi's gradual-rollout timing. Its notification can therefore precede the
 vendor's automatic update for that computer; installation still requires a click.
@@ -51,7 +51,7 @@ vendor's automatic update for that computer; installation still requires a click
 ## Upstream updater reference
 
 Verified against official documentation, source, public metadata, and local
-help/version output on 2026-09-22. These are upstream capabilities; PandaCode only
+help/version output on 2026-09-22. These are upstream capabilities; Indocode only
 enables **Update** when it recognizes the selected installation and can verify
 that the command will update it.
 
@@ -63,7 +63,7 @@ that the command will update it.
 | Legacy Python Kimi CLI | `https://pypi.org/pypi/kimi-cli/json`; JSON `info.version` | `uv tool upgrade kimi-cli --no-cache` for a verified uv installation. This is a separate product/package from Kimi Code. |
 | OpenCode v1 native | `https://api.github.com/repos/anomalyco/opencode/releases/latest`; JSON `tag_name` | `opencode upgrade <version> --method curl`. The vendor command runs its installer internally. OpenCode v2 uses a separate package and must not be selected as a v1 update. |
 | Grok Build native | `https://x.ai/cli/{stable,alpha,enterprise}`; plain version | `grok --no-auto-update update` preserves the selected channel. `update --check --json` is also available, but a metadata request avoids starting the CLI for a background check. |
-| Antigravity ACP server | [Official ACP registry entry](https://raw.githubusercontent.com/agentclientprotocol/registry/refs/heads/main/antigravity-acp/agent.json); JSON `version` and platform archives | Update through its owning installer/editor. `agy update` updates the separate terminal CLI, not PandaCode's `agy_acp_server.par` or `agy_acp_server.exe`. No verified server self-updater is assumed. |
+| Antigravity ACP server | [Official ACP registry entry](https://raw.githubusercontent.com/agentclientprotocol/registry/refs/heads/main/antigravity-acp/agent.json); JSON `version` and platform archives | Update through its owning installer/editor. `agy update` updates the separate terminal CLI, not Indocode's `agy_acp_server.par` or `agy_acp_server.exe`. No verified server self-updater is assumed. |
 
 For npm installations, the package names are `@anthropic-ai/claude-code`,
 `@openai/codex`, `@moonshot-ai/kimi-code`, and `opencode-ai` (OpenCode v1).
@@ -89,9 +89,9 @@ system-package installations should remain with their owning package manager.
   installations use manual updating.
 - A stable launcher and a path pinned directly to its current version are
   different update targets, even when they resolve to the same file today.
-- PandaCode leaves the process's installer-home environment unchanged. A custom
+- Indocode leaves the process's installer-home environment unchanged. A custom
   home or installation location that cannot be matched safely stays manual.
-- PandaCode invokes a fixed official CLI or recognized package manager. It does
+- Indocode invokes a fixed official CLI or recognized package manager. It does
   not construct downloaded shell installers or request administrator passwords.
   Windows file locks and system-package permissions can require manual action.
 

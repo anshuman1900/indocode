@@ -1,5 +1,5 @@
 {
-  "name": "pandacode-sandbox",
+  "name": "indocode-sandbox",
   "private": true,
   "type": "module",
   "dependencies": { "@cloudflare/sandbox": "1.0.1" },

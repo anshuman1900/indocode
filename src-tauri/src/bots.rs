@@ -1,6 +1,6 @@
-//! Bots: named, always-on agents that live in PandaCode and can be reached from the
+//! Bots: named, always-on agents that live in Indocode and can be reached from the
 //! desktop app, a local web page and chat channels (docs/bots.md). Each bot owns a
-//! workspace project; each conversation with it is an ordinary PandaCode task, so
+//! workspace project; each conversation with it is an ordinary Indocode task, so
 //! harness runs, approvals, the queue and history work unchanged.
 
 mod brief;
@@ -254,7 +254,7 @@ fn slug(name: &str, id: &str) -> String {
 }
 
 pub(crate) fn workspace_root() -> PathBuf {
-    crate::agent_usage_providers::home().unwrap_or_else(std::env::temp_dir).join("PandaCode Bots")
+    crate::agent_usage_providers::home().unwrap_or_else(std::env::temp_dir).join("Indocode Bots")
 }
 
 pub(crate) fn get(store: &Store, id: &str) -> Result<Bot> {

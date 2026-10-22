@@ -2119,6 +2119,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "indocode"
+version = "0.3.24"
+dependencies = [
+ "base64 0.22.1",
+ "block2",
+ "cairo-rs",
+ "chacha20poly1305",
+ "chrono",
+ "des",
+ "dunce",
+ "futures-util",
+ "gio",
+ "hkdf",
+ "hmac",
+ "ignore",
+ "image",
+ "keyring",
+ "libc",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "objc2-web-kit",
+ "portable-pty",
+ "regex",
+ "reqwest 0.13.5",
+ "rusqlite",
+ "rustls",
+ "security-framework",
+ "serde",
+ "serde_json",
+ "sha2",
+ "shell-words",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-process",
+ "tauri-plugin-updater",
+ "tokio",
+ "tokio-tungstenite",
+ "toml 0.9.12+spec-1.1.0",
+ "uuid",
+ "webkit2gtk",
+ "webview2-com",
+ "windows",
+ "x25519-dalek",
+ "zip 2.4.2",
+]
+
+[[package]]
 name = "infer"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2974,56 +3024,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.20",
-]
-
-[[package]]
-name = "pandacode"
-version = "0.3.24"
-dependencies = [
- "base64 0.22.1",
- "block2",
- "cairo-rs",
- "chacha20poly1305",
- "chrono",
- "des",
- "dunce",
- "futures-util",
- "gio",
- "hkdf",
- "hmac",
- "ignore",
- "image",
- "keyring",
- "libc",
- "objc2",
- "objc2-app-kit",
- "objc2-foundation",
- "objc2-web-kit",
- "portable-pty",
- "regex",
- "reqwest 0.13.5",
- "rusqlite",
- "rustls",
- "security-framework",
- "serde",
- "serde_json",
- "sha2",
- "shell-words",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-process",
- "tauri-plugin-updater",
- "tokio",
- "tokio-tungstenite",
- "toml 0.9.12+spec-1.1.0",
- "uuid",
- "webkit2gtk",
- "webview2-com",
- "windows",
- "x25519-dalek",
- "zip 2.4.2",
 ]
 
 [[package]]

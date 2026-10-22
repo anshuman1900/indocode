@@ -22,12 +22,12 @@ const PROVIDERS: Record<CloudConnection['provider'], { name: string; summary: st
     name: 'Cloudflare', summary: 'Deploys to Workers and Pages, and container sandboxes.',
     key: { name: 'key', label: 'API token', placeholder: 'Workers Scripts, Pages and Containers: Edit', secret: true },
     fields: [{ name: 'account', label: 'Account ID', placeholder: '32 hexadecimal characters' }],
-    note: 'Agents deploy with Wrangler using this token. Container sandboxes are a separate one-time setup that deploys a small PandaCode Worker; it needs Docker running and a Workers Paid plan.', connect: 'Connect',
+    note: 'Agents deploy with Wrangler using this token. Container sandboxes are a separate one-time setup that deploys a small Indocode Worker; it needs Docker running and a Workers Paid plan.', connect: 'Connect',
   },
   aws: {
     name: 'AWS', summary: 'EC2 Linux and Windows desktops, and AgentCore.',
     fields: [{ name: 'region', label: 'Region', placeholder: 'us-east-1' }, { name: 'profile', label: 'CLI profile', placeholder: 'Optional', optional: true }],
-    note: 'Uses your AWS CLI sign-in (run `aws login` first). Desktops have no open ports; PandaCode reaches them through Systems Manager, which needs the Session Manager plugin for screens.', connect: 'Connect',
+    note: 'Uses your AWS CLI sign-in (run `aws login` first). Desktops have no open ports; Indocode reaches them through Systems Manager, which needs the Session Manager plugin for screens.', connect: 'Connect',
   },
   vercel: {
     name: 'Vercel', summary: 'Deploys by agents, preview and production.',
@@ -44,7 +44,7 @@ const PROVIDERS: Record<CloudConnection['provider'], { name: string; summary: st
   gcloud: {
     name: 'Google Cloud', summary: 'Deploys by agents: Cloud Run and Cloud Storage.',
     fields: [{ name: 'project', label: 'Project ID', placeholder: 'my-app-123456' }, { name: 'region', label: 'Region', placeholder: 'Optional, such as us-central1', optional: true }],
-    note: 'Uses your installed gcloud CLI and its sign-in (run `gcloud auth login` first); PandaCode downloads nothing and stores only the project and region.', connect: 'Connect',
+    note: 'Uses your installed gcloud CLI and its sign-in (run `gcloud auth login` first); Indocode downloads nothing and stores only the project and region.', connect: 'Connect',
   },
 };
 

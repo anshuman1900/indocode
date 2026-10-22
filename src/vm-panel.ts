@@ -3,7 +3,7 @@ import { escape, icon } from './dom';
 import { cloudName, createOptions, machines, type CloudConnection, type CloudMachine, type Machine } from './vm-machines';
 
 /* The inspector's VM panel: one local macOS or Linux VM's live screen, which you can
- * click, scroll and type into. Agents reach the same machines through pandacode_vm_*. */
+ * click, scroll and type into. Agents reach the same machines through indocode_vm_*. */
 
 export type VmImage = { id: string; name: string; os: 'linux' | 'darwin'; source: string; downloadGb: number; memoryMb: number; cpus: number };
 export type Vm = { name: string; running: boolean; attached: boolean; os: string; memoryMb: number; cpus: number; sizeGb: number; desktop?: 'installing' | 'failed' | null; desktopError?: string | null };
@@ -17,7 +17,7 @@ export type VmHost = {
   project(): string | null;
 };
 
-const FRAME_GAP = 220, CLOUD_FRAME_GAP = 1200, TYPE_DELAY = 120, NOTCH = 40, SHARE_KEY = 'pandacode.vmShareProject';
+const FRAME_GAP = 220, CLOUD_FRAME_GAP = 1200, TYPE_DELAY = 120, NOTCH = 40, SHARE_KEY = 'indocode.vmShareProject';
 const KEYS: Record<string, string> = { Enter: 'Return', Backspace: 'backspace', Tab: 'tab', Escape: 'escape', ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Delete: 'delete', Home: 'home', End: 'end', PageUp: 'pageup', PageDown: 'pagedown', ' ': 'space' };
 const sleep = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
 
@@ -65,10 +65,10 @@ export function mountVmPanel(root: HTMLElement, host: VmHost) {
       if (all().length) return '<p>Choose a machine below.</p>';
       const setup = status.supported && !status.installed ? `<button type="button" class="primary-button" data-vm="setup">Set up VMs</button><small>Downloads Tart from Cirrus Labs and checks Apple's notarization. Free for personal and small-team use.</small>` : '';
       const options = createOptions(status, connections);
-      const local = status.supported ? "PandaCode runs Linux and macOS VMs on Apple's Virtualization framework: headless, and only the memory you give it." : 'Local VMs need a Mac with Apple silicon.';
+      const local = status.supported ? "Indocode runs Linux and macOS VMs on Apple's Virtualization framework: headless, and only the memory you give it." : 'Local VMs need a Mac with Apple silicon.';
       return `<strong>${options.length ? 'Create a machine' : 'Run Linux, macOS and Windows machines'}</strong><p>Agents can see, click, type and run commands in an isolated machine. ${local}${anyCloud() ? '' : ' Cloud sandboxes from Daytona, Cloudflare and AWS connect in Settings → Agents.'}</p>${setup}${options.length ? `<div class="vm-images">${options.map(option => `<button type="button" class="secondary-button" data-vm-create="${escape(option.id)}">${escape(option.label)}<small>${escape(option.description)}</small></button>`).join('')}</div>` : ''}`;
     }
-    if (vm.elsewhere) return `<strong>${escape(vm.name)} is running outside PandaCode</strong><p>Stop it, then start it here to see its screen.</p><button type="button" class="secondary-button" data-vm="power">Stop</button>`;
+    if (vm.elsewhere) return `<strong>${escape(vm.name)} is running outside Indocode</strong><p>Stop it, then start it here to see its screen.</p><button type="button" class="secondary-button" data-vm="power">Stop</button>`;
     if (!vm.running) return `<strong>${escape(vm.name)} is ${vm.os === 'darwin' && !vm.cloud ? 'stopped or suspended' : 'stopped'}</strong><p>${escape(vm.detail)}</p>${vm.canStart ? '<button type="button" class="primary-button" data-vm="power">Start</button>' : ''}`;
     if (!vm.desktop) return `<strong>${escape(vm.name)} has no screen</strong><p>Agents use it with commands (vm_exec). ${escape(vm.detail)}</p>`;
     return '<p>Connecting to the screen…</p>';
@@ -129,8 +129,8 @@ export function mountVmPanel(root: HTMLElement, host: VmHost) {
   };
   function uniqueName(image: string): string {
     const taken = new Set(status?.vms.map(vm => vm.name));
-    let name = `pandacode-${image}`;
-    for (let n = 2; taken.has(name); n++) name = `pandacode-${image}-${n}`;
+    let name = `indocode-${image}`;
+    for (let n = 2; taken.has(name); n++) name = `indocode-${image}-${n}`;
     return name;
   }
   function create(option: string): void {

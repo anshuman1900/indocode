@@ -1,4 +1,4 @@
-//! Tools a bot's conversations get on top of the usual PandaCode tools: durable
+//! Tools a bot's conversations get on top of the usual Indocode tools: durable
 //! memory, schedules it can set for itself, and proactive messages to the user.
 //! They only exist in tasks that belong to a bot, and only touch that bot.
 
@@ -27,7 +27,7 @@ pub(crate) fn catalog() -> Vec<Value> {
 
 /// Bot tools act only on the bot that owns the task, so harnesses need not ask before using them.
 pub(crate) fn self_scoped(name: &str) -> bool {
-    name.starts_with("pandacode_bot_") && names().iter().any(|known| known == name)
+    name.starts_with("indocode_bot_") && names().iter().any(|known| known == name)
 }
 
 fn names() -> Vec<String> {
@@ -55,7 +55,7 @@ pub(crate) fn with_bot(base: Option<ToolHost>, app: tauri::AppHandle, session_id
                 if !names().contains(&name) {
                     return match base {
                         Some(base) => (base.handler)(name, args).await,
-                        None => Err("Unknown PandaCode tool.".into()),
+                        None => Err("Unknown Indocode tool.".into()),
                     };
                 }
                 validate_spec(&catalog(), &name, &args)?;
@@ -70,7 +70,7 @@ pub(crate) async fn dispatch(app: &tauri::AppHandle, session_id: &str, name: &st
     let (bot, _) = owner_of(&*state.store.lock().map_err(|e| e.to_string())?, session_id)?.ok_or("This task no longer belongs to a bot.")?;
     let string = |key: &str| args[key].as_str().unwrap_or_default().to_owned();
     let result = match name {
-        "pandacode_bot_notify" => {
+        "indocode_bot_notify" => {
             gateway::notify(app, &bot, &string("text")).await;
             json!({"sent": true})
         }
@@ -78,21 +78,21 @@ pub(crate) async fn dispatch(app: &tauri::AppHandle, session_id: &str, name: &st
             let store = state.store.lock().map_err(|e| e.to_string())?;
             let now = crate::storage::now();
             match name {
-                "pandacode_bot_remember" => {
+                "indocode_bot_remember" => {
                     let memory = super::remember(&store, &bot.id, &string("content"), "bot")?;
                     // This conversation already knows what it just saved.
                     let version = super::get(&store, &bot.id)?.memory_version;
                     super::mark_briefed(&store, session_id, version)?;
                     json!({"saved": memory})
                 }
-                "pandacode_bot_forget" => {
+                "indocode_bot_forget" => {
                     super::forget(&store, &bot.id, &string("memoryId"))?;
                     let version = super::get(&store, &bot.id)?.memory_version;
                     super::mark_briefed(&store, session_id, version)?;
                     json!({"forgotten": true})
                 }
-                "pandacode_bot_recall" => json!({"memories": super::memories(&store, &bot.id)?}),
-                "pandacode_bot_schedule" => {
+                "indocode_bot_recall" => json!({"memories": super::memories(&store, &bot.id)?}),
+                "indocode_bot_schedule" => {
                     let input = schedule::ScheduleInput {
                         title: string("title"),
                         prompt: string("prompt"),
@@ -103,12 +103,12 @@ pub(crate) async fn dispatch(app: &tauri::AppHandle, session_id: &str, name: &st
                     };
                     json!({"scheduled": schedule::create(&store, &bot.id, &input, "bot", now)?})
                 }
-                "pandacode_bot_list_schedules" => json!({"schedules": schedule::list(&store, &bot.id)?}),
-                "pandacode_bot_cancel_schedule" => {
+                "indocode_bot_list_schedules" => json!({"schedules": schedule::list(&store, &bot.id)?}),
+                "indocode_bot_cancel_schedule" => {
                     schedule::delete(&store, &bot.id, &string("scheduleId"))?;
                     json!({"deleted": true})
                 }
-                _ => return Err("Unknown PandaCode tool.".into()),
+                _ => return Err("Unknown Indocode tool.".into()),
             }
         }
     };

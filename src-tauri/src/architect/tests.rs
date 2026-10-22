@@ -29,7 +29,7 @@ fn running_worker(
     call(
         state,
         parent,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment(key,"fast",file)]}),
     )
     .unwrap();
@@ -70,7 +70,7 @@ fn task_deletion_waits_for_team_cleanup_and_late_callbacks_cannot_recreate_it() 
         notifications += 1;
     });
     assert!(dispatch_state(
-        &state, &parent, admission.generation, "pandacode_dispatch_workers",
+        &state, &parent, admission.generation, "indocode_dispatch_workers",
         json!({"assignments":[assignment("late","fast","src")]}),
         &AtomicBool::new(false),
     ).is_err());
@@ -144,7 +144,7 @@ fn generated_review_keeps_model_input_but_projects_a_timed_coordination_turn() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|entry| entry["origin"] == "pandacode_coordination")
+        .find(|entry| entry["origin"] == "indocode_coordination")
         .unwrap();
     assert_eq!(restored["content"], original);
 }
@@ -157,7 +157,7 @@ fn generated_worker_notification_is_typed_but_user_json_and_copies_are_unchanged
         &state,
         &parent,
         &actor,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":"architect","key":"question","message":"Which interface?"}),
     )
     .unwrap();
@@ -186,7 +186,7 @@ fn generated_worker_notification_is_typed_but_user_json_and_copies_are_unchanged
 
 #[test]
 fn prompt_activity_migration_excludes_legacy_coordination_without_a_watermark() {
-    let path = std::env::temp_dir().join(format!("pandacode-legacy-prompt-{}.db", storage::id()));
+    let path = std::env::temp_dir().join(format!("indocode-legacy-prompt-{}.db", storage::id()));
     let parent;
     {
         let store = Store::open(&path).unwrap();
@@ -213,7 +213,7 @@ fn prompt_activity_migration_excludes_legacy_coordination_without_a_watermark() 
 #[test]
 fn legacy_generated_rows_project_only_with_owned_workers_before_the_startup_cutoff() {
     let path =
-        std::env::temp_dir().join(format!("pandacode-legacy-coordination-{}.db", storage::id()));
+        std::env::temp_dir().join(format!("indocode-legacy-coordination-{}.db", storage::id()));
     let (parent, raw);
     {
         let store = Store::open(&path).unwrap();
@@ -363,7 +363,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_a,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         send.clone(),
     )
     .unwrap();
@@ -371,7 +371,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_a,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         send,
     )
     .unwrap();
@@ -381,7 +381,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_a,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":worker_b,"key":"api-shape","message":"Different"})
     )
     .is_err());
@@ -389,7 +389,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_a,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":worker_b,"key":"api-next","message":"Validation is ready."}),
     )
     .unwrap();
@@ -399,7 +399,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
                 &state,
                 &parent,
                 actor,
-                "pandacode_read_team_mailbox",
+                "indocode_read_team_mailbox",
                 json!({})
             )
             .unwrap()["messages"],
@@ -410,7 +410,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_b,
-        "pandacode_read_team_mailbox",
+        "indocode_read_team_mailbox",
         json!({"limit":1}),
     )
     .unwrap();
@@ -420,7 +420,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_b,
-        "pandacode_read_team_mailbox",
+        "indocode_read_team_mailbox",
         json!({"afterId":page["nextCursor"],"limit":1}),
     )
     .unwrap();
@@ -430,7 +430,7 @@ fn direct_mailboxes_are_private_cursor_paged_and_idempotent() {
         &state,
         &parent,
         &actor_a,
-        "pandacode_read_team_mailbox",
+        "indocode_read_team_mailbox",
         json!({"recipient":worker_b})
     )
     .is_err());
@@ -463,10 +463,10 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
         .id
         .clone();
     for name in [
-        "pandacode_dispatch_workers",
-        "pandacode_followup_worker",
-        "pandacode_finish_team",
-        "pandacode_cancel_worker",
+        "indocode_dispatch_workers",
+        "indocode_followup_worker",
+        "indocode_finish_team",
+        "indocode_cancel_worker",
     ] {
         assert!(coordinate(&state, &parent, &actor, name, json!({})).is_err());
         assert!(!coordination::tools(true).iter().any(|t| t["name"] == name));
@@ -475,7 +475,7 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
         &state,
         &parent,
         &actor,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":"foreign-worker","key":"one","message":"Hello"})
     )
     .is_err());
@@ -483,7 +483,7 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
         &state,
         &parent,
         &actor,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":"architect","sender":"architect","key":"one","message":"Hello"})
     )
     .is_err());
@@ -494,7 +494,7 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
     call(
         &state,
         &parent,
-        "pandacode_cancel_worker",
+        "indocode_cancel_worker",
         json!({"workerId":worker_id,"reason":"No longer needed"}),
     )
     .unwrap();
@@ -502,7 +502,7 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
         &state,
         &parent,
         &actor,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":"architect","key":"late","message":"Late write"})
     )
     .is_err());
@@ -518,7 +518,7 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
         &state,
         &parent,
         &actor,
-        "pandacode_read_team_mailbox",
+        "indocode_read_team_mailbox",
         json!({})
     )
     .is_err());
@@ -528,7 +528,7 @@ fn workers_cannot_control_teams_spoof_senders_or_write_after_cancel_pause_or_ret
         &parent,
         original,
         &coordination::Actor::Architect,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":worker_id,"key":"late-parent","message":"Late"}),
         &AtomicBool::new(false)
     )
@@ -544,7 +544,7 @@ fn checkpoints_notify_idle_architect_once_without_interrupting_workers_or_exhaus
         &state,
         &parent,
         &actor,
-        "pandacode_checkpoint_worker",
+        "indocode_checkpoint_worker",
         checkpoint.clone(),
     )
     .unwrap();
@@ -556,7 +556,7 @@ fn checkpoints_notify_idle_architect_once_without_interrupting_workers_or_exhaus
         &state,
         &parent,
         &actor,
-        "pandacode_checkpoint_worker",
+        "indocode_checkpoint_worker",
         checkpoint,
     )
     .unwrap();
@@ -591,7 +591,7 @@ fn checkpoints_notify_idle_architect_once_without_interrupting_workers_or_exhaus
         &state,
         &parent,
         &actor,
-        "pandacode_send_team_message",
+        "indocode_send_team_message",
         json!({"recipient":"architect","key":"new-info","message":"Additional detail"}),
     )
     .unwrap();
@@ -625,16 +625,16 @@ fn checkpoint_validation_roles_and_limits_do_not_mutate_saved_progress() {
         &state,
         &parent,
         &coordination::Actor::Architect,
-        "pandacode_checkpoint_worker",
+        "indocode_checkpoint_worker",
         valid.clone()
     )
     .is_err());
-    coordinate(&state, &parent, &actor, "pandacode_checkpoint_worker", valid).unwrap();
+    coordinate(&state, &parent, &actor, "indocode_checkpoint_worker", valid).unwrap();
     assert!(coordinate(
         &state,
         &parent,
         &actor,
-        "pandacode_checkpoint_worker",
+        "indocode_checkpoint_worker",
         json!({"key":"one","summary":"Changed milestone","nextSteps":"Run checks"})
     )
     .is_err());
@@ -642,7 +642,7 @@ fn checkpoint_validation_roles_and_limits_do_not_mutate_saved_progress() {
         &state,
         &parent,
         &actor,
-        "pandacode_checkpoint_worker",
+        "indocode_checkpoint_worker",
         json!({"key":"two","summary":"🌿".repeat(600),"nextSteps":"Run checks"})
     )
     .is_err());
@@ -661,7 +661,7 @@ fn checkpoint_validation_roles_and_limits_do_not_mutate_saved_progress() {
 
 #[test]
 fn persisted_messages_and_checkpoint_survive_restart_without_auto_resuming() {
-    let path = std::env::temp_dir().join(format!("pandacode-mailbox-{}.db", storage::id()));
+    let path = std::env::temp_dir().join(format!("indocode-mailbox-{}.db", storage::id()));
     let (parent, worker_session);
     {
         let store = Store::open(&path).unwrap();
@@ -683,8 +683,8 @@ fn persisted_messages_and_checkpoint_survive_restart_without_auto_resuming() {
         };
         let (run, actor) = running_worker(&state, &parent, "a", "src");
         worker_session = run.config.session_id.clone();
-        coordinate(&state,&parent,&actor,"pandacode_send_team_message",json!({"recipient":"architect","key":"restart-message","message":"Parser interface is ready"})).unwrap();
-        coordinate(&state,&parent,&actor,"pandacode_checkpoint_worker",json!({"key":"restart-progress","summary":"Parser checks passed","nextSteps":"Wire renderer","blocker":null})).unwrap();
+        coordinate(&state,&parent,&actor,"indocode_send_team_message",json!({"recipient":"architect","key":"restart-message","message":"Parser interface is ready"})).unwrap();
+        coordinate(&state,&parent,&actor,"indocode_checkpoint_worker",json!({"key":"restart-progress","summary":"Parser checks passed","nextSteps":"Wire renderer","blocker":null})).unwrap();
     }
     let store = Store::open(&path).unwrap();
     let team = load(&store, &parent).unwrap().unwrap();
@@ -708,7 +708,7 @@ fn persisted_messages_and_checkpoint_survive_restart_without_auto_resuming() {
 
 #[test]
 fn collaboration_migration_refreshes_only_codex_team_catalogs_and_retains_private_history() {
-    let path = std::env::temp_dir().join(format!("pandacode-team-v15-{}.db", storage::id()));
+    let path = std::env::temp_dir().join(format!("indocode-team-v15-{}.db", storage::id()));
     let (parent, child, claude, ordinary);
     {
         let store = Store::open(&path).unwrap();
@@ -791,7 +791,7 @@ fn collaboration_migration_refreshes_only_codex_team_catalogs_and_retains_privat
 
 #[test]
 fn legacy_codex_catalog_refresh_preserves_private_history_and_survives_restart_once() {
-    let path = std::env::temp_dir().join(format!("pandacode-team-catalog-{}.db", storage::id()));
+    let path = std::env::temp_dir().join(format!("indocode-team-catalog-{}.db", storage::id()));
     let (parent, child, ordinary, admission);
     {
         let store = Store::open(&path).unwrap();
@@ -1102,7 +1102,7 @@ fn unicode_summary_truncation_is_bounded() {
 }
 #[test]
 fn restart_marks_team_interrupted_without_relaunching_workers() {
-    let path = std::env::temp_dir().join(format!("pandacode-team-test-{}.db", storage::id()));
+    let path = std::env::temp_dir().join(format!("indocode-team-test-{}.db", storage::id()));
     let sid;
     {
         let store = Store::open(&path).unwrap();
@@ -1345,11 +1345,11 @@ fn queued_switch_enforces_lower_assignment_limit_and_rejects_used_limits() {
         sid: sid.clone(), prompt: "Build the feature".into(), images: None,
         admission: Admission { parent: sid.clone(), generation: 1 },
     });
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("first","fast","src/a")]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("first","fast","src/a")]})).unwrap();
     let mut config = load(&state.store.lock().unwrap(), &sid).unwrap().unwrap().config;
     config.max_assignments = 1;
     configure_state(&state, &sid, Some(config.clone()), None, None).unwrap();
-    assert!(call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("extra","fast","src/b")]})).unwrap_err().contains("Assignment limit"));
+    assert!(call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("extra","fast","src/b")]})).unwrap_err().contains("Assignment limit"));
     config.max_rounds = 0;
     assert!(configure_state(&state, &sid, Some(config), None, None).is_err());
     let mut team = load(&state.store.lock().unwrap(), &sid).unwrap().unwrap();
@@ -1410,7 +1410,7 @@ fn mixed_harness_delegation_review_followup_and_finish_use_real_task_lifecycle()
         },
     };
     let (parent, _parent_rx) = claim(&state, parent_action);
-    let result=call(&state,&sid,"pandacode_dispatch_workers",json!({"assignments":[assignment("engine","fast","src"),assignment("tests","kimi","tests")]})).unwrap();
+    let result=call(&state,&sid,"indocode_dispatch_workers",json!({"assignments":[assignment("engine","fast","src"),assignment("tests","kimi","tests")]})).unwrap();
     let first_id = result["workerIds"][0].as_str().unwrap().to_string();
     let a = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
     let (first, _first_rx) = claim(&state, a);
@@ -1433,7 +1433,7 @@ fn mixed_harness_delegation_review_followup_and_finish_use_real_task_lifecycle()
     assert!(review.prompt.contains("Engine checks passed"));
     assert!(review.prompt.contains("Tests passed on Kimi"));
     let (reviewer, _review_rx) = claim(&state, review);
-    call(&state,&sid,"pandacode_followup_worker",json!({"workerId":first_id,"key":"engine-fix","prompt":"Handle the missing empty input case."})).unwrap();
+    call(&state,&sid,"indocode_followup_worker",json!({"workerId":first_id,"key":"engine-fix","prompt":"Handle the missing empty input case."})).unwrap();
     finish(&state, &reviewer, "Correct the edge case.", true);
     let retry = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
     let (retried, _retry_rx) = claim(&state, retry);
@@ -1446,7 +1446,7 @@ fn mixed_harness_delegation_review_followup_and_finish_use_real_task_lifecycle()
     call(
         &state,
         &sid,
-        "pandacode_finish_team",
+        "indocode_finish_team",
         json!({"summary":"Implemented and verified the feature."}),
     )
     .unwrap();
@@ -1460,20 +1460,20 @@ fn mixed_harness_delegation_review_followup_and_finish_use_real_task_lifecycle()
 fn batch_idempotency_rejects_different_arguments_and_rolls_back_invalid_batches() {
     let (state, sid) = state_fixture();
     let batch = json!({"assignments":[assignment("engine","fast","src")]});
-    let first = call(&state, &sid, "pandacode_dispatch_workers", batch.clone()).unwrap();
-    let repeat = call(&state, &sid, "pandacode_dispatch_workers", batch).unwrap();
+    let first = call(&state, &sid, "indocode_dispatch_workers", batch.clone()).unwrap();
+    let repeat = call(&state, &sid, "indocode_dispatch_workers", batch).unwrap();
     assert_eq!(first, repeat);
     assert!(call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment("engine","kimi","src")]})
     )
     .is_err());
     assert!(call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment("new","fast","new"),assignment("bad","missing","bad")]})
     )
     .is_err());
@@ -1501,7 +1501,7 @@ fn pause_between_scheduling_and_claim_prevents_a_worker_process_and_stale_comple
     call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment("engine","fast","src")]}),
     )
     .unwrap();
@@ -1536,7 +1536,7 @@ fn dispatch_requires_explicit_file_scopes_without_persisting_any_part_of_the_bat
     let (state, sid) = state_fixture();
     let mut unscoped = assignment("unscoped", "fast", "src");
     unscoped.as_object_mut().unwrap().remove("files");
-    let result = call(&state, &sid, "pandacode_dispatch_workers", json!({
+    let result = call(&state, &sid, "indocode_dispatch_workers", json!({
         "assignments": [assignment("valid", "fast", "tests"), unscoped]
     }));
     assert!(result.is_err(), "omitted scopes must not silently reserve the whole checkout");
@@ -1547,7 +1547,7 @@ fn dispatch_requires_explicit_file_scopes_without_persisting_any_part_of_the_bat
         assert_eq!(count, expected, "{table}");
     }
     let tools = catalog();
-    let dispatch = tools.iter().find(|tool| tool["name"] == "pandacode_dispatch_workers").unwrap();
+    let dispatch = tools.iter().find(|tool| tool["name"] == "indocode_dispatch_workers").unwrap();
     assert!(dispatch["inputSchema"]["properties"]["assignments"]["items"]["required"]
         .as_array().unwrap().contains(&json!("files")));
 }
@@ -1571,7 +1571,7 @@ fn read_only_workers_overlap_writers_under_finite_and_unlimited_parallel_limits(
             let writer = assignment("writer", "fast", "src");
             let mut assignments = if writer_first { vec![writer, review, research] } else { vec![review, research, writer] };
             assignments.push(assignment("overlapping-writer", "fast", "src/lib.rs"));
-            call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments": assignments})).unwrap();
+            call(&state, &sid, "indocode_dispatch_workers", json!({"assignments": assignments})).unwrap();
             let mut running = Vec::new();
             while let Some(action) = next_action_state(&state, &mut |_| {}).unwrap() {
                 assert!(running.len() < 3, "a second overlapping writer must wait");
@@ -1597,23 +1597,23 @@ fn read_only_worker_followups_inherit_or_change_access_only_after_settlement() {
     let (state, sid) = state_fixture();
     let mut review = assignment("review", "fast", "src");
     review["readOnly"] = json!(true);
-    let ids = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments": [review]})).unwrap();
+    let ids = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments": [review]})).unwrap();
     let worker_id = ids["workerIds"][0].clone();
     let action = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
     let (first, _rx) = claim(&state, action);
     assert!(first.config.prompt.contains("Do not edit, create, or delete files"));
-    assert!(call(&state, &sid, "pandacode_followup_worker", json!({
+    assert!(call(&state, &sid, "indocode_followup_worker", json!({
         "workerId": worker_id, "key": "too-early", "prompt": "Apply the fix", "readOnly": false
     })).unwrap_err().contains("settle"));
     finish(&state, &first, "Reviewed", true);
-    call(&state, &sid, "pandacode_followup_worker", json!({
+    call(&state, &sid, "indocode_followup_worker", json!({
         "workerId": worker_id, "key": "review-again", "prompt": "Review again"
     })).unwrap();
     let action = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
     let (second, _rx) = claim(&state, action);
     assert!(second.config.prompt.contains("Do not edit, create, or delete files"));
     finish(&state, &second, "Reviewed again", true);
-    call(&state, &sid, "pandacode_followup_worker", json!({
+    call(&state, &sid, "indocode_followup_worker", json!({
         "workerId": worker_id, "key": "apply-fix", "prompt": "Apply the fix", "readOnly": false, "files": ["src/fix.rs"]
     })).unwrap();
     let action = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
@@ -1652,7 +1652,7 @@ fn unlimited_team_launches_more_than_four_agents_without_bypassing_scope_ownersh
     let (_parent, _parent_rx) = claim(&state, parent_action);
     let mut assignments = (0..8).map(|index| assignment(&format!("part-{index}"), "fast", &format!("part-{index}.rs"))).collect::<Vec<_>>();
     assignments.push(assignment("overlap", "fast", "part-0.rs"));
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":assignments})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":assignments})).unwrap();
     let mut running = Vec::new();
     while let Some(action) = next_action_state(&state, &mut |_| {}).unwrap() {
         assert!(running.len() < 8, "overlapping work must remain queued");
@@ -1670,7 +1670,7 @@ fn unlimited_team_launches_more_than_four_agents_without_bypassing_scope_ownersh
 fn explicit_team_parallel_limit_still_queues_independent_workers() {
     let (state, sid) = state_fixture();
     let assignments = (0..5).map(|index| assignment(&format!("part-{index}"), "fast", &format!("part-{index}.rs"))).collect::<Vec<_>>();
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":assignments})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":assignments})).unwrap();
     let mut running = Vec::new();
     while let Some(action) = next_action_state(&state, &mut |_| {}).unwrap() {
         running.push(claim(&state, action));
@@ -1698,7 +1698,7 @@ fn different_teams_in_same_checkout_serialize_overlapping_scopes() {
         call(
             &state,
             parent,
-            "pandacode_dispatch_workers",
+            "indocode_dispatch_workers",
             json!({"assignments":[assignment("engine","fast","src")]}),
         )
         .unwrap();
@@ -1727,7 +1727,7 @@ fn read_only_scopes_allow_parallel_workers_across_teams_in_the_same_checkout() {
             let mut task = assignment("shared-scope", "fast", "src");
             task["files"] = json!([]);
             task["readOnly"] = json!(read_only);
-            call(&state, parent, "pandacode_dispatch_workers", json!({"assignments": [task]})).unwrap();
+            call(&state, parent, "indocode_dispatch_workers", json!({"assignments": [task]})).unwrap();
         }
         let mut running = Vec::new();
         for _ in 0..2 {
@@ -1751,7 +1751,7 @@ fn permission_revocation_applies_to_worker_retry_and_failed_work_can_be_abandone
     let ids = call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment("engine","fast","src")]}),
     )
     .unwrap();
@@ -1771,11 +1771,11 @@ fn permission_revocation_applies_to_worker_retry_and_failed_work_can_be_abandone
     let (retry, _rx) = claim(&state, action);
     assert_eq!(retry.config.mode, "ask");
     finish(&state, &retry, "Still blocked.", false);
-    call(&state,&sid,"pandacode_cancel_worker",json!({"workerId":ids["workerIds"][0],"reason":"Superseded by a smaller validated implementation."})).unwrap();
+    call(&state,&sid,"indocode_cancel_worker",json!({"workerId":ids["workerIds"][0],"reason":"Superseded by a smaller validated implementation."})).unwrap();
     assert!(call(
         &state,
         &sid,
-        "pandacode_finish_team",
+        "indocode_finish_team",
         json!({"summary":"Scope delivered; superseded worker intentionally omitted."})
     )
     .is_ok());
@@ -1786,7 +1786,7 @@ fn round_and_attempt_limits_stop_automatic_spending_until_explicit_action() {
     let result = call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment("engine","fast","src")]}),
     )
     .unwrap();
@@ -1803,7 +1803,7 @@ fn round_and_attempt_limits_stop_automatic_spending_until_explicit_action() {
         let follow = call(
             &state,
             &sid,
-            "pandacode_followup_worker",
+            "indocode_followup_worker",
             json!({"workerId":worker_id,"key":format!("fix-{attempt}"),"prompt":"Resolve the interface first."}),
         );
         if attempt < 3 {
@@ -1846,7 +1846,7 @@ fn dependency_failure_is_reported_instead_of_leaving_a_permanent_queue() {
     let first = call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[assignment("engine","fast","src")]}),
     )
     .unwrap();
@@ -1855,7 +1855,7 @@ fn dependency_failure_is_reported_instead_of_leaving_a_permanent_queue() {
     call(
         &state,
         &sid,
-        "pandacode_dispatch_workers",
+        "indocode_dispatch_workers",
         json!({"assignments":[dependent]}),
     )
     .unwrap();
@@ -1909,10 +1909,10 @@ fn legacy_dispatch_retry_without_files_reuses_the_saved_whole_checkout_assignmen
     let (state, sid) = state_fixture();
     let mut original = assignment("legacy-whole-checkout", "fast", "src");
     original["files"] = json!([]);
-    let first = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments": [original.clone()]})).unwrap();
+    let first = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments": [original.clone()]})).unwrap();
     let revision = load(&state.store.lock().unwrap(), &sid).unwrap().unwrap().revision;
     original.as_object_mut().unwrap().remove("files");
-    let retry = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments": [original]})).unwrap();
+    let retry = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments": [original]})).unwrap();
     assert_eq!(retry["workerIds"], first["workerIds"]);
     let store = state.store.lock().unwrap();
     let team = load(&store, &sid).unwrap().unwrap();
@@ -1944,7 +1944,7 @@ fn auto_assignment(key: &str, extra: Value) -> Value {
 #[test]
 fn auto_team_lead_chooses_worker_models() {
     let (state, sid) = auto_state();
-    let result = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[
+    let result = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[
         auto_assignment("direct", json!({"provider":"codex","model":"gpt-6.1-sol"})),
         auto_assignment("roster", json!({"profileId":"kimi"})),
         auto_assignment("own", json!({})),
@@ -1963,7 +1963,7 @@ fn auto_team_lead_chooses_worker_models() {
 #[test]
 fn auto_team_rejects_ambiguous_or_unknown_models() {
     let (state, sid) = auto_state();
-    let bad = |extra: Value| call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[auto_assignment("x", extra)]})).unwrap_err();
+    let bad = |extra: Value| call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[auto_assignment("x", extra)]})).unwrap_err();
     assert!(bad(json!({"profileId":"kimi","model":"m"})).contains("not both"));
     assert!(bad(json!({"model":"m"})).contains("together"));
     assert!(bad(json!({"provider":"other","model":"m"})).contains("Unknown harness"));
@@ -1972,7 +1972,7 @@ fn auto_team_rejects_ambiguous_or_unknown_models() {
 #[test]
 fn configured_team_still_requires_a_profile() {
     let (state, sid) = state_fixture();
-    let error = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[auto_assignment("x", json!({"provider":"codex","model":"m"}))]})).unwrap_err();
+    let error = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[auto_assignment("x", json!({"provider":"codex","model":"m"}))]})).unwrap_err();
     assert!(error.contains("profileId"));
 }
 #[test]
@@ -2018,7 +2018,7 @@ fn roster_only_state(lead_in_roster: bool) -> (AppState, String) {
 #[test]
 fn roster_only_team_dispatches_only_its_models() {
     let (state, sid) = roster_only_state(false);
-    let dispatch = |key: &str, extra: Value| call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[auto_assignment(key, extra)]}));
+    let dispatch = |key: &str, extra: Value| call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[auto_assignment(key, extra)]}));
     assert!(dispatch("outside", json!({"provider":"claude","model":"opus"})).unwrap_err().contains("only orchestrate"));
     assert!(dispatch("unlisted-lead", json!({})).unwrap_err().contains("only orchestrate"));
     dispatch("direct", json!({"provider":"codex","model":"default"})).unwrap();
@@ -2032,7 +2032,7 @@ fn roster_only_team_dispatches_only_its_models() {
 #[test]
 fn roster_only_team_lets_a_listed_lead_staff_itself() {
     let (state, sid) = roster_only_state(true);
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[auto_assignment("own", json!({}))]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[auto_assignment("own", json!({}))]})).unwrap();
     let store = state.store.lock().unwrap();
     let worker = &load(&store, &sid).unwrap().unwrap().workers[0];
     assert_eq!((worker.profile_id.as_str(), worker.reasoning_effort.as_deref()), ("lead", Some("high")));
@@ -2042,7 +2042,7 @@ fn roster_only_team_keeps_lead_and_worker_efforts_apart() {
     // Issue #34: the lead runs at its own effort while workers of the same model use the roster's.
     let (state, sid) = roster_only_state(true);
     state.store.lock().unwrap().db.execute("UPDATE sessions SET reasoning_effort='xhigh' WHERE id=?1", [&sid]).unwrap();
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[auto_assignment("own", json!({}))]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[auto_assignment("own", json!({}))]})).unwrap();
     let store = state.store.lock().unwrap();
     let worker = &load(&store, &sid).unwrap().unwrap().workers[0];
     assert_eq!(worker.reasoning_effort.as_deref(), Some("high"));
@@ -2107,7 +2107,7 @@ fn every_registered_team_tool_runs_without_an_approval_prompt() {
     for name in &names {
         assert!(team_tool(name), "{name} is not auto-allowed");
     }
-    assert!(!team_tool("pandacode_run_project"));
+    assert!(!team_tool("indocode_run_project"));
 }
 #[test]
 fn a_question_answered_without_delegating_leaves_the_team_ready() {
@@ -2125,13 +2125,13 @@ fn a_failed_follow_up_never_reports_the_previous_attempts_success() {
     let (state, sid) = state_fixture();
     let action = Launch { sid: sid.clone(), prompt: "Objective".into(), images: None, admission: Admission { parent: sid.clone(), generation: 1 } };
     let (parent, _rx) = claim(&state, action);
-    let dispatched = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
+    let dispatched = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
     let id = dispatched["workerIds"][0].as_str().unwrap().to_owned();
     let (worker, _w) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
     finish(&state, &worker, "Attempt one: all engine checks passed.", true);
     finish(&state, &parent, "waiting", true);
     let (review, _r) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
-    call(&state, &sid, "pandacode_followup_worker", json!({"workerId":id,"key":"fix","prompt":"Fix the edge case."})).unwrap();
+    call(&state, &sid, "indocode_followup_worker", json!({"workerId":id,"key":"fix","prompt":"Fix the edge case."})).unwrap();
     finish(&state, &review, "follow", true);
     let (retried, _x) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
     {
@@ -2150,11 +2150,11 @@ fn a_new_objective_runs_a_reused_key_again_and_counts_its_own_assignments() {
     let (state, sid) = state_fixture();
     let first = Launch { sid: sid.clone(), prompt: "Objective one".into(), images: None, admission: Admission { parent: sid.clone(), generation: 1 } };
     let (parent, _rx) = claim(&state, first);
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("tests","fast","tests")]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("tests","fast","tests")]})).unwrap();
     let (worker, _w) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
     finish(&state, &worker, "Tests pass.", true);
     // Within the objective, repeating the key says the work will not run again.
-    let again = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("tests","fast","tests")]})).unwrap();
+    let again = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("tests","fast","tests")]})).unwrap();
     assert_eq!(again["queued"], false);
     assert_eq!(again["duplicates"][0]["status"], "completed");
     {
@@ -2172,7 +2172,7 @@ fn a_new_objective_runs_a_reused_key_again_and_counts_its_own_assignments() {
     let generation = generation + 1;
     let second = Launch { sid: sid.clone(), prompt: "Objective two".into(), images: None, admission: Admission { parent: sid.clone(), generation } };
     let (_turn, _rx) = claim(&state, second);
-    let fresh = call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("tests","fast","tests")]})).unwrap();
+    let fresh = call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("tests","fast","tests")]})).unwrap();
     assert_eq!(fresh["queued"], true);
     assert_eq!(load(&state.store.lock().unwrap(), &sid).unwrap().unwrap().workers.len(), 2);
 }
@@ -2181,7 +2181,7 @@ fn pausing_and_resuming_does_not_use_up_worker_attempts() {
     let (state, sid) = state_fixture();
     let action = Launch { sid: sid.clone(), prompt: "Objective".into(), images: None, admission: Admission { parent: sid.clone(), generation: 1 } };
     let (parent, _rx) = claim(&state, action);
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
     finish(&state, &parent, "waiting", true);
     for _ in 0..4 {
         control_state(&state, &sid, "pause").unwrap();
@@ -2194,7 +2194,7 @@ fn pausing_and_resuming_does_not_use_up_worker_attempts() {
 #[test]
 fn one_team_with_a_missing_folder_does_not_stop_the_others() {
     let (state, healthy) = state_fixture();
-    let gone = std::env::temp_dir().join(format!("pandacode-gone-{}", storage::id()));
+    let gone = std::env::temp_dir().join(format!("indocode-gone-{}", storage::id()));
     std::fs::create_dir_all(&gone).unwrap();
     let broken = {
         let store = state.store.lock().unwrap();
@@ -2211,7 +2211,7 @@ fn one_team_with_a_missing_folder_does_not_stop_the_others() {
     std::fs::remove_dir_all(&gone).unwrap();
     let action = Launch { sid: healthy.clone(), prompt: "Objective".into(), images: None, admission: Admission { parent: healthy.clone(), generation: 1 } };
     let (_parent, _rx) = claim(&state, action);
-    call(&state, &healthy, "pandacode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
+    call(&state, &healthy, "indocode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
     let next = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
     assert_ne!(next.sid, broken);
     let team = load(&state.store.lock().unwrap(), &broken).unwrap().unwrap();
@@ -2241,7 +2241,7 @@ fn a_worker_that_cannot_start_fails_alone() {
     let (state, sid) = state_fixture();
     let action = Launch { sid: sid.clone(), prompt: "Objective".into(), images: None, admission: Admission { parent: sid.clone(), generation: 1 } };
     let (parent, _rx) = claim(&state, action);
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("one","fast","src/a"),assignment("two","fast","src/b")]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("one","fast","src/a"),assignment("two","fast","src/b")]})).unwrap();
     let first = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
     fail_launch_state(&state, &first.admission, &first.sid, "An agent update is being installed", &mut |_| {});
     let team = load(&state.store.lock().unwrap(), &sid).unwrap().unwrap();
@@ -2267,7 +2267,7 @@ const SILENT: i64 = (watchdog::SILENCE_MINUTES + 1) * 60 * 1000;
 fn a_failed_worker_is_handed_to_the_architect_while_others_still_run() {
     let (state, sid) = state_fixture();
     let parent = objective_turn(&state, &sid);
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("one","fast","src/a"),assignment("two","fast","src/b")]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("one","fast","src/a"),assignment("two","fast","src/b")]})).unwrap();
     let (one, _a) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
     let (two, _b) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
     finish(&state, &parent, "waiting", true);
@@ -2289,7 +2289,7 @@ fn a_failed_worker_is_handed_to_the_architect_while_others_still_run() {
 fn a_silent_worker_is_stopped_and_settles_as_failed() {
     let (state, sid) = state_fixture();
     let (run, mut rx) = {
-        call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("slow","fast","src")]})).unwrap();
+        call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("slow","fast","src")]})).unwrap();
         claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap())
     };
     let now = storage::now();
@@ -2310,7 +2310,7 @@ fn a_silent_worker_is_stopped_and_settles_as_failed() {
 fn a_silent_architect_turn_is_stopped_without_stopping_its_workers() {
     let (state, sid) = state_fixture();
     let parent = objective_turn(&state, &sid);
-    call(&state, &sid, "pandacode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
+    call(&state, &sid, "indocode_dispatch_workers", json!({"assignments":[assignment("engine","fast","src")]})).unwrap();
     let (worker, _w) = claim(&state, next_action_state(&state, &mut |_| {}).unwrap().unwrap());
     let now = storage::now();
     state.agents.lock().unwrap()[&worker.config.session_id].last_event.store(now + SILENT, Ordering::SeqCst);
@@ -2336,7 +2336,7 @@ fn a_silent_review_is_asked_once_to_continue_with_the_reason() {
     assert_eq!(watchdog::stop_silent(&state, storage::now() + SILENT, &mut |_| {}).unwrap(), 1);
     settle(&state, &review, false, true);
     let nudge = next_action_state(&state, &mut |_| {}).unwrap().unwrap();
-    assert!(nudge.prompt.starts_with("PandaCode stopped your last turn after"));
+    assert!(nudge.prompt.starts_with("Indocode stopped your last turn after"));
 }
 #[test]
 fn a_resumed_conversation_gets_the_team_rules_once_and_only_new_messages() {
@@ -2345,12 +2345,12 @@ fn a_resumed_conversation_gets_the_team_rules_once_and_only_new_messages() {
     store.db.execute("UPDATE sessions SET resume_id='native-1' WHERE id=?1", [&sid]).unwrap();
     let admission = Admission { parent: sid.clone(), generation: 1 };
     let first = prompt(&store, &sid, "Build the parser", Some(&admission)).unwrap();
-    assert!(first.contains("PandaCode architect mode. Coordinate"));
+    assert!(first.contains("Indocode architect mode. Coordinate"));
     assert!(first.ends_with("Build the parser"));
     let second = prompt(&store, &sid, "Now the renderer", Some(&admission)).unwrap();
-    assert!(!second.contains("PandaCode architect mode. Coordinate"));
+    assert!(!second.contains("Indocode architect mode. Coordinate"));
     assert!(!second.contains("Team coordination"));
-    assert!(second.starts_with("PandaCode architect mode continues"));
+    assert!(second.starts_with("Indocode architect mode continues"));
     assert!(second.ends_with("Now the renderer"));
     store.db.execute("INSERT INTO architect_messages(parent_session_id,sender,recipient,request_key,content,created_at) VALUES(?1,'w1','architect','k','Renderer API is ready',1)", [&sid]).unwrap();
     let third = prompt(&store, &sid, "Review", Some(&admission)).unwrap();
@@ -2361,10 +2361,10 @@ fn a_resumed_conversation_gets_the_team_rules_once_and_only_new_messages() {
     let mut team = load(&store, &sid).unwrap().unwrap();
     team.config.max_rounds += 4;
     save(&store, &mut team).unwrap();
-    assert!(prompt(&store, &sid, "Go on", Some(&admission)).unwrap().contains("PandaCode architect mode. Coordinate"));
+    assert!(prompt(&store, &sid, "Go on", Some(&admission)).unwrap().contains("Indocode architect mode. Coordinate"));
     // A conversation the harness starts afresh has never seen them.
     store.db.execute("UPDATE sessions SET resume_id=NULL WHERE id=?1", [&sid]).unwrap();
-    assert!(prompt(&store, &sid, "Go on", Some(&admission)).unwrap().contains("PandaCode architect mode. Coordinate"));
+    assert!(prompt(&store, &sid, "Go on", Some(&admission)).unwrap().contains("Indocode architect mode. Coordinate"));
 }
 
 #[test]
@@ -2384,7 +2384,7 @@ fn lead_guidance_joins_the_team_rules_and_is_reminded() {
     assert!(guidance < guard, "the guard against worker output stays last");
     // Ordinary turns name it in the one-line reminder.
     let second = prompt(&store, &sid, "Now the renderer", Some(&admission)).unwrap();
-    assert!(second.starts_with("PandaCode architect mode continues"));
+    assert!(second.starts_with("Indocode architect mode continues"));
     assert!(second.contains("including the user's team guidance"));
 }
 

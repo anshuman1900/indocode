@@ -327,7 +327,7 @@ test('team defaults migrate the latest owned legacy config once and never overwr
   parents.get('parent').updatedAt = 10;
   parents.get('other').updatedAt = 20;
   parents.get('other').provider = 'kimi';
-  storage.set('pandacode.preview.architect-configs', JSON.stringify({ parent: config(1), removed: config(3), other: config(2) }));
+  storage.set('indocode.preview.architect-configs', JSON.stringify({ parent: config(1), removed: config(3), other: config(2) }));
   const migrated = createPreviewArchitect(host);
   assert.equal(migrated.profiles().enabled, true);
   assert.equal(migrated.profiles().lastSetup.architect.provider, 'kimi');

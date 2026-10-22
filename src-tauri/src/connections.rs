@@ -13,7 +13,7 @@ use std::{
     sync::{Mutex, OnceLock},
 };
 
-const SERVICE: &str = "app.pandacode.connections";
+const SERVICE: &str = "app.indocode.connections";
 const MAX_CONNECTIONS: usize = 50;
 const MAX_ARGS: usize = 32;
 const MAX_ARG_LEN: usize = 1024;

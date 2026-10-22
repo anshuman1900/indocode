@@ -1,4 +1,4 @@
-//! PandaCode Connect (docs/remote-access.md): sign-in, one end-to-end encrypted relay
+//! Indocode Connect (docs/remote-access.md): sign-in, one end-to-end encrypted relay
 //! socket, host RPC for this computer's tasks, and mirrors: local tasks that run on
 //! another of the user's computers. Nothing touches the network until the user signs in.
 mod auth;
@@ -135,7 +135,7 @@ impl Inner {
         self.generation += 1;
         self.outbox = None;
         self.connected = false;
-        self.fail_pending(None, "Signed out of PandaCode Connect.");
+        self.fail_pending(None, "Signed out of Indocode Connect.");
         self.token = None;
         self.unreadable = false;
         self.settings.account = None;
@@ -176,7 +176,7 @@ impl Remote {
         if let Some(secret) = key.as_ref() {
             return Ok(secret.clone());
         }
-        let secret = config::read_key(&self.accounts.key)?.and_then(|text| crypto::decode_secret(&text)).ok_or("This computer has no PandaCode Connect key. Sign in again.")?;
+        let secret = config::read_key(&self.accounts.key)?.and_then(|text| crypto::decode_secret(&text)).ok_or("This computer has no Indocode Connect key. Sign in again.")?;
         *key = Some(secret.clone());
         Ok(secret)
     }
@@ -273,7 +273,7 @@ fn signed_in_start(dir: &std::path::Path, accounts: &config::Accounts, device_id
             secret_store::remove(config::SERVICE, &legacy.token);
             secret_store::remove(config::SERVICE, &legacy.key);
         }
-        Err(error) => eprintln!("Could not move the PandaCode Connect sign-in to this install's Keychain items: {error}"),
+        Err(error) => eprintln!("Could not move the Indocode Connect sign-in to this install's Keychain items: {error}"),
     }
     (config::Startup::SignedIn(adopted.token), secret)
 }
@@ -522,7 +522,7 @@ pub async fn remote_revoke_device(app: tauri::AppHandle, device_id: String) -> R
     let (token, me) = {
         let state = remote(&app);
         let inner = state.lock();
-        (inner.token.clone().ok_or("Sign in to PandaCode Connect first.")?, inner.settings.device_id.clone())
+        (inner.token.clone().ok_or("Sign in to Indocode Connect first.")?, inner.settings.device_id.clone())
     };
     auth::relay(&build, &token, reqwest::Method::DELETE, &format!("/v1/devices/{device_id}")).await.inspect_err(|error| {
         if error == auth::SIGNED_OUT {

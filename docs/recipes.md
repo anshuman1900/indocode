@@ -1,6 +1,6 @@
 # Workflow recipes
 
-Local, reusable multi-step flows (issue #44). A recipe is one JSON file: `.pandacode/recipes/<name>.json` in a project, or the same folder under app data (`recipes/`) for all projects. A project recipe hides a global one of the same name. Names are `[a-z0-9][a-z0-9_-]{0,63}`; recipes have at most 50 steps, 4000 characters per step, 64 KB per file.
+Local, reusable multi-step flows (issue #44). A recipe is one JSON file: `.indocode/recipes/<name>.json` in a project, or the same folder under app data (`recipes/`) for all projects. A project recipe hides a global one of the same name. Names are `[a-z0-9][a-z0-9_-]{0,63}`; recipes have at most 50 steps, 4000 characters per step, 64 KB per file.
 
 ```json
 { "name": "review-diff", "description": "Review, check, approve",

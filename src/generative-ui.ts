@@ -4,7 +4,7 @@ import richCss from './rich-markdown.css?inline';
 import { icon } from './dom';
 
 /* Generative UI in threads. `renderMarkdown` wraps ```ui, ```chart, ```svg and ```html fences
- * in <pandacode-ui>; the fence source stays in the light DOM (so streaming reconciles and
+ * in <indocode-ui>; the fence source stays in the light DOM (so streaming reconciles and
  * morphs see plain text) and the view is drawn in a shadow root that survives them.
  * Nothing runs agent code: buttons only put a prompt in the composer for the user to send. */
 
@@ -105,9 +105,9 @@ class CodeBlock extends HTMLElement {
   }
 }
 
-if (typeof customElements !== 'undefined' && !customElements.get('pandacode-ui')) {
-  customElements.define('pandacode-ui', GenerativeView);
-  customElements.define('pandacode-code', CodeBlock);
+if (typeof customElements !== 'undefined' && !customElements.get('indocode-ui')) {
+  customElements.define('indocode-ui', GenerativeView);
+  customElements.define('indocode-code', CodeBlock);
   // Load the component library while the app is idle, before the first view needs it.
   setTimeout(() => { void components().catch(() => { library = undefined; }); }, 1500);
 }

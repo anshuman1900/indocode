@@ -129,21 +129,21 @@ fn authenticates_with_a_vnc_password() {
     assert!(Rfb::connect(address, None, WAIT).err().unwrap().contains("password"));
 }
 
-/// Against a running VM: `PANDACODE_VNC=vnc://:password@127.0.0.1:port cargo test --lib -- --ignored vm::rfb::tests::live`
+/// Against a running VM: `INDOCODE_VNC=vnc://:password@127.0.0.1:port cargo test --lib -- --ignored vm::rfb::tests::live`
 #[test]
 #[ignore]
 fn live_capture_and_type() {
-    let url = std::env::var("PANDACODE_VNC").expect("set PANDACODE_VNC");
+    let url = std::env::var("INDOCODE_VNC").expect("set INDOCODE_VNC");
     let (password, address) = crate::vm::parse_vnc_url(&url).unwrap();
     let mut rfb = Rfb::connect(address, password.as_deref(), WAIT).unwrap();
     let frame = rfb.capture().unwrap();
-    let path = std::env::temp_dir().join("pandacode-vm-live.png");
+    let path = std::env::temp_dir().join("indocode-vm-live.png");
     frame.save(&path).unwrap();
     eprintln!("{}×{} saved to {}", frame.width(), frame.height(), path.display());
-    for ch in "echo pandacode".chars() {
+    for ch in "echo indocode".chars() {
         rfb.key(ch as u32, true).unwrap();
         rfb.key(ch as u32, false).unwrap();
     }
     std::thread::sleep(Duration::from_millis(400));
-    rfb.capture().unwrap().save(std::env::temp_dir().join("pandacode-vm-live-typed.png")).unwrap();
+    rfb.capture().unwrap().save(std::env::temp_dir().join("indocode-vm-live-typed.png")).unwrap();
 }

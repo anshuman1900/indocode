@@ -13,7 +13,7 @@ const QUICK: Duration = Duration::from_secs(60);
 /// Pulling an image can take a long time on a slow connection.
 const PULL: Duration = Duration::from_secs(3 * 60 * 60);
 
-/// Tart from PATH, or the app bundle PandaCode's setup installs in ~/Applications.
+/// Tart from PATH, or the app bundle Indocode's setup installs in ~/Applications.
 pub fn binary() -> Option<PathBuf> {
     let bundles = ["Applications/tart.app/Contents/MacOS/tart"];
     std::env::var_os("HOME")
@@ -162,8 +162,8 @@ mod tests {
 
     #[test]
     fn lists_local_vms_and_skips_the_image_cache() {
-        let json = r#"[{"State":"running","Name":"pandacode-ubuntu","Size":5,"Disk":20,"Running":true,"Source":"local"},{"State":"stopped","Name":"ghcr.io/cirruslabs/ubuntu:latest","Size":5,"Disk":20,"Running":false,"Source":"OCI"}]"#;
-        assert_eq!(parse_list(json).unwrap(), vec![Vm { name: "pandacode-ubuntu".into(), running: true, size_gb: 5, disk_gb: 20 }]);
+        let json = r#"[{"State":"running","Name":"indocode-ubuntu","Size":5,"Disk":20,"Running":true,"Source":"local"},{"State":"stopped","Name":"ghcr.io/cirruslabs/ubuntu:latest","Size":5,"Disk":20,"Running":false,"Source":"OCI"}]"#;
+        assert_eq!(parse_list(json).unwrap(), vec![Vm { name: "indocode-ubuntu".into(), running: true, size_gb: 5, disk_gb: 20 }]);
         assert!(parse_list("nope").is_err());
     }
     #[test]

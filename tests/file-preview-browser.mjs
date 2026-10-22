@@ -12,7 +12,7 @@ async function assertPreview(page, label) {
   await page.waitForFunction(() => document.body.dataset.loaded === 'true' && document.querySelector('#preview-image')?.naturalWidth === 32);
   assert.equal(await page.locator('#preview-heading').evaluate(element => getComputedStyle(element).color), 'rgb(212, 170, 25)', `${label}: CSS`);
   assert.equal(await page.title(), 'Preview ready', `${label}: JavaScript`);
-  assert.ok(!page.url().includes('__pandacode_preview'), `${label}: clean final URL`);
+  assert.ok(!page.url().includes('__indocode_preview'), `${label}: clean final URL`);
   assert.equal(await page.evaluate(async () => (await fetch('/.env')).status), 404, `${label}: hidden-file protection`);
 }
 const unrelated = http.createServer((_request, response) => {
@@ -23,7 +23,7 @@ await new Promise(resolve => unrelated.listen(0, '127.0.0.1', resolve));
 try {
   for (const [name, engine] of [['Chromium', chromium], ['WebKit', webkit]]) {
     const executablePath = name === 'Chromium'
-      ? process.env.PANDACODE_TEST_CHROME ?? (process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined)
+      ? process.env.INDOCODE_TEST_CHROME ?? (process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined)
       : undefined;
     const browser = await engine.launch({ headless: true, executablePath });
     try {

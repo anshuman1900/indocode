@@ -29,7 +29,7 @@ test('any accent hue yields readable buttons, links and selection in both modes'
   }
 });
 
-test('real VS Code themes map to readable PandaCode surfaces and keep their own accent', () => {
+test('real VS Code themes map to readable Indocode surfaces and keep their own accent', () => {
   assert.equal(themes.length, 23);
   for (const theme of themes) {
     const { tokens, terminal } = vsixTokens({ id: 'x', name: theme.name, extension: 'x', kind: theme.kind, colors: theme.colors });

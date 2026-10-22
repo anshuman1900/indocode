@@ -231,7 +231,7 @@ function h<K extends keyof HTMLElementTagNameMap>(tag: K, props: Props = {}, ...
 export async function renderBlock(kind: string, source: string): Promise<HTMLElement> {
   const host = h('div', { class: 'gu' });
   if (kind === 'mermaid') {
-    // No diagram renderer ships with PandaCode: show the source, labelled and copyable.
+    // No diagram renderer ships with Indocode: show the source, labelled and copyable.
     host.append(codeView('Diagram · Mermaid', source));
     return host;
   }
@@ -341,7 +341,7 @@ async function view(spec: View): Promise<HTMLElement> {
     case 'form': return form(spec);
     case 'stack': case 'grid': return h('div', { class: `gu-${spec.type}`, style: spec.type === 'grid' ? `--gu-columns:${spec.columns}` : undefined }, ...(await Promise.all(spec.children.map(view))));
     case 'custom': return custom(spec);
-    case 'unknown': return h('div', { class: 'gu-failed' }, h('p', { class: 'gu-error' }, `PandaCode has no “${spec.name}” view. Showing its data instead.`), h('pre', {}, h('code', {}, spec.raw)));
+    case 'unknown': return h('div', { class: 'gu-failed' }, h('p', { class: 'gu-error' }, `Indocode has no “${spec.name}” view. Showing its data instead.`), h('pre', {}, h('code', {}, spec.raw)));
   }
 }
 

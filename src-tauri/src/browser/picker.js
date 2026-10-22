@@ -73,4 +73,4 @@
   document.addEventListener('pointermove', move, true);
   document.addEventListener('click', choose, true);
   document.addEventListener('keydown', keydown, true);
-})(__PANDACODE_PICK_KEY__);
+})(__INDOCODE_PICK_KEY__);

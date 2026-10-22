@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ timezoneId: 'America/New_York' });
-const storageKey = 'pandacode.wallpaperPreferences';
+const storageKey = 'indocode.wallpaperPreferences';
 const workspace = (page: Page) => page.locator('.workspace');
 const sceneImages = (page: Page) => page.locator('.workspace-wallpaper img');
 const slider = (page: Page) => page.getByRole('slider', { name: 'Wallpaper visibility', exact: true });
@@ -278,7 +278,7 @@ test('wallpapers settings pin a default scene until rotation is explicitly resum
 });
 
 test('wallpapers settings migrate the disabled preference and retain a favorite through disabling', async ({ page }) => {
-  await page.addInitScript(() => { localStorage.setItem('pandacode.wallpapers', 'false'); });
+  await page.addInitScript(() => { localStorage.setItem('indocode.wallpapers', 'false'); });
   await open(page);
   await expect(sceneImages(page)).toHaveCount(0);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -291,7 +291,7 @@ test('wallpapers settings migrate the disabled preference and retain a favorite 
   await expect(workspace(page)).toHaveAttribute('data-wallpaper', 'tue-afternoon');
   await enabled.uncheck();
   await expect(sceneImages(page)).toHaveCount(0);
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.wallpapers'))).toBe('false');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.wallpapers'))).toBe('false');
   await page.reload();
   await expect(prompt(page)).toBeEnabled();
   await expect(sceneImages(page)).toHaveCount(0);
@@ -302,7 +302,7 @@ test('wallpapers settings migrate the disabled preference and retain a favorite 
   await expect(defaultButton(page, 'Tuesday', 'afternoon')).toHaveAttribute('aria-pressed', 'true');
   await enabled.check();
   await expect(workspace(page)).toHaveAttribute('data-wallpaper', 'tue-afternoon');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.wallpapers'))).toBe('true');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.wallpapers'))).toBe('true');
   await page.reload();
   await expect(workspace(page)).toHaveAttribute('data-wallpaper', 'tue-afternoon');
 });

@@ -1,4 +1,4 @@
-# PandaCode
+# Indocode
 
 Original native desktop coding workspace, macOS first; Tauri 2 + Rust + TypeScript. The user authorized implementation and architecture decisions. Research T3 Code for requirements and architectural tradeoffs only; do not copy source or UI assets.
 
@@ -6,7 +6,7 @@ Original native desktop coding workspace, macOS first; Tauri 2 + Rust + TypeScri
 
 Native system webview, one Rust core, no bundled Node runtime/server. Plain TypeScript DOM updates, local SQLite persistence, bounded transcript pages and output buffers. Spawn provider processes only for active turns and terminate when complete; resume through provider session IDs. Lazy-load terminal and Markdown rendering. Native IPC only, no listening HTTP server in production.
 
-Charcoal and white workspace themes, yellow primary actions and selection, bamboo-green accents, neutral secondary surfaces, and platform system typography. Three columns: task navigation, conversation/composer, collapsible inspector whose views (Files, Search, Changes, Browser, and PR, Simulators and VM where they apply) sit in a VS Code-style icon bar on its left edge; it opens on Files for tasks without saved panel state. A simple bamboo mark, a small PandaCode label, and subtle botanical details provide restrained branding. Keep the mark focused on application identity and leave working surfaces quiet. Official provider marks identify harnesses throughout the task list, conversation, composer, model picker, command palette and settings; all assets are local. The terminal follows the selected theme and is only mounted when opened. Immediate press feedback, clear keyboard focus, restrained translucent chrome, and reduced-motion, reduced-transparency and high-contrast preferences follow the apple-design skill. Avoid entrance animations that delay access or disappear in background WebKit windows.
+Charcoal and white workspace themes, yellow primary actions and selection, bamboo-green accents, neutral secondary surfaces, and platform system typography. Three columns: task navigation, conversation/composer, collapsible inspector whose views (Files, Search, Changes, Browser, and PR, Simulators and VM where they apply) sit in a VS Code-style icon bar on its left edge; it opens on Files for tasks without saved panel state. A simple bamboo mark, a small Indocode label, and subtle botanical details provide restrained branding. Keep the mark focused on application identity and leave working surfaces quiet. Official provider marks identify harnesses throughout the task list, conversation, composer, model picker, command palette and settings; all assets are local. The terminal follows the selected theme and is only mounted when opened. Immediate press feedback, clear keyboard focus, restrained translucent chrome, and reduced-motion, reduced-transparency and high-contrast preferences follow the apple-design skill. Avoid entrance animations that delay access or disappear in background WebKit windows.
 
 A moon/sun toggle in the sidebar footer switches between the original light theme
 and a charcoal theme with yellow and bamboo-green accents. Save the explicit choice locally and
@@ -60,7 +60,7 @@ Exercise protocol parsers and request serialization, storage restart, path trave
 5. Package macOS app, measure footprint, document runnable commands and remaining parity gaps.
 ## New-task project selection
 
-The new-task page follows the supplied layout in PandaCode's selected theme:
+The new-task page follows the supplied layout in Indocode's selected theme:
 a small provider mark above a centered “What should we build in …?” heading and a
 composer anchored at the bottom. The heading's project name and the composer context
 row open the same searchable, keyboard-accessible project picker. Project paths
@@ -100,7 +100,7 @@ scope. Permission changes preserve the composer and its draft.
 On macOS 26 and later, use Apple's native `NSGlassEffectView` with the webview as
 its content view. The native material spans the window; opaque conversation and
 inspector surfaces leave only the sidebar exposed. A small warm tint, translucent
-yellow selection and a fine edge highlight retain PandaCode's white/yellow palette.
+yellow selection and a fine edge highlight retain Indocode's white/yellow palette.
 One native behind-window vibrancy backdrop supplies desktop colors beneath the
 glass. Both views resize through AppKit, without shaders, per-frame JavaScript,
 additional webviews or a CSS blur over the sidebar. The glass keeps the webview

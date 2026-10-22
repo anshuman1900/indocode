@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::secret_store;
 
-const SERVICE: &str = "app.pandacode.cloud";
+const SERVICE: &str = "app.indocode.cloud";
 pub const PROVIDERS: [&str; 4] = ["daytona", "cloudflare", "aws", "agentcore"];
 
 /// A cloud machine as the panel and tools see it.
@@ -50,7 +50,7 @@ pub struct Settings {
     pub daytona_organization: Option<String>,
     pub cloudflare_account: Option<String>,
     pub cloudflare_worker_url: Option<String>,
-    /// Cloudflare cannot list Durable Objects, so PandaCode remembers its sandboxes.
+    /// Cloudflare cannot list Durable Objects, so Indocode remembers its sandboxes.
     pub cloudflare_sandboxes: Vec<String>,
     /// AWS CLI profile (none: the default credential chain) and region.
     pub aws_profile: Option<String>,
@@ -59,7 +59,7 @@ pub struct Settings {
     pub vercel_team: Option<String>,
     /// Railway workspace for new projects, when the token reaches more than one.
     pub railway_workspace: Option<String>,
-    /// Google Cloud uses the gcloud CLI's own login; PandaCode stores the project and region.
+    /// Google Cloud uses the gcloud CLI's own login; Indocode stores the project and region.
     pub gcloud_project: Option<String>,
     pub gcloud_region: Option<String>,
 }
@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn splits_known_provider_ids_only() {
         assert_eq!(split("daytona:3f2a"), Some(("daytona", "3f2a")));
-        assert_eq!(split("pandacode-ubuntu"), None);
+        assert_eq!(split("indocode-ubuntu"), None);
         assert_eq!(split("other:x"), None);
         assert_eq!(split("daytona:"), None);
     }

@@ -1,6 +1,6 @@
-# Releasing PandaCode
+# Releasing Indocode
 
-PandaCode releases are GitHub Releases on
+Indocode releases are GitHub Releases on
 [aicodeking/pandacode](https://github.com/aicodeking/pandacode/releases). There
 are no private servers: pushing a `vX.Y.Z` tag runs
 [`.github/workflows/release.yml`](../.github/workflows/release.yml), which builds
@@ -15,11 +15,11 @@ uncommitted work.
 
 | Target | Runner / Rust target | Asset |
 | --- | --- | --- |
-| `darwin-aarch64` | `macos-latest` / `aarch64-apple-darwin` | `PandaCode-macOS-arm64.dmg` |
-| `darwin-x86_64` | `macos-15-intel` / `x86_64-apple-darwin` | `PandaCode-macOS-x64.dmg` |
-| `windows-x86_64` | `windows-2022` / `x86_64-pc-windows-msvc` | `PandaCode-Windows-x64-setup.exe` |
-| `linux-x86_64` | `ubuntu-22.04` / `x86_64-unknown-linux-gnu` | `PandaCode-Linux-x86_64.AppImage` |
-| `linux-aarch64` | `ubuntu-24.04-arm` / `aarch64-unknown-linux-gnu` | `PandaCode-Linux-aarch64.AppImage` |
+| `darwin-aarch64` | `macos-latest` / `aarch64-apple-darwin` | `Indocode-macOS-arm64.dmg` |
+| `darwin-x86_64` | `macos-15-intel` / `x86_64-apple-darwin` | `Indocode-macOS-x64.dmg` |
+| `windows-x86_64` | `windows-2022` / `x86_64-pc-windows-msvc` | `Indocode-Windows-x64-setup.exe` |
+| `linux-x86_64` | `ubuntu-22.04` / `x86_64-unknown-linux-gnu` | `Indocode-Linux-x86_64.AppImage` |
+| `linux-aarch64` | `ubuntu-24.04-arm` / `aarch64-unknown-linux-gnu` | `Indocode-Linux-aarch64.AppImage` |
 
 Each asset has a `NAME.sha256` file beside it (`sha256sum` format). Asset names
 do not contain the version, so
@@ -33,7 +33,7 @@ Installed copies update themselves from GitHub Releases with Tauri's updater
 (`src/app-updates.ts`, `plugins.updater` in `src-tauri/tauri.conf.json`). Each release
 also carries:
 
-- `PandaCode-macOS-arm64.app.tar.gz`, `PandaCode-macOS-x64.app.tar.gz` and a `.sig` for each platform's update file
+- `Indocode-macOS-arm64.app.tar.gz`, `Indocode-macOS-x64.app.tar.gz` and a `.sig` for each platform's update file
   (Windows and Linux update from their installer and AppImage), signed with the
   update key;
 - `latest.json`, written by `scripts/release/updater-manifest.mjs`, naming the version,
@@ -50,9 +50,9 @@ a new key; if it leaks, rotate it the same way. The maintainer's copy lives outs
 repository (never commit it). Update downloads need the release to be publicly
 readable, so automatic updates start working once the repository is public.
 
-## `npx pandacode`
+## `npx indocode`
 
-`packages/npx` is the `pandacode` npm package: it downloads the latest release asset
+`packages/npx` is the `indocode` npm package: it downloads the latest release asset
 (the updater file and its `.sig`), verifies the signature against the public key in
 `tauri.conf.json` and installs it; on macOS it then runs the app with `--local-sign`.
 The `npm` job in `release.yml` publishes it on tag runs with the release version, using
@@ -70,7 +70,7 @@ npm run release:version -- "$release_version"
 ```
 
 This updates `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`,
-`src-tauri/Cargo.toml`, the `pandacode` entry in `src-tauri/Cargo.lock`, and
+`src-tauri/Cargo.toml`, the `indocode` entry in `src-tauri/Cargo.lock`, and
 records today's date in `website/src/data/release-dates.json` (the website's
 `/changelog` uses it). Versions are plain numeric SemVer; prerelease suffixes
 are rejected.

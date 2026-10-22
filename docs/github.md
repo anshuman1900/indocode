@@ -1,6 +1,6 @@
 # GitHub
 
-PandaCode talks to GitHub through the GitHub CLI you already use. It stores no
+Indocode talks to GitHub through the GitHub CLI you already use. It stores no
 tokens and asks for no sign-in of its own: when `gh` is installed and signed in,
 issues and pull requests become available in the prompt, on the board, and from
 the branch chip. **Settings → GitHub** shows the connection for the current

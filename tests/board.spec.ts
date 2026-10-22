@@ -100,10 +100,10 @@ test.describe('project board', () => {
     await expect(filter).toBeVisible();
     await expect(archived).toBeVisible();
     await filter.click();
-    await page.getByRole('dialog', { name: 'Filter projects', exact: true }).getByRole('menuitemradio', { name: 'pandacode', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Filter projects', exact: true }).getByRole('menuitemradio', { name: 'indocode', exact: true }).click();
     await expect(card(page, 'Explore the project')).toBeVisible();
     await expect(card(page, 'Make search feel instant')).toHaveCount(0);
-    await expect(board(page).getByRole('heading', { name: 'pandacode', exact: true })).toBeVisible();
+    await expect(board(page).getByRole('heading', { name: 'indocode', exact: true })).toBeVisible();
 
     await archived.click();
     await expect(archived).toHaveAttribute('aria-pressed', 'true');
@@ -115,7 +115,7 @@ test.describe('project board', () => {
     await page.getByRole('button', { name: 'Conversation view', exact: true }).click();
     await expect(sidebar).toBeVisible();
     await expect.poll(async () => (await main.boundingBox())!.x).toBeGreaterThan(0);
-    await expect(sidebar.getByRole('button', { name: 'Filter projects', exact: true })).toContainText('pandacode');
+    await expect(sidebar.getByRole('button', { name: 'Filter projects', exact: true })).toContainText('indocode');
     await expect(page.locator('.task-item.selected .task-title')).toHaveText('Explore the project');
   });
 
@@ -134,7 +134,7 @@ test.describe('project board', () => {
     await expect(details(page).getByRole('button', { name: 'Start task', exact: true })).toBeEnabled();
     await expect.poll(async () => (await details(page).boundingBox())!.x).toBeGreaterThan(500);
     await expect.poll(async () => { const bounds = (await details(page).boundingBox())!; return bounds.x + bounds.width; }).toBeLessThanOrEqual(1441);
-    await page.screenshot({ path: '/private/tmp/pandacode-board-pending.png', animations: 'disabled' });
+    await page.screenshot({ path: '/private/tmp/indocode-board-pending.png', animations: 'disabled' });
     await details(page).getByRole('button', { name: 'Close task details', exact: true }).click();
     await expect(details(page)).toBeHidden();
     await expect(card(page, task.title)).toBeVisible();
@@ -161,7 +161,7 @@ test.describe('project board', () => {
     await expect(details(page).locator('.agent-message').first()).toBeVisible();
     await expect(details(page)).toContainText('This is the browser preview.');
     await expect(details(page).getByRole('button', { name: 'Mark complete', exact: true })).toBeEnabled();
-    await page.screenshot({ path: '/private/tmp/pandacode-board-review.png', animations: 'disabled' });
+    await page.screenshot({ path: '/private/tmp/indocode-board-review.png', animations: 'disabled' });
     await details(page).getByRole('button', { name: 'Mark complete', exact: true }).click();
     await expect(column(page, 'Completed').getByRole('button', { name: `Open task: ${title}`, exact: true })).toBeVisible();
     const completed = await savedTask(page, title);
@@ -319,7 +319,7 @@ test.describe('project board', () => {
     await expect.poll(async () => { const bounds = (await details(page).boundingBox())!; return bounds.x + bounds.width; }).toBeLessThanOrEqual(901);
     await expect(details(page).getByRole('button', { name: 'Start task', exact: true })).toBeVisible();
     await expect(details(page).getByRole('button', { name: 'Close task details', exact: true })).toBeVisible();
-    await page.screenshot({ path: '/private/tmp/pandacode-board-light-compact.png', animations: 'disabled' });
+    await page.screenshot({ path: '/private/tmp/indocode-board-light-compact.png', animations: 'disabled' });
   });
 
   test('archives completed tasks after a week while retaining recent completions and pending tasks', async ({ page }) => {
@@ -333,7 +333,7 @@ test.describe('project board', () => {
     `);
     await page.reload();
     await page.locator('#project-filter').click();
-    await page.getByRole('dialog', { name: 'Filter projects', exact: true }).getByRole('menuitemradio', { name: 'pandacode', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Filter projects', exact: true }).getByRole('menuitemradio', { name: 'indocode', exact: true }).click();
     await expect(page.locator('#sidebar-note .filter-note')).toHaveText('4 more in other projectsShow all');
     await page.locator('#sidebar-note .filter-note').click();
     await openBoard(page);

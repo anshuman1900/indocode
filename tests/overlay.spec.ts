@@ -46,7 +46,7 @@ test('overlay copies live Markdown and forks a saved message without opening the
   await expect(response).toBeHidden();
   expect(await page.evaluate(() => (window as any).__overlayCalls.filter((call:any) => call.command === 'fork_session_at_message').map((call:any) => call.args))).toEqual([{sessionId:'preview-active',messageId:1}]);
   expect(await page.evaluate(() => (window as any).__overlayCalls.some((call:any) => call.command === 'overlay_open_task'))).toBe(false);
-  await page.screenshot({path:'/private/tmp/pandacode-overlay-message-fork.png'});
+  await page.screenshot({path:'/private/tmp/indocode-overlay-message-fork.png'});
   await page.getByRole('button',{name:'Back to active agents'}).click();
   await expect(page.locator('.launcher-task')).toHaveCount(4);
   await page.locator('.launcher-task[data-task="preview-active"]').click();
@@ -86,7 +86,7 @@ test('launcher shows saved team models beside its architect and preserves the co
   await page.clock.install();
   await instrumentLauncher(page, `if (command === 'overlay_snapshot') {
     const count = window.__teamWorkerCount ?? 2;
-    return {tasks, projects:[{id:'preview-project',name:'PandaCode',path:'/Projects/PandaCode'}],
+    return {tasks, projects:[{id:'preview-project',name:'Indocode',path:'/Projects/Indocode'}],
       context:{...effectiveContext(),...(!previewPreferences.modelSelection && count > 0 ? {provider:'claude',model:'opus',reasoningEffort:'medium'} : {})},
       activeCount:4, teamWorkerCount:count};
   }`);
@@ -106,7 +106,7 @@ test('launcher shows saved team models beside its architect and preserves the co
   await expect(suffix).toHaveText('+2 models');
   await page.clock.runFor(1600);
   await expect(trigger).toHaveAttribute('title','Codex · GPT-5.6-Sol +2 models');
-  await page.screenshot({path:'/private/tmp/pandacode-overlay-team-models.png'});
+  await page.screenshot({path:'/private/tmp/indocode-overlay-team-models.png'});
   await page.evaluate(() => { (window as any).__teamWorkerCount = 1; });
   await page.clock.runFor(1600);
   await expect(suffix).toHaveText('+1 model');
@@ -129,7 +129,7 @@ async function instrumentLauncher(page: Page, intercept = ''): Promise<void> {
       $&`)});
   });
   await page.addInitScript(() => {
-    window.addEventListener('pandacode-overlay-launched', event => {
+    window.addEventListener('indocode-overlay-launched', event => {
       document.documentElement.dataset.lastLaunch = JSON.stringify((event as CustomEvent).detail);
     });
   });
@@ -167,7 +167,7 @@ test('launcher file mentions insert a quoted reference without sending and keep 
 });
 
 test('launcher file mentions stay scoped to the selected project and ignore delayed previous results', async ({page}) => {
-  await instrumentLauncher(page, `if (command === 'overlay_snapshot') return {tasks,projects:[{id:'preview-project',name:'PandaCode',path:'/Projects/PandaCode'},{id:'other-project',name:'Other project',path:'/Projects/Other'}],context:effectiveContext(),activeCount:4};
+  await instrumentLauncher(page, `if (command === 'overlay_snapshot') return {tasks,projects:[{id:'preview-project',name:'Indocode',path:'/Projects/Indocode'},{id:'other-project',name:'Other project',path:'/Projects/Other'}],context:effectiveContext(),activeCount:4};
     if (command === 'search_files') {
       if (args.projectId === 'preview-project') {
         await new Promise(resolve => {window.__releaseFileSearch=resolve;});
@@ -364,7 +364,7 @@ test('launcher model picker fits the minimum window and Escape only closes the p
   await expect(glm.locator('.provider-logo')).toHaveCount(1);
   await expect(picker).toHaveAttribute('data-popover-state','open');
   await expect(picker).toHaveCSS('opacity','1');
-  await page.screenshot({path:'/private/tmp/pandacode-overlay-check/model-picker.png'});
+  await page.screenshot({path:'/private/tmp/indocode-overlay-check/model-picker.png'});
   await page.keyboard.press('Escape');
   await expect(picker).toHaveCount(0);
   await expect(trigger).toBeFocused();
@@ -376,7 +376,7 @@ test('launcher stays lightweight and starts concurrent tasks without opening the
   const loaded: string[] = [];
   page.on('request', request => loaded.push(request.url()));
   await page.goto('/?view=launcher');
-  await expect(page.getByRole('main', {name:'PandaCode quick launcher'})).toBeVisible();
+  await expect(page.getByRole('main', {name:'Indocode quick launcher'})).toBeVisible();
   await expect(page.locator('.launcher-task[data-task="preview-active"]')).toBeVisible();
   await expect(page.getByRole('button',{name:/Build a responsive gallery/})).toContainText('Needs attention');
   await expect(page.locator('.launcher-count')).toHaveText('4 active');
@@ -407,7 +407,7 @@ test('launcher search and keyboard navigation preserve task identity during stat
   await expect(page.locator('.launcher-task')).toHaveCount(1);
   await page.getByRole('searchbox',{name:'Search tasks'}).press('ArrowDown');
   await expect(page.getByRole('button',{name:/Build a responsive gallery/})).toBeFocused();
-  await page.evaluate(() => { window.addEventListener('pandacode-overlay-open-task', event => document.documentElement.dataset.openedTask = (event as CustomEvent).detail.sessionId); });
+  await page.evaluate(() => { window.addEventListener('indocode-overlay-open-task', event => document.documentElement.dataset.openedTask = (event as CustomEvent).detail.sessionId); });
   await page.keyboard.press('Enter');
   await expect(page.locator('.launcher-thread')).toBeVisible();
   await expect(page.locator('.launcher-thread h2')).toHaveText('Build a responsive gallery');
@@ -432,7 +432,7 @@ for (const child of [
   await page.goto('/?view=launcher');
   const row = page.locator(`.launcher-task[data-task="${child.id}"]`);
   await expect(row).toBeVisible();
-  await page.evaluate(() => { window.addEventListener('pandacode-overlay-open-task', event => document.documentElement.dataset.openedPayload = JSON.stringify((event as CustomEvent).detail)); });
+  await page.evaluate(() => { window.addEventListener('indocode-overlay-open-task', event => document.documentElement.dataset.openedPayload = JSON.stringify((event as CustomEvent).detail)); });
   await row.click();
   await expect(page.locator('.launcher-thread')).toBeVisible();
   await expect(page.locator('.launcher-thread h2')).toHaveText(child.name);
@@ -529,7 +529,7 @@ test('launcher keeps live narratives between compact tool groups and preserves l
     const message = fixture.messages.find((message:any) => message.id === 3);
     message.content = JSON.stringify({...JSON.parse(message.content),status:'completed',output:'The launcher inspection is complete.'});
     fixture.version++;
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'tool',text:''}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'tool',text:''}}));
   });
   await page.clock.runFor(1600);
   await expect(firstTool).toHaveAttribute('data-tool-status','completed');
@@ -538,12 +538,12 @@ test('launcher keeps live narratives between compact tool groups and preserves l
   await expect(groups.nth(1)).toHaveJSProperty('open',false);
   await expect(firstTool.locator('[data-tool-section="output"]')).toContainText('The launcher inspection is complete.');
   expect(await sequence()).toEqual([originalSequence[0], 'Read 2 files', originalSequence[2], originalSequence[3]]);
-  await page.screenshot({path:'/private/tmp/pandacode-overlay-chronological-tools.png'});
+  await page.screenshot({path:'/private/tmp/indocode-overlay-chronological-tools.png'});
   await page.evaluate(() => {
     const fixture = (window as any).__chronologicalThread;
     fixture.status = 'completed'; fixture.version++;
     fixture.messages.push({id:7,sessionId:'preview-active',role:'assistant',content:'The launch flow is verified.',createdAt:7000});
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'done',text:''}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'done',text:''}}));
   });
   await page.clock.runFor(1600);
   await expect(page.locator('.launcher-thread-response:visible')).toContainText('The launch flow is verified.');
@@ -566,7 +566,7 @@ test('launcher streams the selected thread in place and keeps its completed resp
     const {overlayCall} = await import('/src/overlay-client.ts');
     const thread = await overlayCall('overlay_thread',{sessionId:'preview-active'}) as {liveText:string};
     thread.liveText += '\n\nKeyboard navigation now works across all onboarding steps.';
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'\n\nKeyboard navigation now works across all onboarding steps.'}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'\n\nKeyboard navigation now works across all onboarding steps.'}}));
   });
   await page.clock.runFor(1600);
   await expect(page.locator('.launcher-thread-live')).toContainText('Keyboard navigation now works');
@@ -579,7 +579,7 @@ test('launcher streams the selected thread in place and keeps its completed resp
     thread.liveText = '';
     const snapshot = await overlayCall('overlay_snapshot') as {tasks:{id:string;status:string}[]};
     snapshot.tasks.find(task=>task.id==='preview-active')!.status='completed';
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'done',text:''}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'done',text:''}}));
   });
   await page.clock.runFor(1600);
   await expect(page.locator('.launcher-thread-scroll')).toContainText('The onboarding is ready.');
@@ -681,7 +681,7 @@ test('launcher keeps worker and subagent responses separate while receiving live
     const {overlayCall} = await import('/src/overlay-client.ts');
     const thread = await overlayCall('overlay_thread',{sessionId:'preview-active'}) as {liveText:string};
     thread.liveText = 'Unrelated architect response';
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'Unrelated architect response'}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'Unrelated architect response'}}));
   });
   await page.clock.runFor(1600);
   await expect(page.locator('.launcher-thread-scroll')).not.toContainText('Unrelated architect response');
@@ -691,7 +691,7 @@ test('launcher keeps worker and subagent responses separate while receiving live
     const {overlayCall} = await import('/src/overlay-client.ts');
     const thread = await overlayCall('overlay_thread',{sessionId:'preview-active',subagentId:'preview-child'}) as {subagent:{response:string;status:string}};
     thread.subagent.response += '\n\nChecked the final contrast ratios.';
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'subagent',text:'',data:thread.subagent}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'subagent',text:'',data:thread.subagent}}));
   });
   await page.clock.runFor(1600);
   await expect(page.locator('.launcher-thread-scroll')).toContainText('Checked the final contrast ratios.');
@@ -761,7 +761,7 @@ test('launcher fills collapsed history automatically without rolling back a newe
   expect(await page.evaluate(()=>(window as any).__overlayHistory.calls.some((call:any)=>call.beforeId===101))).toBe(true);
   await page.evaluate(() => {
     (window as any).__overlayHistory.live='The latest streaming response is preserved.';
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'The latest streaming response is preserved.'}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'The latest streaming response is preserved.'}}));
   });
   await expect(page.locator('.launcher-thread-live')).toContainText('The latest streaming response is preserved.');
   await page.evaluate(() => { (window as any).__overlayHistory.release(); });
@@ -771,7 +771,7 @@ test('launcher fills collapsed history automatically without rolling back a newe
   await expect(page.getByRole('button',{name:/Load earlier/i})).toHaveCount(0);
   await page.evaluate(() => {
     (window as any).__overlayHistory.live='Streaming continues after earlier history arrives.';
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'Streaming continues after earlier history arrives.'}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event',{detail:{sessionId:'preview-active',kind:'text',text:'Streaming continues after earlier history arrives.'}}));
   });
   await expect(page.locator('.launcher-thread-live')).toContainText('Streaming continues after earlier history arrives.');
   await expect(page.locator('.launcher-thread-user').filter({hasText:'Keep the original accessibility requirements.'})).toBeVisible();
@@ -802,7 +802,7 @@ test('launcher loads beyond 300 messages when scrolling up without losing the la
   await expect(scroll.locator('.launcher-thread-live')).toContainText('Latest response remains visible.');
   await page.evaluate(() => {
     (window as any).__overlayLongHistoryTotal = 650;
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-agent-event', {detail:{sessionId:'preview-active',kind:'done',text:''}}));
+    window.dispatchEvent(new CustomEvent('indocode-overlay-agent-event', {detail:{sessionId:'preview-active',kind:'done',text:''}}));
   });
   await expect(scroll.locator('[data-message-id="451"]')).toHaveCount(1);
   await expect(scroll.locator('[data-message-id="551"]')).toHaveCount(1);
@@ -956,7 +956,7 @@ test('launcher fits small windows and keeps task controls accessible', async ({p
   await expect(lastRow).toBeFocused(); await expect(lastRow).toBeInViewport();
   await page.keyboard.press('Home');
   await expect(page.locator('.launcher-task').first()).toBeFocused();
-  await page.screenshot({path:'/private/tmp/pandacode-overlay-check/launcher.png'});
+  await page.screenshot({path:'/private/tmp/indocode-overlay-check/launcher.png'});
 });
 
 test('launcher thread stays readable and scrollable at minimum window size', async ({page}) => {
@@ -977,5 +977,5 @@ test('launcher thread stays readable and scrollable at minimum window size', asy
   expect(await scroll.evaluate(element => element.scrollHeight > element.clientHeight && element.clientHeight > 100)).toBe(true);
   await scroll.evaluate(element => { element.scrollTop=element.scrollHeight; });
   expect(await scroll.evaluate(element => element.scrollTop > 0)).toBe(true);
-  await page.screenshot({path:'/private/tmp/pandacode-overlay-check/thread.png'});
+  await page.screenshot({path:'/private/tmp/indocode-overlay-check/thread.png'});
 });

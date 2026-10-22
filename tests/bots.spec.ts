@@ -243,15 +243,15 @@ test.describe('bots', () => {
     await expect(form.locator('.bots-check.fail')).toContainText('copy the whole line BotFather sent');
     await form.getByLabel('Bot token').fill('123456789:AAE1234567890abcdefghijklmnopqrstu');
     await form.getByRole('button', { name: 'Test' }).click();
-    await expect(form.locator('.bots-check.ok')).toContainText('@preview_pandacode_bot');
+    await expect(form.locator('.bots-check.ok')).toContainText('@preview_indocode_bot');
     await form.getByRole('button', { name: 'Connect Telegram' }).click();
     const card = panel(page).locator('.bots-channel');
-    await expect(card).toContainText('@preview_pandacode_bot');
+    await expect(card).toContainText('@preview_indocode_bot');
     await expect(panel(page)).not.toContainText('AAE1234567890');
     const guide = card.locator('details.bots-guide');
     await expect(guide).toHaveAttribute('open', '');
-    await guide.getByRole('button', { name: 'Open @preview_pandacode_bot in Telegram' }).click();
-    await expect.poll(async () => (await opened(page)).at(-1)).toBe('https://t.me/preview_pandacode_bot');
+    await guide.getByRole('button', { name: 'Open @preview_indocode_bot in Telegram' }).click();
+    await expect.poll(async () => (await opened(page)).at(-1)).toBe('https://t.me/preview_indocode_bot');
     const pending = panel(page).locator('.bots-pairing.pending');
     await expect(pending).toContainText('4821');
     await expect(tab(page, 'Channels')).toContainText('1');
@@ -331,7 +331,7 @@ test.describe('bots', () => {
     const guide = panel(page).locator('.bots-channel .bots-guide');
     await expect(guide).toContainText('cloudflared tunnel --url http://127.0.0.1:47321');
     await expect(guide).toContainText('the callback URL appears here after you save the address');
-    await expect(guide).toContainText('pandacode-preview0123456789');
+    await expect(guide).toContainText('indocode-preview0123456789');
     await guide.getByPlaceholder('https://….trycloudflare.com').fill('http://not-secure.example');
     await guide.getByRole('button', { name: 'Save' }).click();
     await expect(panel(page).getByRole('alert').first()).toContainText('https://');

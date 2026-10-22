@@ -14,7 +14,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 RUNNER_PATH = Path(__file__).resolve().parents[1] / "src-tauri/scripts/jev_runner.py"
-SPEC = importlib.util.spec_from_file_location("pandacode_jev_runner", RUNNER_PATH)
+SPEC = importlib.util.spec_from_file_location("indocode_jev_runner", RUNNER_PATH)
 runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)
 

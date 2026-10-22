@@ -2,7 +2,7 @@ import { escape, icon } from './dom';
 import type { RemoteRepoCheck, RemoteTarget } from './remote-types';
 import type { Session } from './types';
 
-/* The context bar's computer choice (PandaCode Connect). A new task can start on another
+/* The context bar's computer choice (Indocode Connect). A new task can start on another
  * signed-in computer; a task that runs there shows that computer, locked. */
 
 export const LOCAL = 'local';

@@ -16,7 +16,7 @@ function header({ blockSize = 131072, compression = 6, magic = 0x73717368 } = {}
 }
 
 async function fakeAppImage(directory, { wayland = true } = {}) {
-  const path = join(directory, 'PandaCode_1.2.3_amd64.AppImage');
+  const path = join(directory, 'Indocode_1.2.3_amd64.AppImage');
   const bytes = Buffer.alloc(200, 1);
   header().copy(bytes, OFFSET);
   await writeFile(path, bytes);
@@ -64,7 +64,7 @@ test('mksquashfs keeps the original image settings', () => {
 });
 
 test('rebuilds the AppImage with the same runtime and without Wayland libraries', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'pandacode-appimage-test-'));
+  const directory = await mkdtemp(join(tmpdir(), 'indocode-appimage-test-'));
   try {
     const { path, calls, command } = await fakeAppImage(directory);
     assert.equal(await repackAppImage(path, { command }), true);
@@ -82,7 +82,7 @@ test('rebuilds the AppImage with the same runtime and without Wayland libraries'
 });
 
 test('leaves an AppImage alone when it has no bundled Wayland libraries', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'pandacode-appimage-test-'));
+  const directory = await mkdtemp(join(tmpdir(), 'indocode-appimage-test-'));
   try {
     const { path, calls, command } = await fakeAppImage(directory, { wayland: false });
     const before = await readFile(path);
@@ -95,7 +95,7 @@ test('leaves an AppImage alone when it has no bundled Wayland libraries', async 
 });
 
 test('reports a missing squashfs-tools installation', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'pandacode-appimage-test-'));
+  const directory = await mkdtemp(join(tmpdir(), 'indocode-appimage-test-'));
   try {
     const { path, command } = await fakeAppImage(directory);
     const missing = async (executable, args, options) => {

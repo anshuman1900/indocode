@@ -25,7 +25,7 @@ export interface AppUpdates {
   restart(): Promise<void>;
 }
 
-const KEY = 'pandacode.autoUpdate';
+const KEY = 'indocode.autoUpdate';
 const FIRST_CHECK = 30_000;
 
 type Pending = { version: string; download(onEvent: (event: { event: string; data?: { contentLength?: number; chunkLength?: number } }) => void): Promise<void>; install(): Promise<void> };
@@ -75,7 +75,7 @@ export function startAppUpdates(host: UpdatesHost): AppUpdates {
 
   async function restart(): Promise<void> {
     if (!pending) return;
-    if (host.busy()) { host.notify('PandaCode will restart to update when your agents finish.'); return; }
+    if (host.busy()) { host.notify('Indocode will restart to update when your agents finish.'); return; }
     if (state.kind === 'available') { try { await download(pending); } catch (cause) { set({ kind: 'error', message: message(cause) }); return; } }
     const version = pending.version;
     set({ kind: 'installing', version });

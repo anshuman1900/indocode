@@ -33,11 +33,11 @@ test('missing variables fail without revealing other values', () => {
 });
 
 test('the Cargo.lock version is set with either line ending', () => {
-  const lock = ['[[package]]', 'name = "pancakes"', 'version = "1.0.0"', '', '[[package]]', 'name = "pandacode"', 'version = "0.3.0"', 'dependencies = [', ' "serde",', ']', ''];
+  const lock = ['[[package]]', 'name = "pancakes"', 'version = "1.0.0"', '', '[[package]]', 'name = "indocode"', 'version = "0.3.0"', 'dependencies = [', ' "serde",', ']', ''];
   for (const eol of ['\n', '\r\n']) {
     assert.equal(cargoLockVersion(lock.join(eol), '0.3.1'), lock.join(eol).replace('version = "0.3.0"', 'version = "0.3.1"'));
   }
-  assert.throws(() => cargoLockVersion('[[package]]\r\nname = "other"\r\nversion = "1.0.0"\r\n', '0.3.1'), /No pandacode package/);
+  assert.throws(() => cargoLockVersion('[[package]]\r\nname = "other"\r\nversion = "1.0.0"\r\n', '0.3.1'), /No indocode package/);
   assert.throws(() => cargoLockVersion(lock.join('\n'), '0.3.1;x'));
 });
 
@@ -47,15 +47,15 @@ test('the updater manifest points every signed platform at its release asset', a
   assert.deepEqual(manifest, {
     version: '0.3.1', notes: 'Notes', pub_date: '2026-10-18T00:00:00Z',
     platforms: {
-      'darwin-aarch64': { signature: 'sig-mac', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/PandaCode-macOS-arm64.app.tar.gz' },
-      'darwin-x86_64': { signature: 'sig-intel', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/PandaCode-macOS-x64.app.tar.gz' },
-      'linux-x86_64': { signature: 'sig-linux', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/PandaCode-Linux-x86_64.AppImage' },
-      'linux-aarch64': { signature: 'sig-arm', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/PandaCode-Linux-aarch64.AppImage' },
+      'darwin-aarch64': { signature: 'sig-mac', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/Indocode-macOS-arm64.app.tar.gz' },
+      'darwin-x86_64': { signature: 'sig-intel', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/Indocode-macOS-x64.app.tar.gz' },
+      'linux-x86_64': { signature: 'sig-linux', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/Indocode-Linux-x86_64.AppImage' },
+      'linux-aarch64': { signature: 'sig-arm', url: 'https://github.com/aicodeking/pandacode/releases/download/v0.3.1/Indocode-Linux-aarch64.AppImage' },
     },
   });
   assert.throws(() => updaterManifest('0.3.1', '', {}), /No signed updater files/);
   assert.throws(() => updaterManifest('0.3.1', '', { 'windows-x86_64': ' ' }), /Missing updater signature/);
-  const fork = updaterManifest('0.3.1', '', { 'windows-x86_64': 'sig-win' }, '2026-10-18T00:00:00Z', 'someone/pandacode');
-  assert.equal(fork.platforms['windows-x86_64'].url, 'https://github.com/someone/pandacode/releases/download/v0.3.1/PandaCode-Windows-x64-setup.exe');
+  const fork = updaterManifest('0.3.1', '', { 'windows-x86_64': 'sig-win' }, '2026-10-18T00:00:00Z', 'someone/indocode');
+  assert.equal(fork.platforms['windows-x86_64'].url, 'https://github.com/someone/indocode/releases/download/v0.3.1/Indocode-Windows-x64-setup.exe');
   assert.throws(() => updaterManifest('0.3.1', '', { 'windows-x86_64': 'sig' }, undefined, 'evil.example/x?y'), /Not a GitHub repository/);
 });

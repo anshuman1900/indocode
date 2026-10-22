@@ -6,7 +6,7 @@ use super::*;
 pub enum CoordinationKind {
     WorkerUpdate,
     WorkerReview,
-    /// The architect stopped without dispatching or finishing; PandaCode asks it once to continue.
+    /// The architect stopped without dispatching or finishing; Indocode asks it once to continue.
     Continue,
     /// A worker failed while others still run; the architect handles it right away.
     WorkerFailed,
@@ -33,7 +33,7 @@ struct Envelope {
 }
 pub fn encode(kind: CoordinationKind, prompt: &str) -> Result<String> {
     serde_json::to_string(&Envelope {
-        envelope_type: "pandacode_coordination".into(),
+        envelope_type: "indocode_coordination".into(),
         version: 1,
         kind,
         prompt: prompt.into(),
@@ -45,7 +45,7 @@ pub fn decode(content: &str) -> Option<(CoordinationKind, String)> {
         return None;
     }
     let value: Envelope = serde_json::from_str(content).ok()?;
-    (value.envelope_type == "pandacode_coordination"
+    (value.envelope_type == "indocode_coordination"
         && value.version == 1
         && !value.prompt.is_empty()
         && value.prompt.len() <= 128 * 1024)

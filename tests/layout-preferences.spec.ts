@@ -3,12 +3,12 @@ import { expect, test, type Page } from '@playwright/test';
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent' });
 const separator = (page: Page) => page.getByRole('separator', { name: 'Resize sidebar', exact: true });
 const sidebarWidth = (page: Page) => page.locator('.sidebar').evaluate(node => node.getBoundingClientRect().width);
-const storedWidth = (page: Page) => page.evaluate(() => localStorage.getItem('pandacode.sidebarWidth'));
-const storedScale = (page: Page) => page.evaluate(() => localStorage.getItem('pandacode.uiScale'));
+const storedWidth = (page: Page) => page.evaluate(() => localStorage.getItem('indocode.sidebarWidth'));
+const storedScale = (page: Page) => page.evaluate(() => localStorage.getItem('indocode.uiScale'));
 const rootSize = (page: Page) => page.locator('html').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
 const inspectorSeparator = (page: Page) => page.getByRole('separator', { name: 'Resize right sidebar', exact: true });
 const inspectorWidth = (page: Page) => page.locator('#inspector').evaluate(node => node.getBoundingClientRect().width);
-const storedInspectorWidth = (page: Page) => page.evaluate(() => localStorage.getItem('pandacode.inspectorWidth'));
+const storedInspectorWidth = (page: Page) => page.evaluate(() => localStorage.getItem('indocode.inspectorWidth'));
 
 async function open(page: Page): Promise<void> {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -244,8 +244,8 @@ test('layout preferences leave an open model menu and its search focus stable wh
 
 test('layout preferences ignore corrupt stored dimensions and still accept new choices', async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('pandacode.sidebarWidth', 'not-a-width');
-    localStorage.setItem('pandacode.uiScale', 'not-a-scale');
+    localStorage.setItem('indocode.sidebarWidth', 'not-a-width');
+    localStorage.setItem('indocode.uiScale', 'not-a-scale');
   });
   await open(page);
   await expect.poll(() => rootSize(page)).toBe(14);
@@ -298,8 +298,8 @@ test('layout preferences resize focused terminal text without restarting the PTY
 
 test('layout preferences keep controls readable at 160 percent in wide and narrow windows', async ({ page }, testInfo) => {
   await page.addInitScript(() => {
-    localStorage.setItem('pandacode.uiScale', '1.6');
-    localStorage.setItem('pandacode.sidebarWidth', '190');
+    localStorage.setItem('indocode.uiScale', '1.6');
+    localStorage.setItem('indocode.sidebarWidth', '190');
   });
   await page.route('**/src/preview.ts*', async route => {
     const response = await route.fetch();
@@ -403,7 +403,7 @@ test('layout preferences collapse the sidebar, reclaim its width, and restore bo
   expect(await toggleNode!.evaluate(node => node === document.querySelector('#sidebar-toggle'))).toBe(true);
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect.poll(async () => (await page.locator('.main-pane').boundingBox())!.width).toBeCloseTo(mainBefore.width + 350, 0);
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.sidebarCollapsed'))).toBe('true');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.sidebarCollapsed'))).toBe('true');
   expect(await storedWidth(page)).toBe(chosenWidth);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(prompt(page)).toBeEnabled();
@@ -413,7 +413,7 @@ test('layout preferences collapse the sidebar, reclaim its width, and restore bo
   await expect(page.locator('.sidebar')).toBeVisible();
   await expect(page.locator('.brand>#sidebar-toggle')).toBeVisible();
   await expect.poll(() => sidebarWidth(page)).toBe(350);
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.sidebarCollapsed'))).toBe('false');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.sidebarCollapsed'))).toBe('false');
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(prompt(page)).toBeEnabled();
   await expect(toggle).toHaveAccessibleName('Hide sidebar');
@@ -429,7 +429,7 @@ test('layout preferences sidebar shortcuts survive board roundtrips and hide the
   await page.getByRole('button', { name: 'Board view', exact: true }).click();
   await expect(page.locator('#sidebar-toggle')).toBeHidden();
   await page.keyboard.press('Control+b');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.sidebarCollapsed'))).toBe('true');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.sidebarCollapsed'))).toBe('true');
   await page.getByRole('button', { name: 'Conversation view', exact: true }).click();
   await expect(page.locator('#sidebar-toggle')).toHaveAccessibleName('Show sidebar');
   await expect(page.locator('.sidebar')).toBeHidden();
@@ -481,8 +481,8 @@ test('layout preferences collapse the sidebar without replacing the draft or liv
 
 test('layout preferences reserve Mac window controls when the sidebar is collapsed at 160 percent', async ({ page }, testInfo) => {
   await page.addInitScript(() => {
-    localStorage.setItem('pandacode.sidebarCollapsed', 'true');
-    localStorage.setItem('pandacode.uiScale', '1.6');
+    localStorage.setItem('indocode.sidebarCollapsed', 'true');
+    localStorage.setItem('indocode.uiScale', '1.6');
   });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(prompt(page)).toBeEnabled();
@@ -508,7 +508,7 @@ test('layout preferences reserve Mac window controls when the sidebar is collaps
 });
 
 test('layout preferences keep the left sidebar button clear of Mac controls and narrow branding', async ({ page }, testInfo) => {
-  await page.addInitScript(() => localStorage.setItem('pandacode.uiScale', '1.6'));
+  await page.addInitScript(() => localStorage.setItem('indocode.uiScale', '1.6'));
   await open(page);
   await page.evaluate(async () => {
     const { initializeNativeAppearance } = await import('/src/appearance.ts');
@@ -540,7 +540,7 @@ test('layout preferences keep the left sidebar button clear of Mac controls and 
 
 test('layout preferences constrain a saved wide sidebar when browser styles first load', async ({ page }) => {
   await page.setViewportSize({ width: 1100, height: 940 });
-  await page.addInitScript(() => localStorage.setItem('pandacode.sidebarWidth', '440'));
+  await page.addInitScript(() => localStorage.setItem('indocode.sidebarWidth', '440'));
   await open(page);
   await expect.poll(() => sidebarWidth(page)).toBe(440);
   await page.getByRole('button', { name: 'Open browser', exact: true }).click();
@@ -700,8 +700,8 @@ for (const width of [2048, 1440, 1100, 960, 760, 620]) {
     test(`layout preferences fill the workspace through inspector tabs at ${width}px and ${scale * 100} percent`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width, height: 940 });
       await page.addInitScript(scale => {
-        localStorage.setItem('pandacode.uiScale', String(scale));
-        localStorage.setItem('pandacode.sidebarWidth', '250');
+        localStorage.setItem('indocode.uiScale', String(scale));
+        localStorage.setItem('indocode.sidebarWidth', '250');
       }, scale);
       await page.goto('/', { waitUntil: 'domcontentloaded' });
       await expect(prompt(page)).toBeEnabled();

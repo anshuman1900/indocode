@@ -94,7 +94,7 @@ test.describe('bots web chat page', () => {
   test('a link revoked while open stops polling and sending', async ({ page }) => {
     const state = await openChat(page);
     await expect(page.getByText('Say hi to Scout')).toBeVisible();
-    state.fail = 'This link is no longer valid. Copy a fresh one from PandaCode.';
+    state.fail = 'This link is no longer valid. Copy a fresh one from Indocode.';
     await expect(page.locator('#status')).toHaveText(state.fail);
     await expect(page.getByRole('button', { name: 'Send' })).toBeDisabled();
     const calls = state.auth.length;
@@ -106,7 +106,7 @@ test.describe('bots web chat page', () => {
   test('without a token it explains how to open the page', async ({ page }) => {
     await page.addInitScript(() => sessionStorage.clear());
     const state = await openChat(page, {}, '');
-    await expect(page.locator('#status')).toHaveText('Open this page from the link in PandaCode.');
+    await expect(page.locator('#status')).toHaveText('Open this page from the link in Indocode.');
     expect(state.auth).toEqual([]);
   });
 });

@@ -19,7 +19,7 @@ issues to the board, linked-work chips, and opening pull requests from a task.
   attaches a fresh worktree to the current task (`attach_worktree`), keeping the
   draft, title, harness, and model. A task with history offers *New task in a
   worktree…*, which inherits its settings (existing behavior).
-- **Create form.** Live preview of the final branch (`pandacode/<name>`), a name
+- **Create form.** Live preview of the final branch (`indocode/<name>`), a name
   suggested from the task title or linked issue, *Start from* any local branch
   (default: the current branch), and *Use existing branch* when the name already
   exists. Validation matches the backend: `[A-Za-z0-9_/-]`, no `..`.

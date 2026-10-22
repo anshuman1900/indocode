@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 type Script = { path: string; previewUrl?: string; previewPath?: string };
-const script: Script = { path: 'pandacode-run.sh', previewUrl: 'http://127.0.0.1:3000/' };
+const script: Script = { path: 'indocode-run.sh', previewUrl: 'http://127.0.0.1:3000/' };
 const runButton = (page: Page) => page.locator('#run-project-button');
 const cardRun = (page: Page) => page.locator('.turn-changes [data-action="run-project"]').first();
 const drawer = (page: Page) => page.locator('#terminal-drawer');
@@ -122,7 +122,7 @@ test.describe('project run', () => {
 
   for (const preview of [
     { label: 'dev server', script, url: script.previewUrl! },
-    { label: 'built page', script: { path: 'pandacode-run.sh', previewPath: 'dist/index.html' }, url: 'http://127.0.0.1:43210/index.html' },
+    { label: 'built page', script: { path: 'indocode-run.sh', previewPath: 'dist/index.html' }, url: 'http://127.0.0.1:43210/index.html' },
   ]) test(`opens the ${preview.label} once its native preview is ready`, async ({ page }) => {
     await page.clock.install();
     await open(page, { scripts: { 'session-1': preview.script } });
@@ -140,7 +140,7 @@ test.describe('project run', () => {
   });
 
   test('restarts an exited Run terminal without accumulating tabs', async ({ page }) => {
-    await open(page, { scripts: { 'session-1': { path: 'pandacode-run.sh' } } });
+    await open(page, { scripts: { 'session-1': { path: 'indocode-run.sh' } } });
     await runButton(page).click();
     await expect(screen(page)).toContainText('Running run-1');
     await page.evaluate(() => (window as any).__runTest.emit('terminal-event', { terminalId: 'run-1', data: '\r\nFinished\r\n', exit: true }));
@@ -154,7 +154,7 @@ test.describe('project run', () => {
   });
 
   test('passes an active agent request to the native Run startup', async ({ page }) => {
-    await open(page, { scripts: { 'session-1': { path: 'pandacode-run.sh' } } });
+    await open(page, { scripts: { 'session-1': { path: 'indocode-run.sh' } } });
     await page.evaluate(() => (window as any).__runTest.emit('agent-ui-action', {
       requestId: 'agent-run', sessionId: 'session-1', action: 'run_project', args: {},
     }));
@@ -230,7 +230,7 @@ test.describe('project run', () => {
   test('a delayed preview cannot open over another task or replace that task preview', async ({ page }) => {
     const secondUrl = 'http://127.0.0.1:5173/second';
     await open(page, {
-      scripts: { 'session-1': script, 'session-2': { path: 'pandacode-run.sh', previewUrl: secondUrl } },
+      scripts: { 'session-1': script, 'session-2': { path: 'indocode-run.sh', previewUrl: secondUrl } },
       ready: { 'session-1': script.previewUrl!, 'session-2': secondUrl },
       hold: { 'preview:session-1': true },
     });
@@ -261,7 +261,7 @@ test.describe('project run', () => {
       const fixture = (window as any).__runTest;
       fixture.scripts['session-1'] = script;
       fixture.agent({ sessionId: 'session-1', kind: 'turn_changes', text: '', data: {
-        messageId: 900, turnChanges: { id: 'run-created', files: [{ path: 'pandacode-run.sh', status: 'added', additions: 3, deletions: 0 }], additions: 3, deletions: 0, truncated: false, concurrent: false },
+        messageId: 900, turnChanges: { id: 'run-created', files: [{ path: 'indocode-run.sh', status: 'added', additions: 3, deletions: 0 }], additions: 3, deletions: 0, truncated: false, concurrent: false },
       } });
     }, script);
     await expect(runButton(page)).toBeVisible();
@@ -293,6 +293,6 @@ test.describe('project run', () => {
       return issues;
     });
     expect(overlaps).toEqual([]);
-    await page.screenshot({ path: `/private/tmp/pandacode-project-run-${testInfo.project.name || testInfo.config.projects[0].use.browserName || 'chrome'}-${width}.png`, animations: 'disabled' });
+    await page.screenshot({ path: `/private/tmp/indocode-project-run-${testInfo.project.name || testInfo.config.projects[0].use.browserName || 'chrome'}-${width}.png`, animations: 'disabled' });
   });
 });

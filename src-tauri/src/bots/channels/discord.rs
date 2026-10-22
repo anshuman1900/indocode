@@ -86,7 +86,7 @@ pub(crate) async fn run(app: &tauri::AppHandle, channel: &Channel, mut stop: tok
             Some(10) => {
                 let every = payload["d"]["heartbeat_interval"].as_u64().unwrap_or(41_250);
                 heartbeat = tokio::time::interval_at(tokio::time::Instant::now() + Duration::from_millis(every), Duration::from_millis(every));
-                let identify = json!({"op": 2, "d": {"token": token, "intents": INTENTS, "properties": {"os": std::env::consts::OS, "browser": "PandaCode", "device": "PandaCode"}}});
+                let identify = json!({"op": 2, "d": {"token": token, "intents": INTENTS, "properties": {"os": std::env::consts::OS, "browser": "Indocode", "device": "Indocode"}}});
                 socket.send(Message::text(identify.to_string())).await.map_err(|e| e.to_string())?;
             }
             Some(1) => socket.send(Message::text(json!({"op": 1, "d": sequence}).to_string())).await.map_err(|e| e.to_string())?,

@@ -86,7 +86,7 @@ export function modelSpec(deviceType: string, family: 'phone' | 'pad'): ModelSpe
   return { key: isDuo(key) ? 'iPhone-Duo' : key, ...found.spec };
 }
 
-const FINISH_STORE = 'pandacode.simulatorFinish';
+const FINISH_STORE = 'indocode.simulatorFinish';
 /** The remembered finish for a model, else its launch color. */
 export function chosenFinish(spec: ModelSpec): Finish {
   let saved: Record<string, string> = {};

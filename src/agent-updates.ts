@@ -30,7 +30,7 @@ export interface AgentUpdatesHost {
 export interface AgentUpdatesController { show(): Promise<void>; dispose(): void; }
 
 const CHECK_INTERVAL = 6 * 60 * 60 * 1000;
-const DISMISS_KEY = 'pandacode.agent-updates.dismissed';
+const DISMISS_KEY = 'indocode.agent-updates.dismissed';
 const errorText = (error: unknown): string => error instanceof Error ? error.message : typeof error === 'string' ? error : 'Could not complete the request. Try again.';
 
 /** Checks are automatic; installers run only after an explicit Update click. */

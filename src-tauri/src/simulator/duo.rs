@@ -219,7 +219,7 @@ fn helper_path() -> Result<PathBuf, String> {
 fn build_helper() -> Result<PathBuf, String> {
     let developer = tool("/usr/bin/xcode-select", &["-p".into()], "xcode-select")?;
     let key: String = Sha256::digest([HELPER.as_bytes(), developer.as_bytes()].concat()).iter().take(6).map(|b| format!("{b:02x}")).collect();
-    let dir = std::env::temp_dir().join("pandacode-simulator");
+    let dir = std::env::temp_dir().join("indocode-simulator");
     let binary = dir.join(format!("duo-helper-{key}"));
     if binary.is_file() {
         return Ok(binary);
@@ -473,7 +473,7 @@ mod tests {
     fn the_helper_builds_for_the_simulator() {
         let args = build_args(Path::new("/c/h.m"), Path::new("/c/h.tmp"));
         assert_eq!(args.join(" "), "-sdk iphonesimulator clang -fobjc-arc -O2 -arch arm64 -mios-simulator-version-min=17.0 -framework Foundation -framework IOKit /c/h.m -o /c/h.tmp");
-        assert!(HELPER.contains("Copyright (c) 2026 Karolina Samorek") && HELPER.contains("Permission is hereby granted") && HELPER.contains("hinge-sweep") && HELPER.contains("PandaCode additions: `home`"));
+        assert!(HELPER.contains("Copyright (c) 2026 Karolina Samorek") && HELPER.contains("Permission is hereby granted") && HELPER.contains("hinge-sweep") && HELPER.contains("Indocode additions: `home`"));
     }
 
     /// Needs Xcode 27.1, AXe and a booted iPhone Duo: `cargo test -- --ignored live_duo_taps`

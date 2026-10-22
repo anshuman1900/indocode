@@ -1,8 +1,8 @@
 import { defineConfig } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
-const siteUrl = process.env.PANDACODE_SITE_URL;
-const chrome = process.env.PANDACODE_TEST_CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const siteUrl = process.env.INDOCODE_SITE_URL;
+const chrome = process.env.INDOCODE_TEST_CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 export default defineConfig({
   testDir: './tests',
@@ -12,7 +12,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 6_000 },
   reporter: 'list',
-  outputDir: '/private/tmp/pandacode-landing-checks/results',
+  outputDir: '/private/tmp/indocode-landing-checks/results',
   use: {
     baseURL: siteUrl ?? 'http://127.0.0.1:4173',
     headless: true,
@@ -27,7 +27,7 @@ export default defineConfig({
     { name: 'chrome-reduced-motion', use: { browserName: 'chromium', viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce', launchOptions: { executablePath: chrome } } },
     { name: 'webkit-mobile-reduced-motion', use: { browserName: 'webkit', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' } },
   ],
-  // With PANDACODE_SITE_URL set, test that server instead of starting one on 4173.
+  // With INDOCODE_SITE_URL set, test that server instead of starting one on 4173.
   webServer: siteUrl ? undefined : {
     command: 'npm run dev',
     cwd: fileURLToPath(new URL('./', import.meta.url)),

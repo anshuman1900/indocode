@@ -2,7 +2,7 @@ import './sidebar-resize.css';
 
 /** Resize the existing grid track without rebuilding navigation or conversation UI. */
 export function initializeSidebarResizing(workspace: HTMLElement, sidebar: HTMLElement, right = false): () => void {
-  const preferenceKey = right ? 'pandacode.inspectorWidth' : 'pandacode.sidebarWidth';
+  const preferenceKey = right ? 'indocode.inspectorWidth' : 'indocode.sidebarWidth';
   const widthProperty = right ? '--inspector-width' : '--sidebar-width';
   const minimumWidth = right ? 270 : 190;
   const maximumWidth = right ? 10000 : 440;

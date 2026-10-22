@@ -578,7 +578,7 @@ fn approval_replies_keep_other_requests_waiting_and_reject_old_or_foreign_reques
 #[test]
 fn four_concurrent_task_streams_persist_independent_responses_and_tool_results() {
     let path = std::env::temp_dir().join(format!(
-        "pandacode-concurrent-{}.sqlite3",
+        "indocode-concurrent-{}.sqlite3",
         uuid::Uuid::new_v4()
     ));
     let store = Store::open(&path).unwrap();

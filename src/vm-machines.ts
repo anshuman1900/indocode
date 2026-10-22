@@ -16,7 +16,7 @@ export type Machine = {
   live: boolean;
   desktop: boolean;
   detail: string;
-  /** Local VMs running outside PandaCode must be restarted here to be seen. */
+  /** Local VMs running outside Indocode must be restarted here to be seen. */
   elsewhere: boolean;
   canStart: boolean;
   local?: Vm;
@@ -57,5 +57,5 @@ export function createOptions(status: VmStatus | undefined, connections: CloudCo
 }
 
 export function cloudName(): string {
-  return `pandacode-${Math.random().toString(36).slice(2, 8)}`;
+  return `indocode-${Math.random().toString(36).slice(2, 8)}`;
 }

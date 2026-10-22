@@ -45,7 +45,7 @@ test('packs ride along once, fold in the transcript, and the switch-off is said 
 
   await send(page, 'Fix the flaky search test');
   const first = (await sent(page)).at(-1)!;
-  expect(first.startsWith('Fix the flaky search test\n\nResponse style (PandaCode token saver')).toBe(true);
+  expect(first.startsWith('Fix the flaky search test\n\nResponse style (Indocode token saver')).toBe(true);
   expect(first).toContain('Telegraphic.');
   expect(first).toContain('least code that fully solves');
   // Folded behind the attached-context summary, not shown as what the user typed.
@@ -84,7 +84,7 @@ test('turning on a missing tool installs it, and a thread can become the default
   await panel.getByRole('switch', { name: /Quiet tools/ }).click();
   await panel.getByRole('checkbox', { name: 'Start new threads like this' }).check();
   await expect(page.locator('#toast')).toContainText('New threads start with these savers');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pandacode.tokenSaver')!).defaults.packs)).toEqual(['quiet-tools', 'rtk']);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('indocode.tokenSaver')!).defaults.packs)).toEqual(['quiet-tools', 'rtk']);
   await page.keyboard.press('Escape');
   await send(page, 'Run the tests');
   const block = (await sent(page)).at(-1)!;

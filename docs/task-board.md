@@ -1,6 +1,6 @@
 # Project board
 
-PandaCode offers Conversation and Board views, remembered on this device. Both
+Indocode offers Conversation and Board views, remembered on this device. Both
 views use the same tasks, provider sessions, worktrees, approvals and messages.
 The view toggle is borderless and shares the sidebar's frosted material over wallpapers.
 Board view fills the window without a sidebar. Its header provides project
@@ -43,6 +43,6 @@ cannot replace those details with the short card preview. Editing is unavailable
 until details have loaded, and a canceled, delayed creation never changes the
 current selection.
 
-The archive sweep runs once per minute while PandaCode is open and at launch.
+The archive sweep runs once per minute while Indocode is open and at launch.
 Restoring a completed task grants a fresh seven-day retention period. Reopen
 returns it to Review and clears completion time; a new reply starts work again.

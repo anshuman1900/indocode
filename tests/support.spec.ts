@@ -94,13 +94,13 @@ test('preview opens the GitHub issue tracker without sending customer or workspa
   await open(page, 'preview');
   await support(page).click();
   await expect.poll(() => page.evaluate(() => (window as any).__supportFixture.opened)).toEqual([
-    ['https://github.com/aicodeking/pandacode/issues', '_blank', 'noopener,noreferrer'],
+    ['https://github.com/anshuman1900/indocode/issues', '_blank', 'noopener,noreferrer'],
   ]);
 });
 
 test('Help stays visible in narrow windows with large interface text', async ({ page }) => {
   await page.setViewportSize({ width: 460, height: 740 });
-  await page.addInitScript(() => localStorage.setItem('pandacode.uiScale', '1.6'));
+  await page.addInitScript(() => localStorage.setItem('indocode.uiScale', '1.6'));
   await open(page);
   for (const mode of ['sidebar', 'collapsed', 'board']) {
     if (mode === 'collapsed') await page.getByRole('button', { name: 'Hide sidebar', exact: true }).click();
@@ -126,15 +126,15 @@ test('Settings shows an About section with the version and GitHub links', async 
   await expect(about.locator('.settings-about-version')).toHaveText('Version Preview');
   const urls = await about.locator('[data-action="open-url"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.url));
   expect(urls).toEqual(expect.arrayContaining([
-    'https://github.com/aicodeking/pandacode',
-    'https://github.com/aicodeking/pandacode/issues',
-    'https://github.com/aicodeking/pandacode/releases',
+    'https://github.com/anshuman1900/indocode',
+    'https://github.com/anshuman1900/indocode/issues',
+    'https://github.com/anshuman1900/indocode/releases',
   ]));
   await expect(about.getByRole('button', { name: 'Releases', exact: true })).toBeVisible();
-  await expect(about.getByRole('button', { name: 'PandaCode License' })).toBeVisible();
+  await expect(about.getByRole('button', { name: 'Indocode License' })).toBeVisible();
   await expect(settings).not.toContainText('License & updates');
   await about.getByRole('button', { name: 'Releases', exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as any).__supportFixture.opened)).toEqual([
-    ['https://github.com/aicodeking/pandacode/releases', '_blank', 'noopener,noreferrer'],
+    ['https://github.com/anshuman1900/indocode/releases', '_blank', 'noopener,noreferrer'],
   ]);
 });

@@ -16,8 +16,8 @@ interface PreviewHost {
 interface WorkerRun { worker: TeamWorker; output: string; cursor: number; timer?: number; messages: Message[] }
 interface TeamRun { snapshot: TeamSnapshot; runs: WorkerRun[]; batchStart: number; reviewTimer?: number; messages?: TeamMessage[] }
 
-const storageKey = 'pandacode.preview.architect-configs';
-const libraryKey = 'pandacode.preview.architect-library';
+const storageKey = 'indocode.preview.architect-configs';
+const libraryKey = 'indocode.preview.architect-library';
 const sampleNotice = 'Browser preview — sample output only. No model, command, or file operation is running.';
 function boundedSummary(text: string, limit: number): string {
   const bytes = new TextEncoder().encode(text);

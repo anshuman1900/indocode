@@ -1,12 +1,12 @@
 [package]
-name = "pandacode"
+name = "indocode"
 version = "0.3.24"
 description = "A lightweight native workspace for coding agents"
-authors = ["PandaCode contributors"]
+authors = ["Indocode contributors"]
 edition = "2021"
 
 [lib]
-name = "pandacode_lib"
+name = "indocode_lib"
 # Desktop only links the rlib; add "staticlib", "cdylib" back for mobile targets.
 crate-type = ["rlib"]
 

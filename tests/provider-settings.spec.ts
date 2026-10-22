@@ -167,7 +167,7 @@ test('provider connections expose all harnesses and real GLM model names', async
 
 for (const providerId of ['claude', 'codex', 'kimi', 'opencode', 'glm', 'antigravity', 'grok', 'mimo', 'pi', 'deepseek', 'commandcode', 'omp', 'github-copilot']) {
   test(`provider connections start ${providerId} tasks with Full access and retain explicit restrictions when switching`, async ({ page }) => {
-    await page.addInitScript(provider => localStorage.setItem('pandacode.provider', provider), providerId);
+    await page.addInitScript(provider => localStorage.setItem('indocode.provider', provider), providerId);
     await page.route('**/src/preview.ts*', async route => {
       const response = await route.fetch();
       const source = await response.text();
@@ -202,7 +202,7 @@ for (const providerId of ['claude', 'codex', 'kimi', 'opencode', 'glm', 'antigra
 }
 
 test('GitHub Copilot CLI has CLI sign-in guidance, a path override, Default model, and advertised modes', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('pandacode.provider', 'github-copilot'));
+  await page.addInitScript(() => localStorage.setItem('indocode.provider', 'github-copilot'));
   await page.goto('/');
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Make search feel instant');
   await page.locator('.new-task-button').click();
@@ -255,7 +255,7 @@ test('GitHub Copilot model discovery does not crash the picker in an existing ch
 });
 
 test('Pi offers four approval modes with Accept edits', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('pandacode.provider', 'pi'));
+  await page.addInitScript(() => localStorage.setItem('indocode.provider', 'pi'));
   await page.goto('/');
   await page.locator('.new-task-button').click();
   await page.locator('#mode-picker-trigger').click();
@@ -286,7 +286,7 @@ test('settings organization supports Pi models and executable settings', async (
 });
 
 test('DeepSeek has a key card, four approval modes and effort levels', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('pandacode.provider', 'deepseek'));
+  await page.addInitScript(() => localStorage.setItem('indocode.provider', 'deepseek'));
   await page.goto('/');
   await page.locator('.new-task-button').click();
   await page.locator('#mode-picker-trigger').click();
@@ -304,7 +304,7 @@ test('DeepSeek has a key card, four approval modes and effort levels', async ({ 
 });
 
 test('Command Code has a key card, four approval modes and its own model list', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('pandacode.provider', 'commandcode'));
+  await page.addInitScript(() => localStorage.setItem('indocode.provider', 'commandcode'));
   await page.goto('/');
   await page.locator('.new-task-button').click();
   await page.locator('#mode-picker-trigger').click();

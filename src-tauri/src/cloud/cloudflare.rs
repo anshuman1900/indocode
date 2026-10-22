@@ -1,7 +1,7 @@
-//! Cloudflare sandboxes: PandaCode deploys a small Worker (`cloudflare_worker/`) to your
+//! Cloudflare sandboxes: Indocode deploys a small Worker (`cloudflare_worker/`) to your
 //! account once, then each sandbox is a container behind it, addressed by name. The Worker
 //! checks a random bearer token kept in the OS keychain; containers stop after 10 idle
-//! minutes. Cloudflare cannot list Durable Objects, so PandaCode remembers the names.
+//! minutes. Cloudflare cannot list Durable Objects, so Indocode remembers the names.
 use serde_json::{json, Value};
 use std::{path::Path, process::Command, time::Duration};
 
@@ -31,7 +31,7 @@ pub fn valid_name(name: &str) -> bool {
 /// The workers.dev URL `wrangler deploy` prints.
 pub fn deployed_url(output: &str) -> Option<String> {
     output.split_whitespace().map(|w| w.trim_matches(|c: char| !c.is_ascii_alphanumeric() && c != ':' && c != '/' && c != '.' && c != '-'))
-        .find(|w| w.starts_with("https://pandacode-sandbox.") && w.ends_with(".workers.dev"))
+        .find(|w| w.starts_with("https://indocode-sandbox.") && w.ends_with(".workers.dev"))
         .map(str::to_string)
 }
 
@@ -115,7 +115,7 @@ pub fn deploy(api_token: &str, account: &str, progress: &dyn Fn(&str)) -> Result
     if !run_process(info, "Docker", 1 << 16, Duration::from_secs(30))?.status.success() {
         return Err("Docker is installed but not running. Start Docker Desktop and try again.".into());
     }
-    let work = std::env::temp_dir().join(format!("pandacode-cloudflare-{}", uuid::Uuid::new_v4()));
+    let work = std::env::temp_dir().join(format!("indocode-cloudflare-{}", uuid::Uuid::new_v4()));
     let result = (|| {
         for (path, contents) in FILES {
             let target = work.join(path);
@@ -131,7 +131,7 @@ pub fn deploy(api_token: &str, account: &str, progress: &dyn Fn(&str)) -> Result
         let url = deployed_url(&output).ok_or("The Worker deployed but its address was not reported. Check workers.dev is enabled for your account.")?;
         progress("Securing the Worker…");
         let secret = format!("{}{}", uuid::Uuid::new_v4().simple(), uuid::Uuid::new_v4().simple());
-        wrangler(&work, api_token, account, &["secret", "put", "PANDACODE_TOKEN"], Some(&secret), Duration::from_secs(300))?;
+        wrangler(&work, api_token, account, &["secret", "put", "INDOCODE_TOKEN"], Some(&secret), Duration::from_secs(300))?;
         Ok((url, secret))
     })();
     let _ = std::fs::remove_dir_all(&work);
@@ -163,10 +163,10 @@ mod tests {
 
     #[test]
     fn finds_the_workers_dev_address_in_deploy_output() {
-        let output = "Uploaded pandacode-sandbox (4.1 sec)\nDeployed pandacode-sandbox triggers (0.4 sec)\n  https://pandacode-sandbox.example-team.workers.dev\nCurrent Version ID: 1";
-        assert_eq!(deployed_url(output).as_deref(), Some("https://pandacode-sandbox.example-team.workers.dev"));
+        let output = "Uploaded indocode-sandbox (4.1 sec)\nDeployed indocode-sandbox triggers (0.4 sec)\n  https://indocode-sandbox.example-team.workers.dev\nCurrent Version ID: 1";
+        assert_eq!(deployed_url(output).as_deref(), Some("https://indocode-sandbox.example-team.workers.dev"));
         assert_eq!(deployed_url("no url"), None);
-        assert!(valid_name("pandacode-1") && !valid_name("Big") && !valid_name("-a") && !valid_name(&"a".repeat(64)));
+        assert!(valid_name("indocode-1") && !valid_name("Big") && !valid_name("-a") && !valid_name(&"a".repeat(64)));
     }
 
     #[test]

@@ -111,14 +111,14 @@ export async function mountTerminal(container: HTMLElement, context: TerminalCon
   });
   const refreshTheme = () => { terminal.options.theme = theme(); };
   refreshTheme();
-  window.addEventListener('pandacode-theme-change', refreshTheme);
-  window.addEventListener('pandacode-palette-change', refreshTheme);
+  window.addEventListener('indocode-theme-change', refreshTheme);
+  window.addEventListener('indocode-palette-change', refreshTheme);
   const input = terminal.onData(data => { if (!exited && !disposed) void call('write_terminal', { terminalId, data }).catch(reportError); });
   let resizeFrame = 0;
   const resize = () => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(() => { if (disposed || !surface.clientWidth || !surface.clientHeight) return; fit.fit(); if (!exited) void call('resize_terminal', { terminalId, cols: terminal.cols, rows: terminal.rows }).catch(reportError); }); };
   const refreshSize = () => { terminal.options.fontSize = 12 * textScale(); resize(); };
   refreshSize();
-  window.addEventListener('pandacode-ui-scale-change', refreshSize);
+  window.addEventListener('indocode-ui-scale-change', refreshSize);
   const observer = new ResizeObserver(resize);
   observer.observe(surface);
   const focus = () => { if (!disposed && surface.clientWidth && surface.clientHeight) { resize(); terminal.focus(); } };
@@ -132,7 +132,7 @@ export async function mountTerminal(container: HTMLElement, context: TerminalCon
     insertButton.disabled = exited || disposed || !hasOutput;
   }, activity: () => exited || disposed ? Promise.resolve({ running: false, processNames: [], uncertain: false }) : call<TerminalActivity>('get_terminal_activity', { terminalId }), dispose: async () => {
     if (disposed) return; disposed = true;
-    window.removeEventListener('pandacode-theme-change', refreshTheme); window.removeEventListener('pandacode-palette-change', refreshTheme); window.removeEventListener('pandacode-ui-scale-change', refreshSize); observer.disconnect(); cancelAnimationFrame(resizeFrame); input.dispose(); unlisten(); terminal.dispose(); frame.remove(); await call('close_terminal', { terminalId });
+    window.removeEventListener('indocode-theme-change', refreshTheme); window.removeEventListener('indocode-palette-change', refreshTheme); window.removeEventListener('indocode-ui-scale-change', refreshSize); observer.disconnect(); cancelAnimationFrame(resizeFrame); input.dispose(); unlisten(); terminal.dispose(); frame.remove(); await call('close_terminal', { terminalId });
   } };
 }
 

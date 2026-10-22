@@ -229,7 +229,7 @@ test('Agent usage ignores responses from a closed panel after a new panel has lo
 
 test('Agent usage remains reachable in the sidebar, collapsed header, and board at 140% text size', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 460, height: 740 });
-  await page.addInitScript(() => localStorage.setItem('pandacode.uiScale', '1.4'));
+  await page.addInitScript(() => localStorage.setItem('indocode.uiScale', '1.4'));
   await openApp(page);
   for (const mode of ['sidebar', 'collapsed', 'board']) {
     if (mode === 'collapsed') await page.getByRole('button', { name: 'Hide sidebar', exact: true }).click();

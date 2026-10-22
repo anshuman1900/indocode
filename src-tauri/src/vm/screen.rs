@@ -218,24 +218,24 @@ mod tests {
 mod live {
     use super::*;
 
-    /// Computer use end to end on a Linux VM with the PandaCode desktop:
-    /// `PANDACODE_VM=name PANDACODE_VNC=vnc://… cargo test --lib -- --ignored vm::screen::live`
+    /// Computer use end to end on a Linux VM with the Indocode desktop:
+    /// `INDOCODE_VM=name INDOCODE_VNC=vnc://… cargo test --lib -- --ignored vm::screen::live`
     #[test]
     #[ignore]
     fn opens_a_terminal_and_types_a_command() {
-        let (password, address) = crate::vm::parse_vnc_url(&std::env::var("PANDACODE_VNC").unwrap()).unwrap();
-        let name = std::env::var("PANDACODE_VM").unwrap();
+        let (password, address) = crate::vm::parse_vnc_url(&std::env::var("INDOCODE_VNC").unwrap()).unwrap();
+        let name = std::env::var("INDOCODE_VM").unwrap();
         let mut rfb = Rfb::connect(address, password.as_deref(), Duration::from_secs(5)).unwrap();
-        crate::vm::tart::exec(&name, false, "rm -f /tmp/pandacode-cu", Duration::from_secs(20)).unwrap();
+        crate::vm::tart::exec(&name, false, "rm -f /tmp/indocode-cu", Duration::from_secs(20)).unwrap();
         // Xfce's dock: the terminal launcher.
         act(&mut rfb, &Action::Click { x: 439.0, y: 743.0, button: 1, count: 1 }).unwrap();
         thread::sleep(Duration::from_secs(2));
-        act(&mut rfb, &Action::Type { text: "echo \"Hi PandaCode: 6*7=$((6*7))!\" > /tmp/pandacode-cu".into() }).unwrap();
+        act(&mut rfb, &Action::Type { text: "echo \"Hi Indocode: 6*7=$((6*7))!\" > /tmp/indocode-cu".into() }).unwrap();
         act(&mut rfb, &Action::Key { keys: "Return".into() }).unwrap();
         thread::sleep(Duration::from_millis(800));
-        screenshot(&mut rfb, 80).map(|s| std::fs::write(std::env::temp_dir().join("pandacode-vm-cu.jpg"), s.jpeg)).unwrap().unwrap();
-        let out = crate::vm::tart::exec(&name, false, "cat /tmp/pandacode-cu", Duration::from_secs(20)).unwrap();
-        assert_eq!(out.stdout, "Hi PandaCode: 6*7=42!\n");
+        screenshot(&mut rfb, 80).map(|s| std::fs::write(std::env::temp_dir().join("indocode-vm-cu.jpg"), s.jpeg)).unwrap().unwrap();
+        let out = crate::vm::tart::exec(&name, false, "cat /tmp/indocode-cu", Duration::from_secs(20)).unwrap();
+        assert_eq!(out.stdout, "Hi Indocode: 6*7=42!\n");
         act(&mut rfb, &Action::Key { keys: "ctrl+d".into() }).unwrap();
     }
 }

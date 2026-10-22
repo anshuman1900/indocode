@@ -363,7 +363,7 @@ impl Protocol {
                 return Err("Codex did not resolve a model for this collaboration mode.".into());
             }
             // A preset's stale embedded model/effort must never undo a newer
-            // choice in PandaCode's composer. Null restores native instructions.
+            // choice in Indocode's composer. Null restores native instructions.
             mode["settings"] = json!({"model":model,"reasoning_effort":self.config.reasoning_effort.as_ref().or(self.goals.resolved_effort.as_ref()),"developer_instructions":null});
         }
         if let Some(tier) = settings["serviceTier"].as_str() {

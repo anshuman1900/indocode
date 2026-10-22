@@ -6,7 +6,7 @@ const token = (page: Page, name: string) => page.evaluate(name => getComputedSty
 const pin = (page: Page, scene: string) => page.addInitScript(scene => {
   if (sessionStorage.getItem('pinned') === scene) return;
   sessionStorage.setItem('pinned', scene);
-  localStorage.setItem('pandacode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 20, blur: 0, set: 'automatic', pinned: scene }));
+  localStorage.setItem('indocode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 20, blur: 0, set: 'automatic', pinned: scene }));
 }, scene);
 async function openColors(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -62,7 +62,7 @@ test('a VS Code theme from Open VSX recolors the app and holds still when the wa
   await page.waitForTimeout(300);
   expect(await accent(page)).toBe(dracula);
   expect(await token(page, '--bg')).toBe('#282a36');
-  // Import from a file, then go back to PandaCode's own colors.
+  // Import from a file, then go back to Indocode's own colors.
   await openColors(page);
   await page.getByRole('button', { name: 'Import .vsix…' }).click();
   await expect(page.locator('.vsix-status')).toContainText('Using Tokyo Night');
@@ -70,11 +70,11 @@ test('a VS Code theme from Open VSX recolors the app and holds still when the wa
   await page.getByRole('button', { name: 'Remove Tokyo Night' }).click();
   await expect(page.locator('.vsix-status')).toContainText('Theme removed');
   await expect(page.locator('html')).not.toHaveAttribute('data-vsix', '');
-  await expect(page.getByRole('radio', { name: /PandaCode/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('radio', { name: /Indocode/ })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByRole('radio', { name: 'Wallpaper', exact: true })).toBeEnabled();
 });
 
-test('the light and dark toggle leaves a VS Code theme for PandaCode\'s own palette', async ({ page }) => {
+test('the light and dark toggle leaves a VS Code theme for Indocode\'s own palette', async ({ page }) => {
   await page.goto('/');
   await openColors(page);
   await page.getByRole('radio', { name: /GitHub Light Default/ }).click();
@@ -89,7 +89,7 @@ test('the light and dark toggle leaves a VS Code theme for PandaCode\'s own pale
 for (const theme of ['dark', 'light'] as const) {
   test(`the selected task is a solid fill of the chosen accent over the native sidebar material in ${theme} mode`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme });
-    await page.addInitScript(value => { localStorage.setItem('pandacode.theme', value); localStorage.setItem('pandacode.wallpapers', 'false'); }, theme);
+    await page.addInitScript(value => { localStorage.setItem('indocode.theme', value); localStorage.setItem('indocode.wallpapers', 'false'); }, theme);
     await page.goto('/');
     const card = page.locator('#navigation .task-item.selected');
     await card.waitFor();

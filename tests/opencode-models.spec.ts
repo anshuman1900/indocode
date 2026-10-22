@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const selectedKey = 'pandacode.preview.opencode-models';
+const selectedKey = 'indocode.preview.opencode-models';
 // OpenCode models are embedded in Settings → Agents.
 const settings = (page: Page) => page.getByRole('region', { name: 'Settings', exact: true });
 const dialog = (page: Page) => settings(page).locator('#settings-panel-agents [data-embed="openCodeModels"]');

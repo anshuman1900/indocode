@@ -2,7 +2,7 @@
 //! (the list ccusage uses). A day-old copy is refreshed with a plain GET; no
 //! usage data is sent. Offline, the last saved copy or the bundled snapshot is used.
 //! Not telemetry: the request carries no identifier, account or usage data and
-//! goes to GitHub's public raw file host, never to a PandaCode server.
+//! goes to GitHub's public raw file host, never to a Indocode server.
 
 use super::parse::Record;
 use serde::{Deserialize, Serialize};

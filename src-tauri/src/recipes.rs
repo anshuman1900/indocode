@@ -1,4 +1,4 @@
-//! Local workflow recipes: `<project>/.pandacode/recipes/<name>.json` and a global folder.
+//! Local workflow recipes: `<project>/.indocode/recipes/<name>.json` and a global folder.
 //! A recipe is a list of steps the UI queues as ordinary messages; `dry_run` reports, per
 //! step, whether the chosen harness can do it. Nothing here runs an agent or phones home.
 use serde::{Deserialize, Serialize};
@@ -75,7 +75,7 @@ pub fn valid_name(name: &str) -> bool {
 }
 
 pub fn project_dir(root: &Path) -> PathBuf {
-    root.join(".pandacode").join("recipes")
+    root.join(".indocode").join("recipes")
 }
 
 pub fn validate(recipe: &Recipe) -> Result<(), String> {
@@ -286,7 +286,7 @@ mod tests {
         Recipe { name: "review".into(), description: "d".into(), steps, scope: String::new() }
     }
     fn temp(tag: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("pandacode-recipes-{tag}-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("indocode-recipes-{tag}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         dir
     }

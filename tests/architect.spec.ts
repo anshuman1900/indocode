@@ -150,8 +150,8 @@ test.describe('architect teams', () => {
     test(`workers are one solid surface and keep detail sharp in ${theme} ${view}`, async ({ page, browserName }) => {
       await page.setViewportSize({ width: 1280, height: 820 });
       await page.addInitScript(theme => {
-        localStorage.setItem('pandacode.theme', theme);
-        localStorage.setItem('pandacode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 35, pinned: 'mon-morning' }));
+        localStorage.setItem('indocode.theme', theme);
+        localStorage.setItem('indocode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 35, pinned: 'mon-morning' }));
       }, theme);
       await installArchitect(page, { 'session-2': team('session-2') });
       await seedHistory(page, 'session-2', 'build', '**Search is ready.** The index now reuses its cached entries.\n\n```ts\nconst index = cachedIndex;\n```');
@@ -169,14 +169,14 @@ test.describe('architect teams', () => {
       await row(page, 'build').hover();
       await expect(row(page, 'build')).not.toHaveCSS('background-color', normalRow);
       await expect(row(page, 'build').locator('strong')).toBeVisible();
-      await page.screenshot({ path: `/private/tmp/pandacode-workers-frost-${browserName}-${theme}-${view}-list.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-workers-frost-${browserName}-${theme}-${view}-list.png`, animations: 'disabled' });
       await row(page, 'build').click();
       const detail = panel(page).locator('.architect-worker-message > div').first();
       await expect(detail).toContainText('Search is ready.');
       await expect(detail).toHaveCSS('filter', 'none'); await expect(detail).toHaveCSS('opacity', '1');
       expect(await workerSurface(panel(page))).toEqual(material);
       expect(await panel(page).evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
-      await page.screenshot({ path: `/private/tmp/pandacode-workers-frost-${browserName}-${theme}-${view}-detail.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-workers-frost-${browserName}-${theme}-${view}-detail.png`, animations: 'disabled' });
       // Both accessibility preferences must remove translucency even while a detail is open.
       const preferences = browserName === 'chromium' ? ['prefers-contrast', 'prefers-reduced-transparency'] : ['prefers-contrast'];
       const cdp = browserName === 'chromium' ? await page.context().newCDPSession(page) : null;
@@ -300,7 +300,7 @@ test.describe('architect teams', () => {
     await row(page, 'review').click();
     await expect(reason).toHaveText('Waiting for Builder to finish editing shared files');
     await expect(reason).toHaveCSS('white-space', 'nowrap');
-    await page.screenshot({ path: `/private/tmp/pandacode-worker-queue-${browserName}.png`, animations: 'disabled' });
+    await page.screenshot({ path: `/private/tmp/indocode-worker-queue-${browserName}.png`, animations: 'disabled' });
     snapshot.revision++; snapshot.workers[1].status = 'running'; snapshot.workers[1].readOnly = true;
     await publish(page, snapshot);
     await expect(reason).toBeHidden();
@@ -413,7 +413,7 @@ test.describe('architect teams', () => {
     const tool = (id: string, name: string) => page.evaluate(tool => (window as any).__architectTest.event({ sessionId: 'session-2', kind: 'tool', text: '', tool }),
       { id, name, status: 'completed', input: '', output: 'Done.' });
     await tool('read-plan', 'Read');
-    await tool('dispatch', 'mcp__pandacode_architect__pandacode_dispatch_workers');
+    await tool('dispatch', 'mcp__indocode_architect__indocode_dispatch_workers');
     await publish(page, team('session-2', { status: 'completed', workers: done }));
     await tool('verify', 'Bash');
     const order = () => transcript(page).evaluate(root => {
@@ -433,7 +433,7 @@ test.describe('architect teams', () => {
       { id: 302, sessionId: 'session-2', role: 'assistant', content: 'Delegated to the workers.', createdAt: 3000 },
     ] as Message[] });
     await expect(transcript(page).locator('.team-progress-worker[data-worker-id="build"]')).toBeVisible();
-    // Workers settled; PandaCode resumes the architect before the coordination message loads.
+    // Workers settled; Indocode resumes the architect before the coordination message loads.
     await page.evaluate(() => (window as any).__architectTest.event({ sessionId: 'session-2', kind: 'tool', text: '', tool: { id: 'review-diff', name: 'Bash', status: 'running', input: 'git diff', output: '' } }));
     const later = transcript(page).locator('[data-tool-key="tool:review-diff"]');
     await expect(later).toBeAttached();
@@ -514,7 +514,7 @@ test.describe('architect teams', () => {
       await expect(transcript(page).locator('.turn-changes:visible')).toHaveCount(1);
       await expect(transcript(page).locator('.turn-changes:visible')).toContainText('README.md');
       await progress.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: `/private/tmp/pandacode-team-progress-${view}.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-team-progress-${view}.png`, animations: 'disabled' });
       await page.evaluate(() => { (window as any).__progressNodes = { host: document.querySelector('.team-progress'), build: document.querySelector('.team-progress-worker[data-worker-id="build"]'), review: document.querySelector('.team-progress-worker[data-worker-id="review"]') }; });
       await publish(page, team('session-3', { workers: [worker('other', { name: 'Unrelated background task' })] }));
       await nextPaint(page);
@@ -673,7 +673,7 @@ test.describe('architect teams', () => {
       await expect(panel(page).locator('.architect-worker-empty')).not.toContainText('Loading');
       await expect(live(page)).not.toContainText('word25');
       await expect(page.locator('.task-item[data-id^="worker-"]')).toHaveCount(0);
-      await page.screenshot({ path: `/private/tmp/pandacode-architect-${view}-worker.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-architect-${view}-worker.png`, animations: 'disabled' });
     });
   }
 

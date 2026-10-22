@@ -6,7 +6,7 @@ import { mkdirSync, readFileSync, rmSync } from 'node:fs';
  * 2x, each framed with a soft shadow on a transparent background and saved as WebP in docs/screenshots/. The sample
  * data comes from showcase.js and the replacements below, applied only while capturing. */
 const out = new URL('../../docs/screenshots/', import.meta.url).pathname;
-const raw = '/tmp/pandacode-screenshots/raw/';
+const raw = '/tmp/indocode-screenshots/raw/';
 const showcase = readFileSync(new URL('./showcase.js', import.meta.url), 'utf8');
 
 // Preview-only wording reads as placeholder text in a screenshot; swap in realistic copy.
@@ -27,8 +27,8 @@ const architectCopy: [RegExp | string, string][] = [
 
 async function prepare(page: Page, theme: 'light' | 'dark', scene: string): Promise<void> {
   await page.addInitScript(([t, s]) => {
-    localStorage.setItem('pandacode.theme', t);
-    localStorage.setItem('pandacode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 20, blur: 0, set: 'automatic', pinned: s }));
+    localStorage.setItem('indocode.theme', t);
+    localStorage.setItem('indocode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 20, blur: 0, set: 'automatic', pinned: s }));
   }, [theme, scene]);
   const rewrite = (pattern: string, replacements: [RegExp | string, string][], append = '') => page.route(pattern, async route => {
     const response = await route.fetch();

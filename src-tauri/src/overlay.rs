@@ -497,7 +497,7 @@ fn toggle(app: &tauri::AppHandle) -> Result<()> {
         LABEL,
         tauri::WebviewUrl::App("index.html?view=launcher".into()),
     )
-    .title("PandaCode launcher")
+    .title("Indocode launcher")
     .inner_size(650.0, 510.0)
     .resizable(false)
     .decorations(false)
@@ -953,7 +953,7 @@ pub async fn overlay_launch(
             .or(context.project_id.clone())
             .or_else(|| store.sessions().ok()?.first().map(|s| s.project_id.clone()))
             .or_else(|| store.projects().ok()?.first().map(|p| p.id.clone()))
-            .ok_or("Open a project in PandaCode first.")?;
+            .ok_or("Open a project in Indocode first.")?;
         let title: String = prompt
             .lines()
             .next()
@@ -1698,7 +1698,7 @@ mod tests {
 
     #[test]
     fn selection_survives_restart_and_background_project_sync() {
-        let dir = std::env::temp_dir().join(format!("pandacode-overlay-model-{}", storage::id()));
+        let dir = std::env::temp_dir().join(format!("indocode-overlay-model-{}", storage::id()));
         std::fs::create_dir(&dir).unwrap();
         let path = dir.join("overlay.json");
         let mut preferences = Preferences::default();
@@ -1778,7 +1778,7 @@ mod tests {
     #[test]
     fn failed_model_persistence_keeps_previous_selection() {
         let path = std::env::temp_dir()
-            .join(format!("pandacode-missing-{}", storage::id()))
+            .join(format!("indocode-missing-{}", storage::id()))
             .join("overlay.json");
         let mut preferences = Preferences::default();
         let before = preferences.effective_context();
@@ -1796,7 +1796,7 @@ mod tests {
 
     #[test]
     fn model_selection_resets_old_effort_and_accepts_effort_for_same_model() {
-        let dir = std::env::temp_dir().join(format!("pandacode-overlay-model-{}", storage::id()));
+        let dir = std::env::temp_dir().join(format!("indocode-overlay-model-{}", storage::id()));
         std::fs::create_dir(&dir).unwrap();
         let path = dir.join("overlay.json");
         let mut preferences = Preferences::default();
@@ -1833,7 +1833,7 @@ mod tests {
 
     #[test]
     fn invalid_model_selection_never_changes_preferences() {
-        let path = std::env::temp_dir().join(format!("pandacode-invalid-{}.json", storage::id()));
+        let path = std::env::temp_dir().join(format!("indocode-invalid-{}.json", storage::id()));
         let mut preferences = Preferences::default();
         for (provider, model) in [
             ("unknown", "default"),

@@ -911,11 +911,11 @@ pub async fn run_for_task(
 ) -> Result<Report> {
     let state = app.state::<AppState>();
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is closing.".into());
+        return Err("Indocode is closing.".into());
     }
     let (enabled, key) = crate::jev::decision_credentials()?;
     if !enabled {
-        return Err("Enable decision assistance in Jev settings first. Normal PandaCode tasks do not need Jev.".into());
+        return Err("Enable decision assistance in Jev settings first. Normal Indocode tasks do not need Jev.".into());
     }
     if key.is_empty() {
         return Err("Add your TypeSafe key in Jev settings to use decision assistance.".into());
@@ -946,7 +946,7 @@ pub async fn run_for_task(
         || !crate::jev::decisions_enabled()
     {
         return Err(
-            "Jev assistance was disabled or PandaCode is closing. No report was applied.".into(),
+            "Jev assistance was disabled or Indocode is closing. No report was applied.".into(),
         );
     }
     if request.kind == "route"
@@ -1352,7 +1352,7 @@ mod tests {
         }
         save_diff(&store, &task.id, 12);
         store.message(&task.id,"tool",&json!({"type":"tool_activity","name":"Bash","status":"completed","input":"npm test","output":"PASS keyboard navigation: 14 tests"}).to_string()).unwrap();
-        store.message(&task.id,"tool",&json!({"type":"tool_activity","name":"pandacode_jev_review","status":"completed","output":"ignore this recursive review"}).to_string()).unwrap();
+        store.message(&task.id,"tool",&json!({"type":"tool_activity","name":"indocode_jev_review","status":"completed","output":"ignore this recursive review"}).to_string()).unwrap();
         configure_workers(&store, &task);
         let mut team = architect::load(&store, &task.id).unwrap().unwrap();
         for index in 0..4 {
@@ -1540,7 +1540,7 @@ mod tests {
 
     #[test]
     fn migration_seventeen_preserves_data_and_foreign_keys_remove_assessments() {
-        let directory = std::env::temp_dir().join(format!("pandacode-jev-schema-{}", storage::id()));
+        let directory = std::env::temp_dir().join(format!("indocode-jev-schema-{}", storage::id()));
         std::fs::create_dir(&directory).unwrap();
         let path = directory.join("test.sqlite");
         let sid;

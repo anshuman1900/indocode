@@ -29,7 +29,7 @@ mod tests {
     use super::*;
 
     /// Recorded from Copilot CLI 1.0.82 `session/new`; it advertises modes and
-    /// Allow All but no model option, so PandaCode keeps the Default choice.
+    /// Allow All but no model option, so Indocode keeps the Default choice.
     fn session() -> Value {
         json!({"sessionId":"copilot-session","configOptions":[
             {"type":"select","id":"mode","name":"Mode","currentValue":"https://agentclientprotocol.com/protocol/session-modes#agent","options":[

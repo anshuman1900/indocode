@@ -106,7 +106,7 @@ test('Jev settings persist opt-in and never return saved keys to inputs', async 
   await expect(page.locator('#jev-enabled')).toBeChecked();
   await expect(page.locator('[data-jev-key-status="text"]')).toHaveText('Key saved');
   await expect(page.locator('#jev-text-key')).toHaveValue('');
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-settings.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-settings.png' });
 });
 
 test('Jev setup remains editable after errors and shows installation progress', async ({ page }) => {
@@ -172,7 +172,7 @@ test('browser Jev popover anchors, dismisses, and preserves the form during live
   expect(await page.evaluate(() => (window as any).__popoverInput === document.querySelector('#jev-test-goal'))).toBe(true);
   await expect(popover).not.toContainText('Different task');
   await expect(popover).toHaveAttribute('data-popover-state', 'open');
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-popover-dark.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-popover-dark.png' });
   await page.keyboard.press('Escape');
   await expect(popover).toHaveCount(0);
   await expect(trigger).toBeFocused();
@@ -199,7 +199,7 @@ test('browser Jev popover fits a narrow light window and setup opens from its no
     return box.x >= 0 && box.right <= innerWidth && box.y >= 0 && box.bottom <= innerHeight && element.scrollWidth <= element.clientWidth + 1;
   })).toBe(true);
   await expect(popover).toHaveAttribute('data-popover-state', 'open');
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-popover-narrow-light.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-popover-narrow-light.png' });
   await page.getByRole('button', { name: 'Set up Jev', exact: false }).click();
   await expect(popover).toHaveCount(0);
   await expect(dialog(page).getByRole('heading', { name: 'Jev add-on', exact: true })).toBeVisible();
@@ -209,15 +209,15 @@ for (const [scale, width, height] of [[1.4, 1440, 940], [1.6, 480, 780]]) {
   test(`Jev popover fits long server lists and expanded options at ${scale * 100}% text size in ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await page.addInitScript(scale => {
-      localStorage.setItem('pandacode.uiScale', String(scale));
-      localStorage.setItem('pandacode.sidebarWidth', '380');
-      if (scale === 1.6) localStorage.setItem('pandacode.theme', 'light');
+      localStorage.setItem('indocode.uiScale', String(scale));
+      localStorage.setItem('indocode.sidebarWidth', '380');
+      if (scale === 1.6) localStorage.setItem('indocode.theme', 'light');
     }, scale);
     await installProbe(page);
     await expect.poll(() => page.locator('html').evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeCloseTo(14 * scale, 2);
     await page.evaluate(() => {
       (window as any).__jevLocalServers = Array.from({ length: 12 }, (_, index) => ({
-        process: `pandacode-development-server-for-very-long-project-name-${index + 1}`,
+        process: `indocode-development-server-for-very-long-project-name-${index + 1}`,
         port: 3000 + index, url: `http://localhost:${3000 + index}/`,
       }));
     });
@@ -228,8 +228,8 @@ for (const [scale, width, height] of [[1.4, 1440, 940], [1.6, 480, 780]]) {
     await expect(popover.locator('.jev-server-chip')).toHaveCount(12);
     await expect(popover.locator('[data-jev-run]')).toBeEnabled();
     await expect(popover).toHaveAttribute('data-popover-state', 'open');
-    const capture = process.env.PANDACODE_JEV_LAYOUT_CAPTURE === 'before' ? 'before' : 'after';
-    await page.screenshot({ path: `/private/tmp/pandacode-jev-layout-${capture}-${Math.round(scale * 100)}-${width}.png` });
+    const capture = process.env.INDOCODE_JEV_LAYOUT_CAPTURE === 'before' ? 'before' : 'after';
+    await page.screenshot({ path: `/private/tmp/indocode-jev-layout-${capture}-${Math.round(scale * 100)}-${width}.png` });
     const overflow = () => popover.evaluate(element => {
       const box = element.getBoundingClientRect();
       const outside = Array.from(element.querySelectorAll<HTMLElement>('input,textarea,select,.jev-run-row,.jev-presets,[data-jev-run]'))
@@ -249,7 +249,7 @@ for (const [scale, width, height] of [[1.4, 1440, 940], [1.6, 480, 780]]) {
       const box = port.getBoundingClientRect(), chip = port.closest('.jev-server-chip')!.getBoundingClientRect();
       return box.left >= chip.left && box.right <= chip.right && port.scrollWidth <= port.clientWidth + 1;
     }))).toBe(true);
-    await page.screenshot({ path: `/private/tmp/pandacode-jev-layout-${capture}-${Math.round(scale * 100)}-${width}-servers.png` });
+    await page.screenshot({ path: `/private/tmp/indocode-jev-layout-${capture}-${Math.round(scale * 100)}-${width}-servers.png` });
     await popover.locator('.jev-server-port').last().scrollIntoViewIfNeeded();
     await expect(popover.locator('.jev-server-port').last()).toBeInViewport({ ratio: 0.99 });
     await popover.locator('.jev-server-chip').last().click();
@@ -267,7 +267,7 @@ for (const [scale, width, height] of [[1.4, 1440, 940], [1.6, 480, 780]]) {
     const start = popover.locator('[data-jev-run]');
     await start.scrollIntoViewIfNeeded();
     await expect(start).toBeInViewport();
-    await page.screenshot({ path: `/private/tmp/pandacode-jev-layout-${capture}-${Math.round(scale * 100)}-${width}-expanded.png` });
+    await page.screenshot({ path: `/private/tmp/indocode-jev-layout-${capture}-${Math.round(scale * 100)}-${width}-expanded.png` });
     await start.click();
     await expect.poll(async () => (await calls(page, 'jev_start')).length).toBe(1);
     expect((await calls(page, 'jev_start'))[0].args.request).toMatchObject({
@@ -281,7 +281,7 @@ for (const [scale, width, height] of [[1.4, 1440, 940], [1.6, 480, 780]]) {
 
 test('Jev popover keeps its header and Run button reachable in a short enlarged window', async ({ page }) => {
   await page.setViewportSize({ width: 480, height: 360 });
-  await page.addInitScript(() => { localStorage.setItem('pandacode.uiScale', '1.6'); });
+  await page.addInitScript(() => { localStorage.setItem('indocode.uiScale', '1.6'); });
   await installProbe(page);
   await page.getByRole('button', { name: 'Open browser', exact: true }).click();
   await page.getByRole('button', { name: 'Test with Jev', exact: true }).click();
@@ -304,7 +304,7 @@ test('Jev popover keeps its header and Run button reachable in a short enlarged 
   await popover.locator('#jev-max-steps').fill('12');
   await expect(start).toBeInViewport({ ratio: 1 });
   await expect(close).toBeInViewport({ ratio: 1 });
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-layout-after-160-480-short.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-layout-after-160-480-short.png' });
   await close.click();
   await expect(popover).toHaveCount(0);
   expect(await calls(page, 'jev_start')).toHaveLength(0);
@@ -416,7 +416,7 @@ test('streaming preserves the draft DOM, isolates tasks, and never treats DONE a
   await expect(page.locator('.jev-verification img')).toHaveCount(0);
   await emit(page, { verification: 'passed', checks: [{ name: 'Expected text', passed: true, expected: 'Victory' }] });
   await expect(page.locator('.jev-check-badge')).toHaveText('Checks passed');
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-test.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-test.png' });
 });
 
 test('completed reports attach concise observed evidence to the selected task prompt', async ({ page }) => {
@@ -506,7 +506,7 @@ test('Jev panels stay inside a narrow viewport in both themes', async ({ page })
     await expect(page.locator('#jev-expected-url')).toBeVisible(); expect(await overflow()).toBe(false);
     await page.locator('.jev-test-checks summary').click();
   }
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-narrow-light.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-narrow-light.png' });
   await page.locator('[data-jev-close]').click();
   await page.setViewportSize({ width: 1440, height: 940 }); await settings(page);
   await page.setViewportSize({ width: 280, height: 900 });

@@ -25,9 +25,9 @@ const handle = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '_').
 
 /** A Slack app manifest with every scope, event and Socket Mode already set. */
 export function slackManifest(botName: string): Record<string, unknown> {
-  const name = botName.trim().slice(0, 35) || 'PandaCode bot';
+  const name = botName.trim().slice(0, 35) || 'Indocode bot';
   return {
-    display_information: { name, description: 'An always-on assistant running on my computer through PandaCode.' },
+    display_information: { name, description: 'An always-on assistant running on my computer through Indocode.' },
     features: { bot_user: { display_name: name, always_online: true }, app_home: { messages_tab_enabled: true, messages_tab_read_only_enabled: false } },
     oauth_config: { scopes: { bot: ['app_mentions:read', 'chat:write', 'im:history', 'im:read', 'im:write', 'users:read'] } },
     settings: { event_subscriptions: { bot_events: ['app_mention', 'message.im'] }, interactivity: { is_enabled: false }, org_deploy_enabled: false, socket_mode_enabled: true, token_rotation_enabled: false },
@@ -39,7 +39,7 @@ function steps(kind: ChannelKind, botName: string): Step[] {
   switch (kind) {
     case 'telegram': return [
       { title: 'Open BotFather in Telegram', body: `BotFather is Telegram’s official bot for creating bots. ${link('https://t.me/BotFather', 'Open BotFather', true)}` },
-      { title: 'Create the bot', body: `Send this to BotFather, then answer its two questions: a display name (for example “${escape(botName)}”) and a username ending in “bot”.${copy('/newbot', 'Copy', 'Send')}${copy(`${handle(botName)}_pandacode_bot`, 'Copy', 'Username idea')}` },
+      { title: 'Create the bot', body: `Send this to BotFather, then answer its two questions: a display name (for example “${escape(botName)}”) and a username ending in “bot”.${copy('/newbot', 'Copy', 'Send')}${copy(`${handle(botName)}_indocode_bot`, 'Copy', 'Username idea')}` },
       { title: 'Paste the token BotFather sends back', body: 'It looks like <code>123456789:AAE…</code>. Anyone with it can control the bot, so keep it private.', field: { name: 'token', label: 'Bot token', secret: true, placeholder: '123456789:AAE…' } },
     ];
     case 'slack': return [
@@ -57,7 +57,7 @@ function steps(kind: ChannelKind, botName: string): Step[] {
       { title: 'Create a Meta app with WhatsApp', body: `Choose <b>Other</b> → <b>Business</b>, then add the <b>WhatsApp</b> product. Meta gives you a free test number. ${link('https://developers.facebook.com/apps/creation/', 'Open Meta for Developers', true)}` },
       { title: 'Copy the phone number ID', body: 'In <b>WhatsApp</b> → <b>API Setup</b>, copy the <b>Phone number ID</b> (a long number, not the phone number itself). Add your own phone under <b>To</b> so the test number may message you.', field: { name: 'phoneNumberId', label: 'Phone number ID', secret: false, placeholder: '123456789012345', config: true } },
       { title: 'Copy an access token', body: `The temporary token on API Setup works for 24 hours. For one that lasts, create a system user with WhatsApp permissions and generate its token. ${link('https://business.facebook.com/settings/system-users', 'System users')}`, field: { name: 'access_token', label: 'Access token', secret: true, placeholder: 'EAAG…' } },
-      { title: 'Copy the app secret', body: 'Open <b>App settings</b> → <b>Basic</b> → <b>App secret</b> → <b>Show</b>. PandaCode uses it to check that messages really come from Meta.', field: { name: 'signing_secret', label: 'App secret', secret: true, placeholder: '32 characters' } },
+      { title: 'Copy the app secret', body: 'Open <b>App settings</b> → <b>Basic</b> → <b>App secret</b> → <b>Show</b>. Indocode uses it to check that messages really come from Meta.', field: { name: 'signing_secret', label: 'App secret', secret: true, placeholder: '32 characters' } },
       { title: 'Connect, then point Meta at this computer', body: 'After you connect, the steps for the webhook (with everything to copy) appear on the channel.' },
     ];
     default: return [];
@@ -94,7 +94,7 @@ export function connectSection(detail: BotDetail): string {
   const chooser = `<div class="bots-kind-grid" role="group" aria-label="Add a channel">${KINDS.map(kind => `<button type="button" data-add-kind="${kind.id}" aria-pressed="${kind.id === adding}"><span class="bots-kind" data-kind="${kind.id}" aria-hidden="true">${kind.label.slice(0, 1)}</span><b>${escape(kind.label)}</b><small>${escape(kind.blurb)}</small><em>${escape(kind.minutes)}</em></button>`).join('')}</div>`;
   if (!adding) return chooser;
   if (adding === 'web') {
-    return `${chooser}<form class="bots-connect" data-kind="web"><p class="bots-lede">A chat page served by this computer. Only people with the private link can use it, and only while PandaCode is running.</p>
+    return `${chooser}<form class="bots-connect" data-kind="web"><p class="bots-lede">A chat page served by this computer. Only people with the private link can use it, and only while Indocode is running.</p>
       <div class="dialog-footer"><button type="button" class="secondary-button" data-add-kind="">Cancel</button><button type="submit" class="primary-button">Turn on web chat</button></div></form>`;
   }
   const kind = adding;

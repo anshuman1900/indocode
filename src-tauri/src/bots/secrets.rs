@@ -2,7 +2,7 @@
 //! prompts, logs, the database or the webview; only native channel code reads them.
 use crate::secret_store;
 
-const SERVICE: &str = "app.pandacode.bots";
+const SERVICE: &str = "app.indocode.bots";
 /// Every secret name a channel may hold, so deleting a channel removes them all.
 pub(crate) const NAMES: &[&str] = &["token", "app_token", "signing_secret", "access_token"];
 

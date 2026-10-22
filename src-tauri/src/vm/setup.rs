@@ -1,6 +1,6 @@
 //! One-click Tart setup: download the latest release from GitHub, check that Apple
 //! notarized it and that Cirrus Labs signed it, and install it in ~/Applications.
-//! Tart is under the Functional Source License; PandaCode fetches it, never bundles it.
+//! Tart is under the Functional Source License; Indocode fetches it, never bundles it.
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -45,7 +45,7 @@ fn install() -> Result<PathBuf, String> {
         return Err("Local VMs need a Mac with Apple silicon. Use a cloud sandbox instead.".into());
     }
     let home = std::env::var_os("HOME").map(PathBuf::from).ok_or("Your home folder is unknown.")?;
-    let work = std::env::temp_dir().join(format!("pandacode-tart-{}", uuid::Uuid::new_v4()));
+    let work = std::env::temp_dir().join(format!("indocode-tart-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
     let result = (|| {
         let archive = work.join("tart.tar.gz");

@@ -1,4 +1,4 @@
-// Downloads the latest PandaCode release, verifies its Tauri updater (minisign)
+// Downloads the latest Indocode release, verifies its Tauri updater (minisign)
 // signature with node:crypto, and installs it. Zero dependencies.
 import { createHash, createPublicKey, verify } from 'node:crypto';
 import { spawnSync, spawn } from 'node:child_process';
@@ -11,16 +11,16 @@ import { fileURLToPath } from 'node:url';
 export const PUBKEY = 'dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM3OEQ0RkYwQ0I4QzRGODEKUldTQlQ0ekw4RStOTnhNYW9jL1pTZENocVU3TGNPeVVxcDdzdkN4d0s3R2lPekxGRitGLzVwM3oK';
 export const BASE = 'https://github.com/aicodeking/pandacode/releases/latest/download';
 const ASSETS = {
-  'darwin-arm64': 'PandaCode-macOS-arm64.app.tar.gz',
-  'darwin-x64': 'PandaCode-macOS-x64.app.tar.gz',
-  'win32-x64': 'PandaCode-Windows-x64-setup.exe',
-  'linux-x64': 'PandaCode-Linux-x86_64.AppImage',
-  'linux-arm64': 'PandaCode-Linux-aarch64.AppImage',
+  'darwin-arm64': 'Indocode-macOS-arm64.app.tar.gz',
+  'darwin-x64': 'Indocode-macOS-x64.app.tar.gz',
+  'win32-x64': 'Indocode-Windows-x64-setup.exe',
+  'linux-x64': 'Indocode-Linux-x86_64.AppImage',
+  'linux-arm64': 'Indocode-Linux-aarch64.AppImage',
 };
 
 export function assetFor(platform = process.platform, arch = process.arch) {
   const asset = ASSETS[`${platform}-${arch}`];
-  if (!asset) throw new Error(`PandaCode has no build for ${platform}-${arch}. Supported: macOS (Apple silicon or Intel), Windows x64, Linux x64.`);
+  if (!asset) throw new Error(`Indocode has no build for ${platform}-${arch}. Supported: macOS (Apple silicon or Intel), Windows x64, Linux x64.`);
   return asset;
 }
 
@@ -50,7 +50,7 @@ export function verifyMinisign(data, sigFile, pubkey = PUBKEY) {
 }
 
 export function desktopEntry(exec, icon) {
-  return `[Desktop Entry]\nType=Application\nName=PandaCode\nComment=Desktop app for coding agents\nExec=${exec}\nIcon=${icon}\nTerminal=false\nCategories=Development;\nStartupWMClass=PandaCode\n`;
+  return `[Desktop Entry]\nType=Application\nName=Indocode\nComment=Desktop app for coding agents\nExec=${exec}\nIcon=${icon}\nTerminal=false\nCategories=Development;\nStartupWMClass=Indocode\n`;
 }
 
 async function download(url, file) {
@@ -83,12 +83,12 @@ function installMac(archive, dir) {
   mkdirSync(extracted);
   const tar = run('tar', ['-xzf', archive, '-C', extracted]);
   if (tar.status !== 0) throw new Error(`tar failed: ${tar.stderr}`);
-  const app = join(extracted, 'PandaCode.app');
-  if (!existsSync(app)) throw new Error('The archive does not contain PandaCode.app.');
+  const app = join(extracted, 'Indocode.app');
+  if (!existsSync(app)) throw new Error('The archive does not contain Indocode.app.');
   let root = '/Applications';
   try { accessSync(root, constants.W_OK); } catch { root = join(homedir(), 'Applications'); mkdirSync(root, { recursive: true }); }
-  const target = join(root, 'PandaCode.app');
-  const old = join(root, `.PandaCode-old-${process.pid}.app`);
+  const target = join(root, 'Indocode.app');
+  const old = join(root, `.Indocode-old-${process.pid}.app`);
   if (existsSync(target)) renameSync(target, old);
   try { renameSync(app, target); } catch { // different volume
     const copy = run('cp', ['-R', app, target]);
@@ -97,7 +97,7 @@ function installMac(archive, dir) {
   rmSync(old, { recursive: true, force: true });
   const macos = join(target, 'Contents', 'MacOS');
   const names = readdirSync(macos);
-  const binary = names.find(n => n === 'pandacode') ?? names[0];
+  const binary = names.find(n => n === 'indocode') ?? names[0];
   const sign = run(join(macos, binary), ['--local-sign']);
   if (sign.status !== 0) throw new Error(`Local signing failed:\n${sign.stdout}${sign.stderr}`);
   run('open', [target]);
@@ -108,8 +108,8 @@ function installWindows(setup) {
   const result = run(setup, ['/S'], { stdio: 'inherit' });
   if (result.status !== 0) throw new Error(`The installer exited with ${result.status}.`);
   const base = process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local');
-  const exe = ['PandaCode', 'Programs\\PandaCode'].map(d => join(base, d, 'PandaCode.exe')).find(existsSync);
-  if (!exe) return 'PandaCode (installed; start it from the Start menu)';
+  const exe = ['Indocode', 'Programs\\Indocode'].map(d => join(base, d, 'Indocode.exe')).find(existsSync);
+  if (!exe) return 'Indocode (installed; start it from the Start menu)';
   spawn(exe, [], { detached: true, stdio: 'ignore' }).unref();
   return exe;
 }
@@ -120,19 +120,19 @@ function installLinux(appImage) {
   mkdirSync(bin, { recursive: true });
   mkdirSync(join(share, 'applications'), { recursive: true });
   mkdirSync(join(share, 'icons'), { recursive: true });
-  const target = join(bin, 'pandacode');
+  const target = join(bin, 'indocode');
   copyFileSync(appImage, target);
   chmodSync(target, 0o755);
-  const icon = join(share, 'icons', 'pandacode.png');
+  const icon = join(share, 'icons', 'indocode.png');
   copyFileSync(join(dirname(fileURLToPath(import.meta.url)), 'icon.png'), icon);
-  writeFileSync(join(share, 'applications', 'pandacode.desktop'), desktopEntry(target, icon));
+  writeFileSync(join(share, 'applications', 'indocode.desktop'), desktopEntry(target, icon));
   spawn(target, [], { detached: true, stdio: 'ignore' }).unref();
   return target;
 }
 
 export async function install({ dryRun = false } = {}) {
   const asset = assetFor();
-  const dir = mkdtempSync(join(tmpdir(), 'pandacode-'));
+  const dir = mkdtempSync(join(tmpdir(), 'indocode-'));
   try {
     const file = join(dir, asset);
     const [data, sig] = [await download(`${BASE}/${asset}`, asset), await download(`${BASE}/${asset}.sig`, `${asset}.sig`)];
@@ -141,7 +141,7 @@ export async function install({ dryRun = false } = {}) {
     if (dryRun) return console.log('Dry run: nothing installed.');
     writeFileSync(file, data);
     const where = process.platform === 'darwin' ? installMac(file, dir) : process.platform === 'win32' ? installWindows(file) : installLinux(file);
-    console.log(`Installed PandaCode at ${where}`);
+    console.log(`Installed Indocode at ${where}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

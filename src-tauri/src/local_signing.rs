@@ -1,7 +1,7 @@
-//! macOS: re-sign PandaCode's own bundle with a stable, per-machine self-signed identity, so
+//! macOS: re-sign Indocode's own bundle with a stable, per-machine self-signed identity, so
 //! keychain ACLs and privacy (TCC) grants, which pin the code signature, survive updates.
 //! Release builds are ad hoc signed, which gives every version a new identity. The identity
-//! lives in its own keychain (`~/Library/Keychains/pandacode-signing.keychain-db`), unlocked by a
+//! lives in its own keychain (`~/Library/Keychains/indocode-signing.keychain-db`), unlocked by a
 //! random password kept 0600 in the app data dir. The certificate is untrusted, which codesign
 //! accepts when the identity is named by its SHA-1, and the key's partition list lets codesign
 //! use it without a prompt. A bundle signed by anyone else (Developer ID) is left alone.
@@ -11,7 +11,7 @@
 
 use std::path::{Path, PathBuf};
 
-const IDENTITY: &str = "PandaCode Local Signing";
+const IDENTITY: &str = "Indocode Local Signing";
 
 /// `.../X.app/Contents/MacOS/bin` → `.../X.app`; `None` when not running from an app bundle.
 fn bundle_of(exe: &Path) -> Option<PathBuf> {
@@ -61,15 +61,15 @@ pub fn sign_running_app() -> Result<(), String> {
     }
 }
 
-/// `pandacode --local-sign`, run by the npx installer: sign, report, exit code.
+/// `indocode --local-sign`, run by the npx installer: sign, report, exit code.
 pub fn cli() -> i32 {
     match sign_running_app() {
         Ok(()) => {
-            println!("PandaCode is signed with its local identity.");
+            println!("Indocode is signed with its local identity.");
             0
         }
         Err(error) => {
-            eprintln!("PandaCode local signing failed: {error}");
+            eprintln!("Indocode local signing failed: {error}");
             1
         }
     }
@@ -104,7 +104,7 @@ mod mac {
     const SECURITY: &str = "/usr/bin/security";
     const OPENSSL: &str = "/usr/bin/openssl";
     const CERTIFICATE: &str = "[req]\ndistinguished_name=dn\nx509_extensions=v3\nprompt=no\n\
-        [dn]\nCN=PandaCode Local Signing\n\
+        [dn]\nCN=Indocode Local Signing\n\
         [v3]\nbasicConstraints=critical,CA:false\nkeyUsage=critical,digitalSignature\n\
         extendedKeyUsage=critical,codeSigning\nsubjectKeyIdentifier=hash\n";
 
@@ -171,8 +171,8 @@ mod mac {
     fn paths() -> Result<(PathBuf, PathBuf), String> {
         let home = PathBuf::from(std::env::var_os("HOME").ok_or("HOME is not set")?);
         Ok((
-            home.join("Library/Keychains/pandacode-signing.keychain-db"),
-            home.join("Library/Application Support/ai.pandacode.desktop/local-signing.password"),
+            home.join("Library/Keychains/indocode-signing.keychain-db"),
+            home.join("Library/Application Support/ai.indocode.desktop/local-signing.password"),
         ))
     }
 
@@ -221,7 +221,7 @@ mod mac {
         // No idle lock: signing may happen hours after launch.
         run(SECURITY, &["set-keychain-settings", path], None, QUICK)?;
         run(SECURITY, &["unlock-keychain", "-p", &password, path], None, QUICK)?;
-        let scratch = std::env::temp_dir().join(format!("pandacode-signing-{}", uuid::Uuid::new_v4().simple()));
+        let scratch = std::env::temp_dir().join(format!("indocode-signing-{}", uuid::Uuid::new_v4().simple()));
         fs::create_dir_all(&scratch).map_err(|e| e.to_string())?;
         let result = import(path, &password, &scratch);
         let _ = fs::remove_dir_all(&scratch);
@@ -280,26 +280,26 @@ mod tests {
     #[test]
     fn finds_the_bundle_around_the_executable() {
         assert_eq!(
-            bundle_of(Path::new("/Applications/PandaCode.app/Contents/MacOS/pandacode")),
-            Some(PathBuf::from("/Applications/PandaCode.app"))
+            bundle_of(Path::new("/Applications/Indocode.app/Contents/MacOS/indocode")),
+            Some(PathBuf::from("/Applications/Indocode.app"))
         );
-        assert_eq!(bundle_of(Path::new("/repo/src-tauri/target/debug/pandacode")), None);
-        assert_eq!(bundle_of(Path::new("/x/Tool/Contents/MacOS/pandacode")), None);
+        assert_eq!(bundle_of(Path::new("/repo/src-tauri/target/debug/indocode")), None);
+        assert_eq!(bundle_of(Path::new("/x/Tool/Contents/MacOS/indocode")), None);
     }
 
     #[test]
     fn reads_the_signer() {
-        let adhoc = "Identifier=ai.pandacode.desktop\nCodeDirectory v=20500 flags=0x10002(adhoc,runtime)\nSignature=adhoc\nTeamIdentifier=not set\n";
+        let adhoc = "Identifier=ai.indocode.desktop\nCodeDirectory v=20500 flags=0x10002(adhoc,runtime)\nSignature=adhoc\nTeamIdentifier=not set\n";
         assert_eq!(signer(adhoc), Signer::AdHoc);
         assert_eq!(signer("X.app: code object is not signed at all\n"), Signer::AdHoc);
-        assert_eq!(signer("Signature size=1688\nAuthority=PandaCode Local Signing\n"), Signer::Ours);
+        assert_eq!(signer("Signature size=1688\nAuthority=Indocode Local Signing\n"), Signer::Ours);
         let developer = "Authority=Developer ID Application: Someone (ABCDE12345)\nAuthority=Developer ID Certification Authority\nAuthority=Apple Root CA\n";
         assert_eq!(signer(developer), Signer::Other);
     }
 
     #[test]
     fn reads_the_identity_hash() {
-        let listing = "\nPolicy: Code Signing\n  Matching identities\n  1) 4E200BF903AB2CAAABFF2CCFE671A3853FC90C0C \"PandaCode Local Signing\" (CSSMERR_TP_NOT_TRUSTED)\n     1 identities found\n";
+        let listing = "\nPolicy: Code Signing\n  Matching identities\n  1) 4E200BF903AB2CAAABFF2CCFE671A3853FC90C0C \"Indocode Local Signing\" (CSSMERR_TP_NOT_TRUSTED)\n     1 identities found\n";
         assert_eq!(identity_hash(listing).as_deref(), Some("4E200BF903AB2CAAABFF2CCFE671A3853FC90C0C"));
         assert_eq!(identity_hash("  0 identities found\n"), None);
     }
@@ -311,7 +311,7 @@ mod tests {
     #[ignore]
     fn signs_a_scratch_bundle() {
         use std::process::Command;
-        let root = std::env::temp_dir().join(format!("pandacode-sign-test-{}", uuid::Uuid::new_v4().simple()));
+        let root = std::env::temp_dir().join(format!("indocode-sign-test-{}", uuid::Uuid::new_v4().simple()));
         let bundle = root.join("Scratch.app");
         let macos = bundle.join("Contents/MacOS");
         std::fs::create_dir_all(&macos).unwrap();
@@ -320,7 +320,7 @@ mod tests {
             bundle.join("Contents/Info.plist"),
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?><plist version=\"1.0\"><dict>\
              <key>CFBundleExecutable</key><string>scratch</string>\
-             <key>CFBundleIdentifier</key><string>ai.pandacode.signing-test</string></dict></plist>",
+             <key>CFBundleIdentifier</key><string>ai.indocode.signing-test</string></dict></plist>",
         )
         .unwrap();
         let codesign = |args: &[&str]| Command::new("/usr/bin/codesign").args(args).arg(&bundle).output().unwrap();

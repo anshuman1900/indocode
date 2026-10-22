@@ -197,14 +197,14 @@ pub(super) fn dispatch_state(
         .map_err(|e| e.to_string())?;
     let mut changed = false;
     let result = match name {
-        "pandacode_team_directory" => {
+        "indocode_team_directory" => {
             #[derive(Deserialize)]
             #[serde(deny_unknown_fields)]
             struct Empty {}
             let _: Empty = serde_json::from_value(args).map_err(|e| e.to_string())?;
             json!({"you":actor.id(),"architect":{"id":"architect","status":team.status},"workers":team.workers.iter().map(|w|json!({"id":w.id,"name":w.name,"status":w.status,"files":w.files,"readOnly":w.read_only})).collect::<Vec<_>>()})
         }
-        "pandacode_read_team_mailbox" => {
+        "indocode_read_team_mailbox" => {
             #[derive(Deserialize)]
             #[serde(rename_all = "camelCase", deny_unknown_fields)]
             struct Read {
@@ -219,7 +219,7 @@ pub(super) fn dispatch_state(
             }
             mailbox(&store, parent, actor.id(), read.after_id, read.limit, false)?
         }
-        "pandacode_send_team_message" => {
+        "indocode_send_team_message" => {
             #[derive(Deserialize)]
             #[serde(deny_unknown_fields)]
             struct Send {
@@ -272,7 +272,7 @@ pub(super) fn dispatch_state(
             };
             json!({"messageId":id,"recipient":send.recipient,"saved":true,"duplicate":duplicate,"mailbox":mailbox(&store,parent,actor.id(),0,6,true)?})
         }
-        "pandacode_checkpoint_worker" => {
+        "indocode_checkpoint_worker" => {
             let Actor::Worker { id, .. } = actor else {
                 return Err("Only a worker can save its progress checkpoint.".into());
             };

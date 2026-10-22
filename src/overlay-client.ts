@@ -8,7 +8,7 @@ export interface OverlayThread { messages: Message[]; hasOlder: boolean; liveTex
 export const nativeOverlay = '__TAURI_INTERNALS__' in window;
 const initial: OverlayPreferences = { enabled: true, shortcut: 'CommandOrControl+Shift+Space', context: {projectId: 'preview-project', provider: 'codex', model: 'default', mode: 'full'}, error: null };
 let previewPreferences = initial;
-try { previewPreferences = JSON.parse(localStorage.getItem('pandacode.overlay-preview') || 'null') || initial; } catch { /* Preview storage is optional. */ }
+try { previewPreferences = JSON.parse(localStorage.getItem('indocode.overlay-preview') || 'null') || initial; } catch { /* Preview storage is optional. */ }
 function effectiveContext(): LaunchContext { return {...previewPreferences.context,...previewPreferences.modelSelection,mode:previewPreferences.context.mode ?? 'full'}; }
 // Preview fixtures only. Native catalogs come from the installed harnesses.
 const previewCatalogs: Record<ProviderId, ProviderModel[]> = {
@@ -28,11 +28,11 @@ const previewCatalogs: Record<ProviderId, ProviderModel[]> = {
 };
 const previewProviders: Provider[] = (Object.entries({codex:'Codex',claude:'Claude Code',kimi:'Kimi Code',opencode:'OpenCode',glm:'GLM Coding Plan',antigravity:'Antigravity',grok:'Grok Build',mimo:'MiMo Token Plan',pi:'Pi',deepseek:'DeepSeek',commandcode:'Command Code',omp:'Oh My Pi','github-copilot':'GitHub Copilot CLI'}) as [ProviderId,string][]).map(([id,name]) => ({id,name,installed:id !== 'antigravity',path:id === 'antigravity' ? null : `/sample/bin/${id === 'github-copilot' ? 'copilot' : id === 'commandcode' ? 'command-code' : id}`,version:'Sample provider',models:[]}));
 const tasks: OverlayTask[] = [
-  {id:'preview-active', sessionId:'preview-active', kind:'task', title:'Polish the new onboarding', projectId:'preview-project', projectName:'PandaCode', provider:'codex', status:'running', updatedAt:Date.now()},
-  {id:'preview-approval', sessionId:'preview-approval', kind:'task', title:'Build a responsive gallery', projectId:'preview-project', projectName:'PandaCode', provider:'claude', status:'waiting', updatedAt:Date.now()},
-  {id:'preview-worker', sessionId:'preview-worker', kind:'worker', title:'Build search indexing', parentTitle:'Polish the new onboarding', parentSessionId:'preview-active', workerId:'worker-indexing', projectId:'preview-project', projectName:'PandaCode', provider:'opencode', status:'running', updatedAt:Date.now()},
-  {id:'preview-subagent', sessionId:'preview-active', kind:'subagent', subagentId:'preview-child', title:'Audit accessibility', parentTitle:'Polish the new onboarding', projectId:'preview-project', projectName:'PandaCode', provider:'codex', status:'running', updatedAt:Date.now()},
-  {id:'preview-recent', sessionId:'preview-recent', kind:'task', title:'Review the API changes', projectId:'preview-project', projectName:'PandaCode', provider:'kimi', status:'idle', updatedAt:Date.now()},
+  {id:'preview-active', sessionId:'preview-active', kind:'task', title:'Polish the new onboarding', projectId:'preview-project', projectName:'Indocode', provider:'codex', status:'running', updatedAt:Date.now()},
+  {id:'preview-approval', sessionId:'preview-approval', kind:'task', title:'Build a responsive gallery', projectId:'preview-project', projectName:'Indocode', provider:'claude', status:'waiting', updatedAt:Date.now()},
+  {id:'preview-worker', sessionId:'preview-worker', kind:'worker', title:'Build search indexing', parentTitle:'Polish the new onboarding', parentSessionId:'preview-active', workerId:'worker-indexing', projectId:'preview-project', projectName:'Indocode', provider:'opencode', status:'running', updatedAt:Date.now()},
+  {id:'preview-subagent', sessionId:'preview-active', kind:'subagent', subagentId:'preview-child', title:'Audit accessibility', parentTitle:'Polish the new onboarding', projectId:'preview-project', projectName:'Indocode', provider:'codex', status:'running', updatedAt:Date.now()},
+  {id:'preview-recent', sessionId:'preview-recent', kind:'task', title:'Review the API changes', projectId:'preview-project', projectName:'Indocode', provider:'kimi', status:'idle', updatedAt:Date.now()},
 ];
 const threads = new Map<string, OverlayThread>();
 function previewThread(sessionId: string, subagentId?: string): OverlayThread {
@@ -52,12 +52,12 @@ function previewThread(sessionId: string, subagentId?: string): OverlayThread {
 export async function overlayEvents(callback: (event: AgentEvent) => void): Promise<() => void> {
   if (nativeOverlay) return (await import('@tauri-apps/api/event')).listen<AgentEvent>('agent-event', event => callback(event.payload));
   const receive = (event: Event) => callback((event as CustomEvent<AgentEvent>).detail);
-  window.addEventListener('pandacode-overlay-agent-event', receive);
-  return () => window.removeEventListener('pandacode-overlay-agent-event', receive);
+  window.addEventListener('indocode-overlay-agent-event', receive);
+  return () => window.removeEventListener('indocode-overlay-agent-event', receive);
 }
 export async function overlayCall<T>(command: string, args: Record<string, unknown> = {}): Promise<T> {
   if (nativeOverlay) return (await import('@tauri-apps/api/core')).invoke<T>(command, args);
-  const save = () => { try { localStorage.setItem('pandacode.overlay-preview', JSON.stringify(previewPreferences)); } catch { /* Preview only. */ } };
+  const save = () => { try { localStorage.setItem('indocode.overlay-preview', JSON.stringify(previewPreferences)); } catch { /* Preview only. */ } };
   if (command === 'overlay_preferences') return structuredClone(previewPreferences) as T;
   if (command === 'overlay_save_preferences') {
     const shortcut = String(args.shortcut);
@@ -80,7 +80,7 @@ export async function overlayCall<T>(command: string, args: Record<string, unkno
       .slice(0, Math.max(1, Math.min(Number(args.limit) || 30, 100)))
       .map(path => ({name:path.split('/').pop()!, path, isDir:false})) as T;
   }
-  if (command === 'overlay_snapshot') return { tasks, projects:[{id:'preview-project',name:'PandaCode',path:'/Projects/PandaCode'}], context:effectiveContext(), activeCount:tasks.filter(t => ['running','waiting','coordinating'].includes(t.status)).length } as T;
+  if (command === 'overlay_snapshot') return { tasks, projects:[{id:'preview-project',name:'Indocode',path:'/Projects/Indocode'}], context:effectiveContext(), activeCount:tasks.filter(t => ['running','waiting','coordinating'].includes(t.status)).length } as T;
   if (command === 'overlay_thread') return previewThread(String(args.sessionId), args.subagentId as string | undefined) as T;
   if (command === 'get_message_content') {
     const message = previewThread(String(args.sessionId)).messages.find(message => message.id === args.messageId && ['user','assistant'].includes(message.role));
@@ -100,12 +100,12 @@ export async function overlayCall<T>(command: string, args: Record<string, unkno
     return fork as T;
   }
   if (command === 'overlay_launch') {
-    const id = crypto.randomUUID(), context = effectiveContext(); tasks.unshift({id,sessionId:id,kind:'task',title:String(args.prompt),projectId:'preview-project',projectName:'PandaCode',provider:context.provider,status:'running',updatedAt:Date.now()});
-    window.dispatchEvent(new CustomEvent('pandacode-overlay-launched',{detail:{id,...context}})); return id as T;
+    const id = crypto.randomUUID(), context = effectiveContext(); tasks.unshift({id,sessionId:id,kind:'task',title:String(args.prompt),projectId:'preview-project',projectName:'Indocode',provider:context.provider,status:'running',updatedAt:Date.now()});
+    window.dispatchEvent(new CustomEvent('indocode-overlay-launched',{detail:{id,...context}})); return id as T;
   }
-  if (command === 'overlay_toggle') { window.open(`${location.origin}/?view=launcher`, 'pandacode-launcher', 'width=650,height=510'); return undefined as T; }
+  if (command === 'overlay_toggle') { window.open(`${location.origin}/?view=launcher`, 'indocode-launcher', 'width=650,height=510'); return undefined as T; }
   if (command === 'overlay_hide') { document.documentElement.dataset.overlayHidden = 'true'; return undefined as T; }
-  if (command === 'overlay_open_task') { window.dispatchEvent(new CustomEvent('pandacode-overlay-open-task',{detail:args})); return undefined as T; }
+  if (command === 'overlay_open_task') { window.dispatchEvent(new CustomEvent('indocode-overlay-open-task',{detail:args})); return undefined as T; }
   if (command === 'open_external_url') {
     const raw = String(args.url ?? '');
     const url = new URL(raw);

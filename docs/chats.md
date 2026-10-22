@@ -3,10 +3,10 @@
 A chat is a conversation that is not about a codebase: questions, research, writing, or trying a plugin or skill.
 
 - Start one with **New chat** in the sidebar, **New chat (no project)** in Go to anything (⌘K), or **No project** in a new task's project picker.
-- Each chat gets its own folder, `~/PandaCode Chats/chat-<id>/`, so files from different chats stay apart. User-level config (`~/.claude/CLAUDE.md`, user plugins and skills) still loads; there is no project config.
-- Chats are listed in the sidebar's **Chats** section, apart from project folders, with the usual rename, pin, archive and delete. The project bar, Deploy and Run Script are hidden, and the agent is not told about `pandacode-run.sh`.
+- Each chat gets its own folder, `~/Indocode Chats/chat-<id>/`, so files from different chats stay apart. User-level config (`~/.claude/CLAUDE.md`, user plugins and skills) still loads; there is no project config.
+- Chats are listed in the sidebar's **Chats** section, apart from project folders, with the usual rename, pin, archive and delete. The project bar, Deploy and Run Script are hidden, and the agent is not told about `indocode-run.sh`.
 - An empty chat can **Move to project…**, which uses the same in-place project switch as an empty task.
-- Deleting a chat (or moving it to a project) forgets its hidden project. Its folder is removed only when nothing but PandaCode's own files (`.pandacode`, `.DS_Store`) is left in it.
+- Deleting a chat (or moving it to a project) forgets its hidden project. Its folder is removed only when nothing but Indocode's own files (`.indocode`, `.DS_Store`) is left in it.
 
 ## Implementation
 

@@ -2,7 +2,7 @@
 
 ## Requested outcome
 
-Make PandaCode accessible while working in other apps, give agents reusable visual references, and support OpenCode, GLM Coding Plan through Claude Code, and Google's official Antigravity ACP server.
+Make Indocode accessible while working in other apps, give agents reusable visual references, and support OpenCode, GLM Coding Plan through Claude Code, and Google's official Antigravity ACP server.
 
 ## Design and implementation
 

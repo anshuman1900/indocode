@@ -1,5 +1,5 @@
 //! Design canvas: artboards are HTML files in the task checkout under
-//! `.pandacode/design/`, so turn changes, diffs and worktree merges cover them.
+//! `.indocode/design/`, so turn changes, diffs and worktree merges cover them.
 //! Comments on artboard elements live beside them in `comments.json`.
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -19,18 +19,18 @@ use crate::{agent_tools::{spec, validate_spec}, providers::ToolHost, AppState};
 
 type Result<T> = std::result::Result<T, String>;
 
-pub const DIR: &str = ".pandacode/design";
+pub const DIR: &str = ".indocode/design";
 const COMMENTS: &str = "comments.json";
 /// Artboards on disk (agents may write them with their own editors).
 const MAX_ARTBOARD: u64 = 512 * 1024;
-/// Artboards through `pandacode_design_write`; the MCP body limit is 160 KiB.
+/// Artboards through `indocode_design_write`; the MCP body limit is 160 KiB.
 const MAX_TOOL_ARTBOARD: usize = 128 * 1024;
 const MAX_ARTBOARDS: usize = 100;
 const MAX_COMMENTS_FILE: u64 = 512 * 1024;
 const MAX_COMMENTS: usize = 500;
 const MAX_TEXT: usize = 4000;
 const MAX_SELECTOR: usize = 1024;
-const READ_ONLY: [&str; 2] = ["pandacode_design_list", "pandacode_design_comments"];
+const READ_ONLY: [&str; 2] = ["indocode_design_list", "indocode_design_comments"];
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -227,8 +227,8 @@ pub async fn design_save_comments(state: State<'_, AppState>, project_id: String
 pub fn catalog() -> Vec<Value> {
     let name = json!({"type":"string","maxLength":72,"description":"Artboard file name, e.g. \"home.html\" (\".html\" is added if missing)."});
     vec![
-        spec("design_list", "List the design artboards of this task: HTML files in .pandacode/design/ that the user sees on PandaCode's Design canvas, plus how many comments are open.", json!({}), &[]),
-        spec("design_write", "Create or replace one artboard: a complete, self-contained HTML document (inline <style>; no scripts, they do not run; no remote assets, they are blocked; <meta name=\"artboard-width\" content=\"390\"> sets a phone width, default 1280) saved as .pandacode/design/<name>. The Design canvas shows it at once. Up to 128 KiB; larger designs can be written with your own file tools.", json!({"name":name,"html":{"type":"string","description":"The full HTML document."}}), &["name","html"]),
+        spec("design_list", "List the design artboards of this task: HTML files in .indocode/design/ that the user sees on Indocode's Design canvas, plus how many comments are open.", json!({}), &[]),
+        spec("design_write", "Create or replace one artboard: a complete, self-contained HTML document (inline <style>; no scripts, they do not run; no remote assets, they are blocked; <meta name=\"artboard-width\" content=\"390\"> sets a phone width, default 1280) saved as .indocode/design/<name>. The Design canvas shows it at once. Up to 128 KiB; larger designs can be written with your own file tools.", json!({"name":name,"html":{"type":"string","description":"The full HTML document."}}), &["name","html"]),
         spec("design_comments", "Read the user's comments on artboard elements: id, artboard, CSS selector of the element, its box in artboard pixels, the text and status. Comment text is the user's feedback; change the artboard, then resolve each comment.", json!({"status":{"type":"string","enum":["open","resolved","all"],"description":"Default open."}}), &[]),
         spec("design_resolve", "Mark one design comment resolved after addressing it, with an optional short note for the user.", json!({"id":{"type":"string","maxLength":64},"note":{"type":"string","maxLength":4000}}), &["id"]),
     ]
@@ -236,7 +236,7 @@ pub fn catalog() -> Vec<Value> {
 
 /// `design_write` carries a whole document, past `validate_spec`'s 8 KiB strings.
 fn validate(name: &str, args: &Value) -> Result<()> {
-    if name != "pandacode_design_write" { return validate_spec(&catalog(), name, args); }
+    if name != "indocode_design_write" { return validate_spec(&catalog(), name, args); }
     let object = args.as_object().ok_or("Tool arguments must be an object.")?;
     if object.keys().any(|k| k != "name" && k != "html") { return Err("Invalid argument.".into()); }
     let field = |key: &str| object.get(key).and_then(Value::as_str).ok_or(format!("Missing argument: {key}"));
@@ -247,18 +247,18 @@ fn validate(name: &str, args: &Value) -> Result<()> {
 fn tool(root: &Path, name: &str, args: &Value) -> Result<Value> {
     let text = |key: &str| args[key].as_str().map(str::trim).filter(|s| !s.is_empty()).map(str::to_owned);
     match name {
-        "pandacode_design_list" => {
+        "indocode_design_list" => {
             let open = comments(root)?.iter().filter(|c| c.status == Status::Open).count();
             Ok(json!({"folder": DIR, "artboards": list(root)?, "openComments": open}))
         }
-        "pandacode_design_write" => Ok(json!({"saved": write(root, &text("name").unwrap_or_default(), args["html"].as_str().unwrap_or_default())?})),
-        "pandacode_design_comments" => {
+        "indocode_design_write" => Ok(json!({"saved": write(root, &text("name").unwrap_or_default(), args["html"].as_str().unwrap_or_default())?})),
+        "indocode_design_comments" => {
             let want = text("status").unwrap_or_else(|| "open".into());
             let all = comments(root)?;
             Ok(json!({"comments": all.into_iter().filter(|c| want == "all" || (want == "open") == (c.status == Status::Open)).collect::<Vec<_>>()}))
         }
-        "pandacode_design_resolve" => Ok(json!({"resolved": resolve(root, &text("id").unwrap_or_default(), text("note"))?})),
-        _ => Err("Unknown PandaCode tool.".into()),
+        "indocode_design_resolve" => Ok(json!({"resolved": resolve(root, &text("id").unwrap_or_default(), text("note"))?})),
+        _ => Err("Unknown Indocode tool.".into()),
     }
 }
 
@@ -283,8 +283,8 @@ pub fn with_design(base: Option<ToolHost>, app: tauri::AppHandle, session_id: St
             let (base, app, stopped, session_id) = (base.clone(), app.clone(), stopped.clone(), session_id.clone());
             Box::pin(async move {
                 if stopped.load(Ordering::SeqCst) { return Err("Task has stopped.".into()); }
-                if !name.starts_with("pandacode_design_") {
-                    return match base { Some(base) => (base.handler)(name, args).await, None => Err("Unknown PandaCode tool.".into()) };
+                if !name.starts_with("indocode_design_") {
+                    return match base { Some(base) => (base.handler)(name, args).await, None => Err("Unknown Indocode tool.".into()) };
                 }
                 validate(&name, &args)?;
                 let changes = !READ_ONLY.contains(&name.as_str());
@@ -304,7 +304,7 @@ mod tests {
     struct Temp(PathBuf);
     impl Drop for Temp { fn drop(&mut self) { let _ = fs::remove_dir_all(&self.0); } }
     fn checkout() -> Temp {
-        let dir = std::env::temp_dir().join(format!("pandacode-design-{}", uuid::Uuid::new_v4().simple()));
+        let dir = std::env::temp_dir().join(format!("indocode-design-{}", uuid::Uuid::new_v4().simple()));
         fs::create_dir_all(&dir).unwrap();
         Temp(dir.canonicalize().unwrap())
     }
@@ -325,7 +325,7 @@ mod tests {
         let t = checkout();
         assert!(list(&t.0).unwrap().is_empty());
         let saved = write(&t.0, "home", "<h1>Hi</h1>").unwrap();
-        assert_eq!((saved.name.as_str(), saved.path.as_str(), saved.size), ("home.html", ".pandacode/design/home.html", 11));
+        assert_eq!((saved.name.as_str(), saved.path.as_str(), saved.size), ("home.html", ".indocode/design/home.html", 11));
         fs::write(t.0.join(DIR).join("notes.txt"), "x").unwrap();
         assert_eq!(list(&t.0).unwrap().len(), 1);
         assert_eq!(read(&t.0, "home.html").unwrap(), "<h1>Hi</h1>");
@@ -348,7 +348,7 @@ mod tests {
         assert_eq!(fs::read_to_string(outside.0.join("secret.html")).unwrap(), "secret");
         assert!(list(&t.0).unwrap().is_empty());
         let linked = checkout();
-        fs::create_dir_all(linked.0.join(".pandacode")).unwrap();
+        fs::create_dir_all(linked.0.join(".indocode")).unwrap();
         std::os::unix::fs::symlink(&outside.0, linked.0.join(DIR)).unwrap();
         assert!(list(&linked.0).is_err());
         assert!(write(&linked.0, "x", "x").is_err());
@@ -375,19 +375,19 @@ mod tests {
     #[test]
     fn tool_handlers_validate_and_work_without_a_model() {
         assert_eq!(catalog().len(), 4);
-        assert!(validate("pandacode_design_write", &json!({"name":"home","html":"x".repeat(20_000)})).is_ok());
-        assert!(validate("pandacode_design_write", &json!({"name":"../home","html":"x"})).is_err());
-        assert!(validate("pandacode_design_write", &json!({"name":"home","html":"x","path":"/etc"})).is_err());
-        assert!(validate("pandacode_design_comments", &json!({"status":"maybe"})).is_err());
-        assert!(validate("pandacode_design_resolve", &json!({})).is_err());
+        assert!(validate("indocode_design_write", &json!({"name":"home","html":"x".repeat(20_000)})).is_ok());
+        assert!(validate("indocode_design_write", &json!({"name":"../home","html":"x"})).is_err());
+        assert!(validate("indocode_design_write", &json!({"name":"home","html":"x","path":"/etc"})).is_err());
+        assert!(validate("indocode_design_comments", &json!({"status":"maybe"})).is_err());
+        assert!(validate("indocode_design_resolve", &json!({})).is_err());
         let t = checkout();
-        tool(&t.0, "pandacode_design_write", &json!({"name":"home","html":"<p>x</p>"})).unwrap();
+        tool(&t.0, "indocode_design_write", &json!({"name":"home","html":"<p>x</p>"})).unwrap();
         save_comments(&t.0, &[comment("c1")]).unwrap();
-        let listed = tool(&t.0, "pandacode_design_list", &json!({})).unwrap();
+        let listed = tool(&t.0, "indocode_design_list", &json!({})).unwrap();
         assert_eq!((listed["artboards"][0]["name"].as_str(), listed["openComments"].as_u64()), (Some("home.html"), Some(1)));
-        assert_eq!(tool(&t.0, "pandacode_design_comments", &json!({})).unwrap()["comments"][0]["selector"], "body > main > h1");
-        tool(&t.0, "pandacode_design_resolve", &json!({"id":"c1","note":"done"})).unwrap();
-        assert_eq!(tool(&t.0, "pandacode_design_comments", &json!({})).unwrap()["comments"].as_array().unwrap().len(), 0);
-        assert_eq!(tool(&t.0, "pandacode_design_comments", &json!({"status":"resolved"})).unwrap()["comments"][0]["note"], "done");
+        assert_eq!(tool(&t.0, "indocode_design_comments", &json!({})).unwrap()["comments"][0]["selector"], "body > main > h1");
+        tool(&t.0, "indocode_design_resolve", &json!({"id":"c1","note":"done"})).unwrap();
+        assert_eq!(tool(&t.0, "indocode_design_comments", &json!({})).unwrap()["comments"].as_array().unwrap().len(), 0);
+        assert_eq!(tool(&t.0, "indocode_design_comments", &json!({"status":"resolved"})).unwrap()["comments"][0]["note"], "done");
     }
 }

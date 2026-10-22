@@ -47,7 +47,7 @@ export function mountConversationImport(host: HTMLElement, options: ImportOption
   let loading = false, importing = false, disposed = false, request = 0, searchTimer = 0;
   const selected = new Set<string>();
   host.classList.add('conversation-import');
-  host.innerHTML = `<p class="dialog-description">Bring conversations you started in Claude Code or Codex into PandaCode. Each continues its own session, in the project for its folder.</p>
+  host.innerHTML = `<p class="dialog-description">Bring conversations you started in Claude Code or Codex into Indocode. Each continues its own session, in the project for its folder.</p>
     <div class="import-controls"><div class="import-sources" role="group" aria-label="Import from">${SOURCES.map(item => `<button type="button" data-source="${item.id}" aria-pressed="${item.id === source}">${providerLogo(item.id)}<span>${item.label}</span></button>`).join('')}</div>
       <label class="import-search">${icon('search')}<input type="search" placeholder="Search conversations" aria-label="Search conversations" autocomplete="off"></label></div>
     <div class="import-bar"><label class="import-all"><input type="checkbox" aria-label="Select all shown conversations"><span>Select all</span></label><span class="import-count" role="status"></span></div>
@@ -75,7 +75,7 @@ export function mountConversationImport(host: HTMLElement, options: ImportOption
   }
   function row(item: Importable): string {
     const meta = [escape(folderName(item.folder) || 'Unknown folder'), item.messages ? `${item.messages} messages` : '', age(item.updatedAt)].filter(Boolean).join(' · ');
-    const state = item.importedTaskId ? `<button type="button" class="import-open" data-open="${escape(item.importedTaskId)}">In PandaCode${icon('forward')}</button>`
+    const state = item.importedTaskId ? `<button type="button" class="import-open" data-open="${escape(item.importedTaskId)}">In Indocode${icon('forward')}</button>`
       : item.unavailable ? `<span class="import-unavailable" title="${escape(item.unavailable)}">Unavailable</span>` : '';
     const disabled = Boolean(item.importedTaskId || item.unavailable);
     return `<label class="import-row ${disabled ? 'disabled' : ''}" data-id="${escape(item.id)}" title="${escape(item.folder)}"><input type="checkbox" value="${escape(item.id)}" ${selected.has(item.id) ? 'checked' : ''} ${disabled || importing ? 'disabled' : ''}>

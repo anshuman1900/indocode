@@ -27,7 +27,7 @@ async fn discover_process(
     let mut pipe = Pipe::spawn(command, cwd, timeout).map_err(|_| DISCOVERY_FAILED.to_owned())?;
     let mut failure_warning = DISCOVERY_FAILED;
     let result = async {
-        pipe.send(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"PandaCode","version":env!("CARGO_PKG_VERSION")}}})).await?;
+        pipe.send(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"Indocode","version":env!("CARGO_PKG_VERSION")}}})).await?;
         loop {
             let value = pipe.read().await?;
             if reject_request(&mut pipe, &value).await? { continue; }

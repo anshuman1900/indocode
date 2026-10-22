@@ -4,14 +4,14 @@ import { accentTokens, vsixTokens, type Tokens, type VsixTheme } from './palette
 import { wallpaperAccents } from './wallpaper-accents';
 export type { VsixTheme } from './palette-core';
 
-/* The app's colors: PandaCode's own palette with an accent that is classic yellow,
+/* The app's colors: Indocode's own palette with an accent that is classic yellow,
  * a fixed color, or drawn from the current wallpaper — or, when a VS Code theme is
  * active, that theme's colors, which then stay put whatever the wallpaper does. */
 
 export type AccentChoice = { mode: 'wallpaper' } | { mode: 'classic' } | { mode: 'custom'; color: string };
 type Saved = { accent: AccentChoice; vsix: VsixTheme | null; cache: { key: string; tokens: Tokens; terminal: Record<string, string> } | null };
 
-const STORE = 'pandacode.palette';
+const STORE = 'indocode.palette';
 export const CLASSIC = '#ffd43b';
 export const SWATCHES = ['#4f8ef7', '#34c084', '#a86cf0', '#f0679b', '#ff8a3d', '#2fb8c4'];
 const TOKEN_NAMES = ['--bg', '--sidebar', '--panel', '--raised', '--border', '--text', '--muted', '--faint', '--success', '--danger',
@@ -65,7 +65,7 @@ function apply(): void {
   const changed = state.cache?.key !== next.key;
   state = { ...state, cache: next };
   persist();
-  if (changed) window.dispatchEvent(new CustomEvent('pandacode-palette-change'));
+  if (changed) window.dispatchEvent(new CustomEvent('indocode-palette-change'));
 }
 
 export const palette = {
@@ -79,8 +79,8 @@ export const palette = {
     const leaving = state.vsix && !themeData;
     state = { ...state, vsix: themeData };
     apply();
-    if (leaving) { let saved = 'dark'; try { saved = localStorage.getItem('pandacode.theme') === 'light' ? 'light' : 'dark'; } catch { /* Default palette. */ } root.dataset.theme = saved; apply(); }
-    window.dispatchEvent(new Event('pandacode-theme-change'));
+    if (leaving) { let saved = 'dark'; try { saved = localStorage.getItem('indocode.theme') === 'light' ? 'light' : 'dark'; } catch { /* Default palette. */ } root.dataset.theme = saved; apply(); }
+    window.dispatchEvent(new Event('indocode-theme-change'));
   },
   /** The wallpaper changed: its accent applies, unless a VS Code theme holds the colors. */
   setWallpaper(id: string | undefined): void {

@@ -15,11 +15,11 @@ function applyTheme(theme: Theme): void {
 
 export function setTheme(theme: Theme): void {
   applyTheme(theme);
-  try { localStorage.setItem('pandacode.theme', theme); } catch { /* The toggle still works when storage is unavailable. */ }
-  window.dispatchEvent(new Event('pandacode-theme-change'));
+  try { localStorage.setItem('indocode.theme', theme); } catch { /* The toggle still works when storage is unavailable. */ }
+  window.dispatchEvent(new Event('indocode-theme-change'));
 }
 
 // Apply the saved palette before constructing the workspace.
 let saved: Theme = 'dark';
-try { if (localStorage.getItem('pandacode.theme') === 'light') saved = 'light'; } catch { /* Use the default palette. */ }
+try { if (localStorage.getItem('indocode.theme') === 'light') saved = 'light'; } catch { /* Use the default palette. */ }
 applyTheme(saved);

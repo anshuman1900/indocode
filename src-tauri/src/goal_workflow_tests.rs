@@ -164,7 +164,7 @@ fn goal_maintenance_adds_no_user_turn_and_preserves_the_previous_stage() {
 #[test]
 fn startup_recovery_pauses_active_goals_without_losing_objective_or_budget_usage() {
     let path = std::env::temp_dir().join(format!(
-        "pandacode-goal-recovery-{}.sqlite3",
+        "indocode-goal-recovery-{}.sqlite3",
         uuid::Uuid::new_v4()
     ));
     let sid;

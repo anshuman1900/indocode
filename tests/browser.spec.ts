@@ -422,10 +422,10 @@ test.describe('browser workspace', () => {
 });
 
 const pickerSource = readFileSync(new URL('../src-tauri/src/browser/picker.js', import.meta.url), 'utf8');
-const pickerKey = '__pandacode_picker_test';
+const pickerKey = '__indocode_picker_test';
 const pickerState = (page: Page) => page.evaluate(key => (globalThis as any)[key].result, pickerKey);
 async function startPicker(page: Page): Promise<void> {
-  await page.evaluate(pickerSource.replace('__PANDACODE_PICK_KEY__', JSON.stringify(pickerKey)));
+  await page.evaluate(pickerSource.replace('__INDOCODE_PICK_KEY__', JSON.stringify(pickerKey)));
 }
 
 test.describe('native element picker script', () => {

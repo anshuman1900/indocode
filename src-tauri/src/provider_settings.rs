@@ -26,7 +26,7 @@ struct Runtime {
     settings: Settings,
 }
 static CONFIG: OnceLock<Mutex<Runtime>> = OnceLock::new();
-const SERVICE: &str = "app.pandacode.providers";
+const SERVICE: &str = "app.indocode.providers";
 
 /// A provider API key in the platform's secure store, with the environment
 /// variable that can supply it instead. Labels appear in user-facing errors only.
@@ -795,7 +795,7 @@ mod tests {
     #[test]
     fn saves_selected_models_across_reload_without_losing_connections() {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-model-settings-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-model-settings-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&directory).unwrap();
         let mut runtime = Runtime {
             path: directory.join("provider-settings.json"),

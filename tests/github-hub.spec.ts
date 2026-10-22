@@ -148,7 +148,7 @@ test('a repository that is only on GitHub can be cloned, then worked on', async 
 });
 
 test('the GitHub view stays out of the way when GitHub is turned off', async ({ page }) => {
-  await page.addInitScript(() => { localStorage.setItem('pandacode.github', 'off'); localStorage.setItem('pandacode.view', 'github'); });
+  await page.addInitScript(() => { localStorage.setItem('indocode.github', 'off'); localStorage.setItem('indocode.view', 'github'); });
   await page.goto('/');
   await page.locator('#navigation .task-item').first().waitFor();
   await expect(page.getByRole('button', { name: 'GitHub view' })).toBeHidden();

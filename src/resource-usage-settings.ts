@@ -4,7 +4,7 @@ import type { Metrics } from './types';
 
 const megabytes = (value: number) => `${(value / 1048576).toFixed(1)} MB`;
 
-/** Settings → About: a snapshot of PandaCode's own resource use, refreshed on demand. */
+/** Settings → About: a snapshot of Indocode's own resource use, refreshed on demand. */
 export function resourceUsageHtml(): string {
   return `<div class="settings-group settings-resources" aria-labelledby="settings-resources-heading">
     <div class="setting-row"><div><strong id="settings-resources-heading">Resource usage</strong><small>${preview ? 'Sample mode. Native memory measurements are available in the desktop app.' : 'A snapshot of the native core. The system webview and agent processes are not included in core memory.'}</small></div><button type="button" class="secondary-button settings-resources-refresh">${icon('refresh')}Refresh</button></div>

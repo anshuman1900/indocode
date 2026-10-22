@@ -14,8 +14,8 @@ const CLONE: Duration = Duration::from_secs(6 * 60);
 const FETCH: Duration = Duration::from_secs(90);
 const GIT: Duration = Duration::from_secs(15);
 pub(crate) const WORST_CASE: Duration = Duration::from_secs(6 * 60 + 90 + 8 * 15);
-/// Clones land in `~/PandaCode/<name>`.
-const CLONE_FOLDER: &str = "PandaCode";
+/// Clones land in `~/Indocode/<name>`.
+const CLONE_FOLDER: &str = "Indocode";
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct Start {
@@ -59,7 +59,7 @@ pub(crate) fn find_project(projects: Vec<(Project, Option<String>)>, repo: &str)
     projects.into_iter().find(|(_, origin)| origin.as_deref().is_some_and(|origin| origin.eq_ignore_ascii_case(repo))).map(|(project, _)| project)
 }
 
-/// `<home>/PandaCode/<name>`, or `<name>-2`, `-3`… when taken.
+/// `<home>/Indocode/<name>`, or `<name>-2`, `-3`… when taken.
 pub(crate) fn clone_path(home: &Path, repo: &str, taken: impl Fn(&Path) -> bool) -> PathBuf {
     let name = repo.rsplit('/').next().unwrap_or(repo);
     let parent = home.join(CLONE_FOLDER);
@@ -77,7 +77,7 @@ fn on_origin(root: &Path, branch: &str) -> bool {
     git(root, &["rev-parse", "--verify", "--quiet", &format!("refs/remotes/origin/{branch}")], GIT).is_ok()
 }
 
-/// The project checking out `repo`, cloned into `~/PandaCode` when there is none, and
+/// The project checking out `repo`, cloned into `~/Indocode` when there is none, and
 /// whether it was cloned just now.
 fn project_for(state: &AppState, repo: &str) -> Result<(Project, bool)> {
     let projects = state.store.lock().map_err(|e| e.to_string())?.projects()?;
@@ -194,7 +194,7 @@ pub(crate) async fn run(app: &tauri::AppHandle, from: &str, start: Start) -> Res
         let store = state.store.clone();
         let (id, root) = (task.id.clone(), PathBuf::from(&project.path));
         let attached = tauri::async_runtime::spawn_blocking(move || -> Result<()> {
-            let name = format!("pandacode/remote-{}", &uuid::Uuid::new_v4().simple().to_string()[..8]);
+            let name = format!("indocode/remote-{}", &uuid::Uuid::new_v4().simple().to_string()[..8]);
             let checkout = workspace::create_worktree_with(&root, &name, Some(&format!("origin/{branch}")), false)?;
             store.lock().map_err(|e| e.to_string())?.attach_worktree(&id, &checkout.path, &checkout.branch).map(|_| ())
         })
@@ -231,9 +231,9 @@ mod tests {
     #[test]
     fn clones_take_the_first_free_folder() {
         let home = Path::new("/Users/me");
-        assert_eq!(clone_path(home, "orbit-labs/orbit", |_| false), PathBuf::from("/Users/me/PandaCode/orbit"));
-        let taken = [PathBuf::from("/Users/me/PandaCode/orbit"), PathBuf::from("/Users/me/PandaCode/orbit-2")];
-        assert_eq!(clone_path(home, "orbit-labs/orbit", |path| taken.iter().any(|t| t == path)), PathBuf::from("/Users/me/PandaCode/orbit-3"));
+        assert_eq!(clone_path(home, "orbit-labs/orbit", |_| false), PathBuf::from("/Users/me/Indocode/orbit"));
+        let taken = [PathBuf::from("/Users/me/Indocode/orbit"), PathBuf::from("/Users/me/Indocode/orbit-2")];
+        assert_eq!(clone_path(home, "orbit-labs/orbit", |path| taken.iter().any(|t| t == path)), PathBuf::from("/Users/me/Indocode/orbit-3"));
     }
 
     #[test]
@@ -261,7 +261,7 @@ mod tests {
     /// Picks a pushed branch, falls back to origin's default, and checks it out.
     #[test]
     fn the_branch_comes_from_origin() {
-        let base = std::env::temp_dir().join(format!("pandacode-start-{}", uuid::Uuid::new_v4()));
+        let base = std::env::temp_dir().join(format!("indocode-start-{}", uuid::Uuid::new_v4()));
         let (origin, clone) = (base.join("origin"), base.join("clone"));
         std::fs::create_dir_all(&origin).unwrap();
         let run = |dir: &Path, args: &[&str]| assert!(Command::new("git").arg("-C").arg(dir).args(args).env("GIT_AUTHOR_NAME", "t").env("GIT_AUTHOR_EMAIL", "t@t").env("GIT_COMMITTER_NAME", "t").env("GIT_COMMITTER_EMAIL", "t@t").output().unwrap().status.success(), "{args:?}");

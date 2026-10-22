@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 // Vite may add an HMR timestamp to the app's module URL. Reuse that exact
 // instance so assertions and injected events reach the application's store.
-const previewBody = (source: string) => source + '\nwindow.__pandacodePreviewUrl = import.meta.url;\n';
+const previewBody = (source: string) => source + '\nwindow.__indocodePreviewUrl = import.meta.url;\n';
 
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent' });
 // Rows mark tasks with a prompt or response in the last 24 hours; folders group them by project.
@@ -15,7 +15,7 @@ const chooseProjectFilter = async (page: Page, name: string) => {
   await page.getByRole('dialog', { name: 'Filter projects', exact: true }).getByRole('menuitemradio', { name, exact: true }).click();
 };
 const previewProjectNames = (page: Page) => page.evaluate(async () => {
-  const { invoke } = await import((window as any).__pandacodePreviewUrl);
+  const { invoke } = await import((window as any).__indocodePreviewUrl);
   return (await invoke('list_projects', {})).map((project: { name: string }) => project.name);
 });
 const appearanceSurfaces = (page: Page) => page.evaluate(() => {
@@ -67,14 +67,14 @@ async function expandToolTurn(tool: Locator): Promise<void> {
   if (await group.count() && !await group.evaluate(element => element.hasAttribute('open'))) await group.locator(':scope > summary').click();
 }
 const savedSelection = (page: Page) => page.evaluate(async () => {
-  const { invoke } = await import((window as any).__pandacodePreviewUrl);
+  const { invoke } = await import((window as any).__indocodePreviewUrl);
   // The open task may be an unlisted New task draft, so read it directly.
   const id = document.querySelector<HTMLElement>('#prompt')?.dataset.sessionId ?? document.querySelector<HTMLElement>('.task-item.selected')?.dataset.id;
   const selected = id ? await invoke('get_task', { sessionId: id }).catch(() => null) : null;
   return { provider: selected?.provider, model: selected?.model };
 });
 const savedPermission = (page: Page) => page.evaluate(async () => {
-  const { invoke } = await import((window as any).__pandacodePreviewUrl);
+  const { invoke } = await import((window as any).__indocodePreviewUrl);
   const id = document.querySelector<HTMLElement>('#prompt')?.dataset.sessionId ?? document.querySelector<HTMLElement>('.task-item.selected')?.dataset.id;
   return id ? (await invoke('get_task', { sessionId: id }).catch(() => null))?.mode : undefined;
 });
@@ -94,7 +94,7 @@ const modelPicker = (page: Page) => page.getByRole('dialog', { name: 'Harness an
 const reasoningSlider = (page: Page) => modelPicker(page).getByRole('slider', { name: 'Reasoning effort', exact: true });
 const reasoningLabel = (page: Page) => modelPicker(page).locator('.effort-label');
 const savedEffort = (page: Page, sessionId?: string) => page.evaluate(async sessionId => {
-  const { invoke } = await import((window as any).__pandacodePreviewUrl);
+  const { invoke } = await import((window as any).__indocodePreviewUrl);
   const id = sessionId ?? document.querySelector<HTMLElement>('#prompt')?.dataset.sessionId ?? document.querySelector<HTMLElement>('.task-item.selected')?.dataset.id;
   return id ? (await invoke('get_task', { sessionId: id }).catch(() => null))?.reasoningEffort ?? null : null;
 }, sessionId);
@@ -119,8 +119,8 @@ async function installReasoningPreview(page: Page): Promise<void> {
     const body = source
       .replace(catalogMarker, `Object.assign(catalogs, ${JSON.stringify(catalogs)}); let git =`)
       .replace(effortMarker, `$&
-        if (window.__pandacodeFailEffort) throw new Error('The harness could not save reasoning effort.');
-        if (window.__pandacodeHoldEffort) await new Promise(resolve => { window.__pandacodeReleaseEffort = resolve; });
+        if (window.__indocodeFailEffort) throw new Error('The harness could not save reasoning effort.');
+        if (window.__indocodeHoldEffort) await new Promise(resolve => { window.__indocodeReleaseEffort = resolve; });
       `);
     await route.fulfill({ response, body: previewBody(body) });
   });
@@ -182,8 +182,8 @@ test('identifies sample data and renders the desktop workspace without runtime e
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.reload();
-  await expect(page).toHaveTitle('PandaCode');
-  await expect(page.locator('.brand')).toHaveText('PandaCode');
+  await expect(page).toHaveTitle('Indocode');
+  await expect(page.locator('.brand')).toHaveText('Indocode');
   await expect(page.getByText('Browser preview · sample data', { exact: true })).toBeVisible();
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Make search feel instant');
   await expect(page.locator('#task-heading')).toHaveCount(0);
@@ -194,12 +194,12 @@ test('identifies sample data and renders the desktop workspace without runtime e
   await expect(prompt(page)).toBeEnabled();
   await page.locator('.inspector-tabs [data-action="tab-changes"]').click();
   await expect(page.locator('.change-row')).toHaveCount(3);
-  await page.screenshot({ path: '/private/tmp/pandacode-activity.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-activity.png' });
   expect(errors).toEqual([]);
 });
 
 test('does not offer earlier messages for a complete short conversation with global message IDs', async ({ page }) => {
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('#transcript .message-content')).toHaveText('The project is a small native workspace for coding agents.');
   await expect(page.getByRole('button', { name: 'Load earlier messages', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Return to latest messages', exact: true })).toHaveCount(0);
@@ -233,7 +233,7 @@ async function installHistoryFixture(page: Page, total: number, formatted = fals
     await route.fulfill({ response, body: previewBody(body) });
   });
   await page.reload();
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('#transcript .message-content')).toHaveCount(Math.min(total, 100));
   await expect.poll(() => page.locator('#transcript').evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(2);
 }
@@ -312,7 +312,7 @@ test('deduplicates pending history loads and ignores pages from a previously sel
   await expect(page.locator('#transcript .markdown pre code')).toContainText('createSearchIndex');
   await page.evaluate(() => { const fixture = (window as any).__historyFixture; fixture.hold = false; fixture.release(); });
   await expect(page.locator('#transcript')).not.toContainText('History message');
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('#transcript .message-content')).toHaveCount(100);
   await scrollHistoryTop(page);
   await expect(page.locator('#transcript .message-content')).toHaveCount(200);
@@ -390,46 +390,46 @@ test('defaults to dark mode and remembers explicit light and dark preferences af
   const toggle = page.getByRole('button', { name: 'Dark mode', exact: true });
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBeNull();
   expect((await appearanceSurfaces(page)).mainContrast).toBeGreaterThanOrEqual(4.5);
   await expect(page.locator('.provider-logo[data-provider="codex"]').first()).toHaveCSS('filter', 'invert(1)');
   await page.getByRole('button', { name: 'Choose harness and model', exact: true }).click();
   const menu = page.getByRole('dialog', { name: 'Harness and model', exact: true });
   await expect(menu.getByRole('searchbox', { name: 'Search harnesses and models', exact: true })).toBeFocused();
-  await page.screenshot({ path: '/private/tmp/pandacode-dark-models.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-dark-models.png', animations: 'disabled' });
   await page.keyboard.press('Escape');
   await toggle.focus();
   await page.keyboard.press('Space');
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBe('light');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBe('light');
   await page.reload();
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
   await expect(page.locator('.workspace')).toHaveAttribute('data-wallpaper');
   await expect(page.locator('.main-pane')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBe('light');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBe('light');
   await toggle.focus();
   await page.keyboard.press('Space');
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBe('dark');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBe('dark');
   await page.reload();
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBe('dark');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBe('dark');
 });
 
 test('uses dark mode for missing or invalid preferences without writing a preference on startup', async ({ page }) => {
-  await page.evaluate(() => localStorage.setItem('pandacode.theme', 'invalid'));
+  await page.evaluate(() => localStorage.setItem('indocode.theme', 'invalid'));
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.getByRole('button', { name: 'Dark mode', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBe('invalid');
-  await page.evaluate(() => localStorage.removeItem('pandacode.theme'));
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBe('invalid');
+  await page.evaluate(() => localStorage.removeItem('indocode.theme'));
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.theme'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('indocode.theme'))).toBeNull();
 });
 
 for (const theme of ['light', 'dark']) {
@@ -448,33 +448,33 @@ for (const theme of ['light', 'dark']) {
     await expect(page.locator('html')).toHaveCSS('color-scheme', theme);
     await expect(page.getByRole('button', { name: 'Board view', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('body')).toHaveClass(/compact/);
-    expect(await page.evaluate(keys => Object.fromEntries(keys.map(key => [key, localStorage.getItem(`pandacode.${key}`)])), Object.keys(preferences))).toEqual(preferences);
+    expect(await page.evaluate(keys => Object.fromEntries(keys.map(key => [key, localStorage.getItem(`indocode.${key}`)])), Object.keys(preferences))).toEqual(preferences);
     expect(await page.evaluate(() => localStorage.getItem('another-app.theme'))).toBe('unrelated');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
   });
 
-  test(`keeps existing PandaCode preferences and the ${theme} theme during migration`, async ({ page }) => {
+  test(`keeps existing Indocode preferences and the ${theme} theme during migration`, async ({ page }) => {
     await page.evaluate(theme => {
       localStorage.clear();
       localStorage.setItem('kingcode.theme', theme === 'light' ? 'dark' : 'light');
       localStorage.setItem('kingcode.compact', 'true');
       localStorage.setItem('kingcode.projectFilter', 'project-2');
       localStorage.setItem('kingcode.model.codex', 'legacy-model');
-      localStorage.setItem('pandacode.theme', theme);
-      localStorage.setItem('pandacode.compact', 'false');
-      localStorage.setItem('pandacode.projectFilter', '');
-      localStorage.setItem('pandacode.model.codex', 'current-model');
+      localStorage.setItem('indocode.theme', theme);
+      localStorage.setItem('indocode.compact', 'false');
+      localStorage.setItem('indocode.projectFilter', '');
+      localStorage.setItem('indocode.model.codex', 'current-model');
     }, theme);
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     await expect(page.getByRole('button', { name: 'Dark mode', exact: true })).toHaveAttribute('aria-pressed', String(theme === 'dark'));
     await expect(page.locator('body')).not.toHaveClass(/compact/);
-    expect(await page.evaluate(() => ['compact', 'projectFilter', 'model.codex'].map(key => localStorage.getItem(`pandacode.${key}`)))).toEqual(['false', '', 'current-model']);
+    expect(await page.evaluate(() => ['compact', 'projectFilter', 'model.codex'].map(key => localStorage.getItem(`indocode.${key}`)))).toEqual(['false', '', 'current-model']);
   });
 }
 
-test('does not restore removed PandaCode preferences from legacy storage on later launches', async ({ page }) => {
+test('does not restore removed Indocode preferences from legacy storage on later launches', async ({ page }) => {
   await page.evaluate(() => {
     localStorage.clear();
     localStorage.setItem('kingcode.theme', 'light');
@@ -484,13 +484,13 @@ test('does not restore removed PandaCode preferences from legacy storage on late
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('body')).toHaveClass(/compact/);
   await page.evaluate(() => {
-    localStorage.removeItem('pandacode.theme');
-    localStorage.removeItem('pandacode.compact');
+    localStorage.removeItem('indocode.theme');
+    localStorage.removeItem('indocode.compact');
   });
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('body')).not.toHaveClass(/compact/);
-  expect(await page.evaluate(() => [localStorage.getItem('pandacode.theme'), localStorage.getItem('pandacode.compact')])).toEqual([null, null]);
+  expect(await page.evaluate(() => [localStorage.getItem('indocode.theme'), localStorage.getItem('indocode.compact')])).toEqual([null, null]);
 });
 
 test('loads full model names, searches names or IDs, and saves the harness invocation ID', async ({ page }) => {
@@ -511,7 +511,7 @@ test('loads full model names, searches names or IDs, and saves the harness invoc
   await expect(opus).toBeVisible();
   await search.fill('  OPUS  ');
   await expect(opus).toBeVisible();
-  await page.screenshot({ path: '/private/tmp/pandacode-model-names.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-model-names.png', animations: 'disabled' });
   await search.press('Enter');
   await expect.poll(() => savedSelection(page)).toEqual({ provider: 'claude', model: 'opus' });
   await expect(trigger).toHaveText('Claude Opus 5');
@@ -543,7 +543,7 @@ test('offers only reported reasoning efforts and remembers the selected effort f
   // The context window is shown under the composer, not in this menu.
   await expect(settings).not.toContainText(/context/i);
   await expect(modelPicker(page).getByRole('button', { name: 'Claude Code · Claude Opus 5', exact: true })).toContainText(/1M/i);
-  await page.screenshot({ path: '/private/tmp/pandacode-reasoning-settings.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-reasoning-settings.png', animations: 'disabled' });
   await page.setViewportSize({ width: 860, height: 600 });
   await expect(slider).toBeInViewport();
   const compactBounds = (await modelPicker(page).boundingBox())!;
@@ -552,7 +552,7 @@ test('offers only reported reasoning efforts and remembers the selected effort f
   expect(compactBounds.x + compactBounds.width).toBeLessThanOrEqual(848);
   expect(compactBounds.y + compactBounds.height).toBeLessThanOrEqual(588);
   await expect(modelPicker(page)).toHaveAttribute('data-popover-state', 'open');
-  await page.screenshot({ path: '/private/tmp/pandacode-reasoning-compact.png', animations: 'allow' });
+  await page.screenshot({ path: '/private/tmp/indocode-reasoning-compact.png', animations: 'allow' });
   await page.setViewportSize({ width: 1440, height: 940 });
   await expect(modelPicker(page)).toHaveCSS('max-height', '916px');
   // Resizing also repositions the anchored menu on an animation frame. Wait
@@ -592,7 +592,7 @@ test('offers only reported reasoning efforts and remembers the selected effort f
   const particle = particles.nth(4);
   const position = await particle.evaluate(element => getComputedStyle(element).transform);
   await expect.poll(() => particle.evaluate(element => getComputedStyle(element).transform)).not.toBe(position);
-  await page.screenshot({ path: '/private/tmp/pandacode-effort-slider-dark.png', animations: 'allow' });
+  await page.screenshot({ path: '/private/tmp/indocode-effort-slider-dark.png', animations: 'allow' });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(particle).toHaveCSS('animation-name', 'none');
   await expect(particle).toHaveCSS('opacity', '0.55');
@@ -604,7 +604,7 @@ test('offers only reported reasoning efforts and remembers the selected effort f
   await expect(slider).toHaveAttribute('aria-valuetext', 'High');
   await expect(modelPicker(page)).toHaveAttribute('data-popover-state', 'open');
   await expectColor(highColor);
-  await page.screenshot({ path: '/private/tmp/pandacode-effort-slider-light.png', animations: 'allow' });
+  await page.screenshot({ path: '/private/tmp/indocode-effort-slider-light.png', animations: 'allow' });
   await slider.focus();
   await slider.press('ArrowUp');
   await expect(slider).toBeFocused();
@@ -682,16 +682,16 @@ test('keeps the reasoning menu stationary during delayed effort saves', async ({
   expect(await page.evaluate(() => (window as any).__effortPresentation.scrollTop)).toBeGreaterThan(0);
   for (const [effort, name, key] of [['high', 'High', 'End'], ['low', 'Low', 'Home']]) {
     await page.evaluate(() => {
-      (window as any).__pandacodeHoldEffort = true;
-      delete (window as any).__pandacodeReleaseEffort;
+      (window as any).__indocodeHoldEffort = true;
+      delete (window as any).__indocodeReleaseEffort;
     });
     await reasoningSlider(page).press(key);
-    await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseEffort)).toBe('function');
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseEffort)).toBe('function');
     await expect(reasoningSlider(page)).toBeDisabled();
     await expect(reasoningLabel(page)).toHaveText(name);
     await expect(modelPicker(page).locator('.model-menu-option:not(:disabled)')).toHaveCount(0);
     await expectEffortPresentationUnchanged(page);
-    await page.evaluate(() => { (window as any).__pandacodeHoldEffort = false; (window as any).__pandacodeReleaseEffort(); });
+    await page.evaluate(() => { (window as any).__indocodeHoldEffort = false; (window as any).__indocodeReleaseEffort(); });
     await expect.poll(() => savedEffort(page)).toBe(effort);
     await expect(reasoningSlider(page)).toBeEnabled();
     await expect(reasoningSlider(page)).toHaveAttribute('aria-valuetext', name);
@@ -737,7 +737,7 @@ test('preserves reasoning effort when changing projects and resets it when chang
   await page.keyboard.press('Escape');
   await prompt(page).fill('Use this repository with the same reasoning preference');
   await page.getByRole('button', { name: 'Change task project', exact: true }).first().click();
-  await taskProjectPicker(page).getByRole('option', { name: /^pandacode — / }).click();
+  await taskProjectPicker(page).getByRole('option', { name: /^indocode — / }).click();
   await expect(prompt(page)).toHaveAttribute('data-session-id', sessionId!);
   await expect.poll(() => savedEffort(page)).toBe('high');
   await expect(modelTrigger(page)).toContainText('High');
@@ -772,16 +772,16 @@ test('preserves reasoning effort when changing projects and resets it when chang
 test('keeps task selection and drafts intact when a reasoning save finishes after navigation', async ({ page }) => {
   await installReasoningPreview(page);
   await prompt(page).fill('Original task draft');
-  await page.evaluate(() => { (window as any).__pandacodeHoldEffort = true; });
+  await page.evaluate(() => { (window as any).__indocodeHoldEffort = true; });
   await modelTrigger(page).click();
   await reasoningSlider(page).press('End');
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseEffort)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseEffort)).toBe('function');
   await expect(reasoningSlider(page)).toBeDisabled();
   await expect(reasoningLabel(page)).toHaveText('High');
   await page.locator('.task-item[data-id="session-2"]').click();
   await expect(page.locator('.task-item.selected')).toHaveAttribute('data-id', 'session-2');
   await prompt(page).fill('Second task draft');
-  await page.evaluate(() => { (window as any).__pandacodeHoldEffort = false; (window as any).__pandacodeReleaseEffort(); });
+  await page.evaluate(() => { (window as any).__indocodeHoldEffort = false; (window as any).__indocodeReleaseEffort(); });
   await expect.poll(() => savedEffort(page, 'session-1')).toBe('high');
   await expect(page.locator('.task-item.selected')).toHaveAttribute('data-id', 'session-2');
   await expect(prompt(page)).toHaveValue('Second task draft');
@@ -793,16 +793,16 @@ test('keeps task selection and drafts intact when a reasoning save finishes afte
 
 test('preserves composer focus and selection when a reasoning save finishes after returning to its task', async ({ page }) => {
   await installReasoningPreview(page);
-  await page.evaluate(() => { (window as any).__pandacodeHoldEffort = true; });
+  await page.evaluate(() => { (window as any).__indocodeHoldEffort = true; });
   await modelTrigger(page).click();
   await reasoningSlider(page).press('End');
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseEffort)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseEffort)).toBe('function');
   await page.locator('.task-item[data-id="session-2"]').click();
   await page.locator('.task-item[data-id="session-1"]').click();
   await prompt(page).fill('Keep my selection while I edit this draft');
   await prompt(page).evaluate((element: HTMLTextAreaElement) => element.setSelectionRange(8, 17));
   await expect(prompt(page)).toBeFocused();
-  await page.evaluate(() => { (window as any).__pandacodeHoldEffort = false; (window as any).__pandacodeReleaseEffort(); });
+  await page.evaluate(() => { (window as any).__indocodeHoldEffort = false; (window as any).__indocodeReleaseEffort(); });
   await expect(modelTrigger(page)).toContainText('High');
   await expect(prompt(page)).toHaveValue('Keep my selection while I edit this draft');
   await expect(prompt(page)).toBeFocused();
@@ -814,7 +814,7 @@ test('keeps the previous reasoning choice when saving a new effort fails', async
   await modelTrigger(page).click();
   await reasoningSlider(page).press('End');
   await expect.poll(() => savedEffort(page)).toBe('high');
-  await page.evaluate(() => { (window as any).__pandacodeFailEffort = true; });
+  await page.evaluate(() => { (window as any).__indocodeFailEffort = true; });
   await reasoningSlider(page).press('Home');
   await expect(modelPicker(page).getByRole('alert')).toContainText('could not save reasoning effort');
   await expect(reasoningSlider(page)).toHaveAttribute('aria-valuetext', 'High');
@@ -1039,7 +1039,7 @@ test('changes terminal colors without replacing its session or the composer draf
   await page.getByRole('button', { name: 'Dark mode', exact: true }).click();
   await expect(viewport).toHaveCSS('background-color', 'rgb(25, 26, 24)');
   await expect(prompt(page)).toHaveValue('Keep this draft while changing appearance');
-  await page.screenshot({ path: '/private/tmp/pandacode-dark-terminal.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-dark-terminal.png', animations: 'disabled' });
   expect(await page.evaluate(() => {
     const nodes = (window as any).__themeNodes;
     return nodes[0] === document.querySelector('#prompt') && nodes[1] === document.querySelector('.xterm-screen');
@@ -1075,7 +1075,7 @@ test('synchronizes dark mode with native appearance without wallpapers and respe
   await projectFilter(page).click();
   const menu = page.getByRole('dialog', { name: 'Filter projects', exact: true });
   await expect(menu).toHaveCSS('backdrop-filter', 'none');
-  await page.screenshot({ path: '/private/tmp/pandacode-dark-accessible.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-dark-accessible.png', animations: 'disabled' });
   await page.keyboard.press('Escape');
   const count = await page.evaluate(() => { (window as any).__disposeThemeAppearance(); return (window as any).__themeCalls.length; });
   await page.getByRole('button', { name: 'Dark mode', exact: true }).click();
@@ -1092,17 +1092,17 @@ test('chooses a project filter from its anchored menu using the keyboard', async
   await page.keyboard.press('ArrowDown');
   await expect(all).toBeFocused();
   await expect(all).toHaveAttribute('aria-checked', 'true');
-  await page.screenshot({ path: '/private/tmp/pandacode-filter-menu.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-filter-menu.png', animations: 'disabled' });
   await page.keyboard.press('End');
-  await expect(menu.getByRole('menuitemradio', { name: 'pandacode', exact: true })).toBeFocused();
+  await expect(menu.getByRole('menuitemradio', { name: 'indocode', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(menu).toHaveCount(0);
-  await expect(trigger).toHaveText('pandacode');
+  await expect(trigger).toHaveText('indocode');
   await expect(page.locator('#navigation .task-title')).toHaveText(['Explore the project']);
   await trigger.click();
   await expect(menu.getByRole('searchbox', { name: 'Search projects', exact: true })).toBeFocused();
   await page.keyboard.press('ArrowDown');
-  await expect(menu.getByRole('menuitemradio', { name: 'pandacode', exact: true })).toBeFocused();
+  await expect(menu.getByRole('menuitemradio', { name: 'indocode', exact: true })).toBeFocused();
   await page.keyboard.press('Home');
   await page.keyboard.press('Enter');
   await expect(trigger).toHaveText('All projects');
@@ -1121,9 +1121,9 @@ test('all projects: folder headings show the project icon and rows are one line 
   await expect(folders.locator('.task-item .task-top .task-provider').first()).toBeVisible();
   for (const height of await folders.locator('.task-item').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().height))) expect(height).toBeLessThan(36);
   // One project on its own is named by the filter, which shows its icon: two lines per task.
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('#project-filter > .task-app-icon')).toHaveCount(1);
-  await expect(page.locator('#project-filter')).toHaveText('pandacode');
+  await expect(page.locator('#project-filter')).toHaveText('indocode');
   await expect(page.locator('#navigation .task-item .task-checkout')).toHaveCount(0);
   await expect(page.locator('#navigation .task-item .task-top .task-title')).toHaveText(['Explore the project']);
   await expect(page.locator('#navigation .task-item .task-meta .task-provider')).toHaveCount(1);
@@ -1135,7 +1135,7 @@ test('says how many tasks the project filter hides and shows them all in one cli
   const note = page.locator('#sidebar-note .filter-note');
   await expect(note).toHaveCount(0);
   await expect(page.locator('#navigation .folder-heading')).toHaveCount(2);
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('#navigation .task-title')).toHaveText(['Explore the project']);
   // The filter already names the project: no folder heading, and the note sits under the list.
   await expect(page.locator('#navigation .folder-heading')).toHaveCount(0);
@@ -1239,7 +1239,7 @@ test('changes permissions and opens task actions with anchored keyboard menus', 
   await page.getByRole('button', { name: 'Standard', exact: true }).click();
   const permissions = page.getByRole('dialog', { name: 'Permissions', exact: true });
   await expect(permissions.getByRole('menuitemradio', { name: 'Standard', exact: true })).toBeFocused();
-  await page.screenshot({ path: '/private/tmp/pandacode-permissions-menu.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-permissions-menu.png', animations: 'disabled' });
   await page.keyboard.press('ArrowDown');
   await expect(permissions.getByRole('menuitemradio', { name: 'Accept edits', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
@@ -1269,24 +1269,24 @@ test('updates permissions after leaving and reselecting a task while the save is
     const source = await response.text();
     const marker = /case ["']update_session["']\s*:/;
     expect(source).toMatch(marker);
-    const body = source.replace(marker, `$& if (args.mode && window.__pandacodeDelayPermissions) await new Promise(resolve => { window.__pandacodeReleasePermissions = resolve; });`);
+    const body = source.replace(marker, `$& if (args.mode && window.__indocodeDelayPermissions) await new Promise(resolve => { window.__indocodeReleasePermissions = resolve; });`);
     await route.fulfill({ response, body: previewBody(body) });
   });
   await page.reload();
   await prompt(page).fill('Preserve this draft while permissions finish saving');
-  await page.evaluate(() => { (window as any).__pandacodeDelayPermissions = true; });
+  await page.evaluate(() => { (window as any).__indocodeDelayPermissions = true; });
   await page.getByRole('button', { name: 'Standard', exact: true }).click();
   await page.getByRole('dialog', { name: 'Permissions', exact: true }).getByRole('menuitemradio', { name: 'Accept edits', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleasePermissions)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleasePermissions)).toBe('function');
   await page.locator('.task-item[data-id="session-4"]').click();
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Explore the project');
   await page.locator('.task-item[data-id="session-1"]').click();
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Make search feel instant');
   await expect(page.getByRole('button', { name: 'Standard', exact: true })).toBeVisible();
   await page.evaluate(() => {
-    (window as any).__pandacodeDelayPermissions = false;
-    (window as any).__pandacodeReleasePermissions();
-    delete (window as any).__pandacodeReleasePermissions;
+    (window as any).__indocodeDelayPermissions = false;
+    (window as any).__indocodeReleasePermissions();
+    delete (window as any).__indocodeReleasePermissions;
   });
   await expect(page.locator('#mode-picker-trigger')).toHaveText('Accept edits');
   await expect(prompt(page)).toHaveValue('Preserve this draft while permissions finish saving');
@@ -1405,7 +1405,7 @@ test('chooses the default agent inside Settings without closing the Settings pag
   await trigger.click();
   const menu = page.getByRole('dialog', { name: 'Default agent', exact: true });
   await expect(menu.getByRole('menuitemradio', { name: 'Claude Code', exact: true })).toBeFocused();
-  await page.screenshot({ path: '/private/tmp/pandacode-settings-menu.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-settings-menu.png', animations: 'disabled' });
   await page.keyboard.press('Escape');
   await expect(menu).toHaveCount(0);
   await expect(settings.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
@@ -1441,7 +1441,7 @@ test('keeps the Settings agent menu clickable at the minimum desktop window size
   await settings.getByRole('button', { name: 'Default agent for new tasks', exact: true }).click();
   const menu = page.getByRole('dialog', { name: 'Default agent', exact: true });
   await expect(menu.getByRole('menuitemradio', { name: 'Claude Code', exact: true })).toBeFocused();
-  await page.screenshot({ path: '/private/tmp/pandacode-settings-menu-narrow.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-settings-menu-narrow.png', animations: 'disabled' });
   const hitTargets = await menu.getByRole('menuitemradio').evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
     return { inViewport: rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight,
@@ -1481,7 +1481,7 @@ test('keeps menus readable and usable with reduced motion, transparency, and hig
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
   await expect(menu).toHaveCount(0);
-  await expect(projectFilter(page)).toHaveText('pandacode');
+  await expect(projectFilter(page)).toHaveText('indocode');
   await expect(page.locator('#navigation .task-title')).toHaveText(['Explore the project']);
   await devtools.detach();
 });
@@ -1491,7 +1491,7 @@ for (const material of ['liquidGlass', 'vibrancy'] as const) {
     await disableWallpapers(page);
     await page.evaluate(async material => {
       const { initializeNativeAppearance } = await import('/src/appearance.ts');
-      (window as any).__pandacodeDisposeAppearance = initializeNativeAppearance(async () => ({ platform: 'macos', material }));
+      (window as any).__indocodeDisposeAppearance = initializeNativeAppearance(async () => ({ platform: 'macos', material }));
     }, material);
     await expect(page.locator('html')).toHaveAttribute('data-native-material', material);
     const surfaces = await appearanceSurfaces(page);
@@ -1499,7 +1499,7 @@ for (const material of ['liquidGlass', 'vibrancy'] as const) {
     expect(surfaces.sidebarBackdrop).toBe('none');
     expect(surfaces.mainContrast).toBeGreaterThanOrEqual(4.5);
     await expect(prompt(page)).toBeEnabled();
-    await page.evaluate(() => (window as any).__pandacodeDisposeAppearance());
+    await page.evaluate(() => (window as any).__indocodeDisposeAppearance());
     await expect(page.locator('html')).not.toHaveAttribute('data-native-material');
     expect((await appearanceSurfaces(page)).alphas[0]).toBe(1);
   });
@@ -1512,20 +1512,20 @@ test('keeps preview, unsupported platforms, and unavailable native materials opa
   expect((await appearanceSurfaces(page)).alphas.filter((_, index) => [0, 4, 5].includes(index))).toEqual([1, 1, 1]);
   await page.evaluate(async () => {
     const { initializeNativeAppearance } = await import('/src/appearance.ts');
-    (window as any).__pandacodeDisposeAppearance = initializeNativeAppearance(async () => ({ platform: 'other', material: 'liquidGlass' }));
+    (window as any).__indocodeDisposeAppearance = initializeNativeAppearance(async () => ({ platform: 'other', material: 'liquidGlass' }));
   });
   await expect(page.locator('html')).toHaveAttribute('data-native-material', 'solid');
   expect((await appearanceSurfaces(page)).alphas.filter((_, index) => [0, 4, 5].includes(index))).toEqual([1, 1, 1]);
   await page.evaluate(async () => {
-    (window as any).__pandacodeDisposeAppearance();
+    (window as any).__indocodeDisposeAppearance();
     const { initializeNativeAppearance } = await import('/src/appearance.ts');
-    (window as any).__pandacodeDisposeAppearance = initializeNativeAppearance(async () => { throw new Error('Test native material unavailable'); });
+    (window as any).__indocodeDisposeAppearance = initializeNativeAppearance(async () => { throw new Error('Test native material unavailable'); });
   });
   await expect(page.locator('html')).toHaveAttribute('data-native-material', 'solid');
   const fallback = await appearanceSurfaces(page);
   expect(fallback.alphas.filter((_, index) => [0, 4, 5].includes(index))).toEqual([1, 1, 1]);
   expect(fallback.mainContrast).toBeGreaterThanOrEqual(4.5);
-  await page.evaluate(() => (window as any).__pandacodeDisposeAppearance());
+  await page.evaluate(() => (window as any).__indocodeDisposeAppearance());
 });
 
 test('coalesces appearance preferences without restoring stale glass or losing the draft and open menu', async ({ page }) => {
@@ -1536,7 +1536,7 @@ test('coalesces appearance preferences without restoring stale glass or losing t
   await search.fill('opus');
   await page.evaluate(async () => {
     const { initializeNativeAppearance } = await import('/src/appearance.ts');
-    const testState = (window as any).__pandacodeAppearance = { calls: [], pending: [], materials: [], hold: false, material: 'liquidGlass', active: 0, maxActive: 0, prompt: document.querySelector('#prompt'), menu: document.querySelector('.model-menu') };
+    const testState = (window as any).__indocodeAppearance = { calls: [], pending: [], materials: [], hold: false, material: 'liquidGlass', active: 0, maxActive: 0, prompt: document.querySelector('#prompt'), menu: document.querySelector('.model-menu') };
     testState.dispose = initializeNativeAppearance(preferences => {
       testState.calls.push(preferences);
       testState.maxActive = Math.max(testState.maxActive, ++testState.active);
@@ -1558,20 +1558,20 @@ test('coalesces appearance preferences without restoring stale glass or losing t
       contrast.removeEventListener('change', onContrast);
     };
   });
-  const calls = () => page.evaluate(() => (window as any).__pandacodeAppearance.calls);
+  const calls = () => page.evaluate(() => (window as any).__indocodeAppearance.calls);
   await expect(page.locator('html')).toHaveAttribute('data-native-material', 'liquidGlass');
-  await page.evaluate(() => { (window as any).__pandacodeAppearance.hold = true; window.dispatchEvent(new Event('focus')); });
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeAppearance.pending.length)).toBe(1);
+  await page.evaluate(() => { (window as any).__indocodeAppearance.hold = true; window.dispatchEvent(new Event('focus')); });
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeAppearance.pending.length)).toBe(1);
   const gatedCallCount = (await calls()).length;
   const devtools = await page.context().newCDPSession(page);
   await devtools.send('Emulation.setEmulatedMedia', { features: [
     { name: 'prefers-reduced-transparency', value: 'reduce' }, { name: 'prefers-contrast', value: 'no-preference' },
   ] });
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeAppearance.observed)).toEqual({ reducedTransparency: true, increasedContrast: false });
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeAppearance.observed)).toEqual({ reducedTransparency: true, increasedContrast: false });
   await expect(page.locator('html')).toHaveAttribute('data-native-material', 'solid');
   expect((await appearanceSurfaces(page)).alphas).toEqual([1, 1, 1, 1, 1, 1]);
   await page.evaluate(() => {
-    const state = (window as any).__pandacodeAppearance;
+    const state = (window as any).__indocodeAppearance;
     state.observer = new MutationObserver(() => state.materials.push(document.documentElement.dataset.nativeMaterial));
     state.observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-native-material'] });
   });
@@ -1580,15 +1580,15 @@ test('coalesces appearance preferences without restoring stale glass or losing t
   ] });
   // CSS queries change before their change events are dispatched. Wait for both
   // real events before replying to IPC, so this tests coalescing deterministically.
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeAppearance.observed)).toEqual({ reducedTransparency: false, increasedContrast: true });
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeAppearance.observed)).toEqual({ reducedTransparency: false, increasedContrast: true });
   expect((await calls()).length).toBe(gatedCallCount);
-  await page.evaluate(() => (window as any).__pandacodeAppearance.pending.shift().reply({ platform: 'macos', material: 'liquidGlass' }));
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeAppearance.pending.map((request: any) => request.preferences))).toEqual([{ reducedTransparency: false, increasedContrast: true, darkMode: true }]);
+  await page.evaluate(() => (window as any).__indocodeAppearance.pending.shift().reply({ platform: 'macos', material: 'liquidGlass' }));
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeAppearance.pending.map((request: any) => request.preferences))).toEqual([{ reducedTransparency: false, increasedContrast: true, darkMode: true }]);
   expect((await calls()).length).toBe(gatedCallCount + 1);
   await expect(page.locator('html')).toHaveAttribute('data-native-material', 'solid');
-  expect(await page.evaluate(() => (window as any).__pandacodeAppearance.materials)).not.toContain('liquidGlass');
+  expect(await page.evaluate(() => (window as any).__indocodeAppearance.materials)).not.toContain('liquidGlass');
   await page.evaluate(() => {
-    const state = (window as any).__pandacodeAppearance;
+    const state = (window as any).__indocodeAppearance;
     state.hold = false;
     state.pending.shift().reply({ platform: 'macos', material: 'liquidGlass' });
     state.material = 'vibrancy';
@@ -1598,21 +1598,21 @@ test('coalesces appearance preferences without restoring stale glass or losing t
   await devtools.send('Emulation.setEmulatedMedia', { features: [
     { name: 'prefers-reduced-transparency', value: 'no-preference' }, { name: 'prefers-contrast', value: 'no-preference' },
   ] });
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeAppearance.observed)).toEqual({ reducedTransparency: false, increasedContrast: false });
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeAppearance.observed)).toEqual({ reducedTransparency: false, increasedContrast: false });
   await expect(page.locator('html')).toHaveAttribute('data-native-material', 'vibrancy');
   expect((await calls()).at(-1)).toEqual({ reducedTransparency: false, increasedContrast: false, darkMode: true });
-  expect(await page.evaluate(() => (window as any).__pandacodeAppearance.maxActive)).toBe(1);
+  expect(await page.evaluate(() => (window as any).__indocodeAppearance.maxActive)).toBe(1);
   await expect(page.locator('.task-item.selected')).toHaveAttribute('data-id', 'session-1');
   await expect(prompt(page)).toHaveValue('Keep my draft as the system appearance changes');
   await expect(menu).toHaveCount(1);
   await expect(search).toHaveValue('opus');
   await expect(search).toBeFocused();
   expect(await page.evaluate(() => {
-    const state = (window as any).__pandacodeAppearance;
+    const state = (window as any).__indocodeAppearance;
     return state.prompt === document.querySelector('#prompt') && state.menu === document.querySelector('.model-menu');
   })).toBe(true);
   const cleanupCallCount = await page.evaluate(() => {
-    const state = (window as any).__pandacodeAppearance;
+    const state = (window as any).__indocodeAppearance;
     state.dispose(); state.observer.disconnect(); state.stopObservingMedia();
     window.dispatchEvent(new Event('focus'));
     return state.calls.length;
@@ -1638,7 +1638,7 @@ test('expands saved tool commands and file contents after reloading the conversa
   await expect(bash.locator('[data-tool-section="output"] pre')).toContainText('Tests: 12 passed, 12 total');
   await expect(bash).toHaveAttribute('data-tool-status', 'completed');
   await bash.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: '/private/tmp/pandacode-tool-details.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-tool-details.png' });
   await page.reload();
   await expandToolTurn(bash);
   await bash.locator(':scope > summary').click();
@@ -1659,7 +1659,7 @@ test('coalesces live tool updates while preserving expansion and saves their det
   // The async preview bridge may start after click resolves. Wait for its tool
   // event's backing record before advancing the paused animation-frame clock.
   await expect.poll(() => page.evaluate(async sessionId => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const { messages } = await invoke('get_messages', { sessionId });
     return messages.filter((message: { role: string }) => message.role === 'tool')
       .map((message: { content: string }) => JSON.parse(message.content).status);
@@ -1694,7 +1694,7 @@ test('coalesces live tool updates while preserving expansion and saves their det
   await expect(saved.locator('[data-tool-section="input"] pre')).toHaveText('npm test -- --runInBand');
   await expect(saved.locator('[data-tool-section="output"] pre')).toContainText('Tests: 12 passed, 12 total');
   const persisted = await page.evaluate(async sessionId => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const { messages } = await invoke('get_messages', { sessionId });
     return messages.filter((message: { role: string }) => message.role === 'tool').map((message: { content: string }) => JSON.parse(message.content));
   }, sessionId);
@@ -1713,8 +1713,8 @@ test('preserves focused tool detail and output scroll across snapshots and savin
     expect(source).toMatch(messageMarker);
     const body = source
       .replace(outputMarker, `const sampleTestOutput = Array.from({ length: 60 }, (_, index) => 'Sample test output line ' + index).join('\\n') + '\\n' +`)
-      .replace(messageMarker, 'tool.output = sampleTestOutput; window.__pandacodeToolStarted = true; const toolMessage =')
-      .replace(/case ["']list_sessions["']\s*:/, `$& if (window.__pandacodeDelaySaved) await new Promise(resolve => { window.__pandacodeReleaseSaved = resolve; });`);
+      .replace(messageMarker, 'tool.output = sampleTestOutput; window.__indocodeToolStarted = true; const toolMessage =')
+      .replace(/case ["']list_sessions["']\s*:/, `$& if (window.__indocodeDelaySaved) await new Promise(resolve => { window.__indocodeReleaseSaved = resolve; });`);
     await route.fulfill({ response, body: previewBody(body) });
   });
   await page.clock.install();
@@ -1725,7 +1725,7 @@ test('preserves focused tool detail and output scroll across snapshots and savin
   await expect(newTaskHeading(page)).toBeVisible();
   await prompt(page).fill('Keep my position while I read the tool output');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeToolStarted)).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeToolStarted)).toBe(true);
   await page.clock.runFor(20);
   const live = page.locator('.live-tools details.tool-activity');
   await expect(live).toHaveAttribute('data-tool-status', 'running');
@@ -1749,9 +1749,9 @@ test('preserves focused tool detail and output scroll across snapshots and savin
   await expect(live).toHaveAttribute('open', '');
   await expect(output).toBeFocused();
   expect(await output.evaluate(element => element.scrollTop)).toBe(scroll.top);
-  await page.evaluate(() => { (window as any).__pandacodeDelaySaved = true; });
+  await page.evaluate(() => { (window as any).__indocodeDelaySaved = true; });
   await page.clock.runFor(1000);
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseSaved)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseSaved)).toBe('function');
   await page.clock.runFor(20);
   // The completed-turn boundary may materialize the tool before history loads.
   await expect(retainedTool).toHaveCount(1);
@@ -1759,9 +1759,9 @@ test('preserves focused tool detail and output scroll across snapshots and savin
   await expect(output).toBeFocused();
   expect(await output.evaluate(element => element.scrollTop)).toBe(scroll.top);
   await page.evaluate(() => {
-    (window as any).__pandacodeDelaySaved = false;
-    (window as any).__pandacodeReleaseSaved();
-    delete (window as any).__pandacodeReleaseSaved;
+    (window as any).__indocodeDelaySaved = false;
+    (window as any).__indocodeReleaseSaved();
+    delete (window as any).__indocodeReleaseSaved;
   });
   await expect(prompt(page)).toBeEnabled();
   await expect(live).toHaveCount(0);
@@ -1794,7 +1794,7 @@ test('caps long live tool activity without dropping the output being read', asyn
   await prompt(page).fill('Keep the first result readable throughout a long run');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
   await expect.poll(() => page.evaluate(async sessionId => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const { messages } = await invoke('get_messages', { sessionId });
     return messages.some((message: { role: string }) => message.role === 'tool');
   }, sessionId)).toBe(true);
@@ -1808,7 +1808,7 @@ test('caps long live tool activity without dropping the output being read', asyn
   await expect(output).toHaveText('Keep this first tool output available while I read it.');
   await output.focus();
   await page.evaluate(async sessionId => {
-    const { emitActivityTestEvent } = await import((window as any).__pandacodePreviewUrl);
+    const { emitActivityTestEvent } = await import((window as any).__indocodePreviewUrl);
     for (let index = 0; index < 40; index++) {
       emitActivityTestEvent({ sessionId, kind: 'text', text: index >= 38 ? 'A'.repeat(20_000) : `Progress update ${index}.` });
       emitActivityTestEvent({ sessionId, kind: 'tool', text: 'Read', tool: {
@@ -1873,7 +1873,7 @@ test('collapses turn activity into one compact row while keeping the final answe
   expect(bounds.height).toBeGreaterThanOrEqual(24);
   expect(bounds.height).toBeLessThanOrEqual(44);
   expect((await turn.boundingBox())!.height).toBeLessThanOrEqual(52);
-  await page.screenshot({ path: '/private/tmp/pandacode-activity-collapsed.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-activity-collapsed.png', animations: 'disabled' });
   await summary.focus();
   await page.keyboard.press('Enter');
   await expect(turn).toHaveAttribute('open', '');
@@ -1881,7 +1881,7 @@ test('collapses turn activity into one compact row while keeping the final answe
   await expandToolTurn(toolByName(page, 'Read'));
   await expect(toolByName(page, 'Read').locator(':scope > summary')).toBeVisible();
   await expect(toolByName(page, 'Bash').locator(':scope > summary')).toBeVisible();
-  await page.screenshot({ path: '/private/tmp/pandacode-activity-expanded.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-activity-expanded.png', animations: 'disabled' });
   await summary.focus();
   await page.keyboard.press('Space');
   await expect(turn).not.toHaveAttribute('open', '');
@@ -1898,7 +1898,7 @@ async function showTurnFixture(page: Page, entries: Array<{ role: string; conten
     await route.fulfill({ response, body: previewBody(source.replace(marker, `messages['session-4'] = ${JSON.stringify(fixture)}; const providers =`)) });
   });
   await page.reload();
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
 }
 
 const turnTool = (id: string, name: string, status = 'completed') => JSON.stringify({ type: 'tool_activity', version: 1, id, name, status, input: `${name} input`, output: `${name} output` });
@@ -2015,7 +2015,7 @@ test('keeps live approvals and errors actionable while tool activity is collapse
     const body = source.replace(marker, `
       agent({ sessionId: s.id, kind: 'approval', requestId: 'turn-approval', text: 'Run npm test in this project?' });
       agent({ sessionId: s.id, kind: 'error', text: 'A previous check failed.' });
-      window.__pandacodeTurnApprovalReady = true;
+      window.__indocodeTurnApprovalReady = true;
       const output =
     `);
     await route.fulfill({ response, body: previewBody(body) });
@@ -2028,7 +2028,7 @@ test('keeps live approvals and errors actionable while tool activity is collapse
   await expect(prompt(page)).toBeFocused();
   await prompt(page).fill('Check the project and request permission');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeTurnApprovalReady)).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeTurnApprovalReady)).toBe(true);
   await page.clock.runFor(20);
   const turn = page.locator('#stream-region details.turn-activity');
   await expect(turn).toHaveCount(1);
@@ -2064,10 +2064,10 @@ async function startControlledStatusStream(page: Page, withoutContextMetadata = 
         selected.status = 'running';
         messages[selected.id] ??= [];
         messages[selected.id].push({ id: ++id, sessionId: selected.id, role: 'user', content: args.text, createdAt: Date.now() });
-        window.__pandacodeControlledStatusReady = true;
+        window.__indocodeControlledStatusReady = true;
         break;
       }`)
-      .replace(approvalMarker, `$& await new Promise(resolve => { window.__pandacodeResolveStatusApproval = resolve; });`)
+      .replace(approvalMarker, `$& await new Promise(resolve => { window.__indocodeResolveStatusApproval = resolve; });`)
       + `
         export const emitStatusTestEvent = agent;
         export const refreshStatusTestSessions = () => emit('sessions-changed', {});
@@ -2086,7 +2086,7 @@ async function startControlledStatusStream(page: Page, withoutContextMetadata = 
   const sessionId = (await prompt(page).getAttribute('data-session-id'))!;
   await prompt(page).fill('Show the actual provider activity as it arrives');
   await page.getByRole('button', { name: 'Send message', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeControlledStatusReady)).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeControlledStatusReady)).toBe(true);
   await page.clock.runFor(20);
   const turn = page.locator('#stream-region .turn-activity');
   await expect(turn).toHaveAttribute('open', '');
@@ -2096,7 +2096,7 @@ async function startControlledStatusStream(page: Page, withoutContextMetadata = 
 
 async function emitStatusEvents(page: Page, sessionId: string, events: Array<Record<string, unknown>>): Promise<void> {
   await page.evaluate(async ({ sessionId, events }) => {
-    const { emitStatusTestEvent } = await import((window as any).__pandacodePreviewUrl);
+    const { emitStatusTestEvent } = await import((window as any).__indocodePreviewUrl);
     for (const event of events) emitStatusTestEvent({ ...event, sessionId });
   }, { sessionId, events });
   await page.clock.runFor(20);
@@ -2108,13 +2108,13 @@ test('shows reported context usage while running and keeps late usage from creat
   await expect(indicator).toHaveText('200K context');
   await expect(modelTrigger(page)).toBeDisabled();
   await page.evaluate(async sessionId => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     await invoke('update_session', { sessionId, contextUsage: { usedTokens: 24000, contextWindow: 200000 } });
   }, sessionId);
   await emitStatusEvents(page, sessionId, [{ kind: 'usage', text: '', data: { usedTokens: 24000, contextWindow: 200000 } }]);
   await expect(indicator).toHaveText('24K / 200K context');
   await expect(indicator).toHaveAttribute('title', /24,000.*200,000/);
-  await page.screenshot({ path: '/private/tmp/pandacode-context-usage.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-context-usage.png', animations: 'disabled' });
   await emitStatusEvents(page, sessionId, [
     { kind: 'usage', text: '', data: { usedTokens: -10, contextWindow: 200000 } },
     { kind: 'usage', text: '', data: { usedTokens: 'fake', contextWindow: 200000 } },
@@ -2136,7 +2136,7 @@ test('shows reported context usage while running and keeps late usage from creat
   await modelPicker(page).getByRole('button', { name: 'Claude Code · Claude Opus 5', exact: true }).click();
   await expect(indicator).not.toContainText('25K');
   expect(await page.evaluate(async sessionId => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const sessions = await invoke('list_sessions', {});
     return sessions.find((session: { id: string }) => session.id === sessionId)?.contextUsage ?? null;
   }, sessionId)).toBeNull();
@@ -2196,11 +2196,11 @@ test('updates live tool status and preserves newer response status across delaye
   await expect(approval).toBeVisible();
   await expect(status).toBeHidden();
   await approval.getByRole('button', { name: 'Approve', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeResolveStatusApproval)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeResolveStatusApproval)).toBe('function');
   await emitStatusEvents(page, sessionId, [{ kind: 'text', text: 'The approved check is producing a response.' }]);
   await expect(approval).toBeVisible();
   await expect(status).toHaveText('Generating response');
-  await page.evaluate(() => { (window as any).__pandacodeResolveStatusApproval(); });
+  await page.evaluate(() => { (window as any).__indocodeResolveStatusApproval(); });
   await expect(approval).toHaveCount(0);
   await expect(status).toBeVisible();
   await expect(status).toHaveText('Generating response');
@@ -2251,8 +2251,8 @@ test('approvals wait in one slim bar above the prompt and its context bar, one l
   const bar = page.locator('#composer-area .approval-bar');
   // The sample harness holds each answer until the test lets it through.
   const resolveApproval = async () => {
-    await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeResolveStatusApproval)).toBe('function');
-    await page.evaluate(() => { const w = window as any, resolve = w.__pandacodeResolveStatusApproval; w.__pandacodeResolveStatusApproval = undefined; resolve(); });
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeResolveStatusApproval)).toBe('function');
+    await page.evaluate(() => { const w = window as any, resolve = w.__indocodeResolveStatusApproval; w.__indocodeResolveStatusApproval = undefined; resolve(); });
   };
   const lineHeights = () => bar.locator('.approval-line').evaluateAll(lines => lines.map(line => Math.round(line.getBoundingClientRect().height)));
   await emitStatusEvents(page, sessionId, [{ kind: 'approval', requestId: 'one', text: 'Run `npm test`\nin the project folder' }]);
@@ -2300,19 +2300,19 @@ test('keeps approval, retry, stopping, and completed summaries clear', async ({ 
   await expect(label).toHaveText(/^Waiting for approval · /);
   const approval = page.locator('.approval-bar');
   await approval.getByRole('button', { name: 'Approve', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeResolveStatusApproval)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeResolveStatusApproval)).toBe('function');
   await emitStatusEvents(page, sessionId, [{ kind: 'text', text: 'The approved check is producing a response.' }]);
   await page.clock.runFor(8000);
   await expect(label).toHaveText(/^Waiting for approval · /);
   await expect(approval).toBeVisible();
-  await page.evaluate(() => { (window as any).__pandacodeResolveStatusApproval(); });
+  await page.evaluate(() => { (window as any).__indocodeResolveStatusApproval(); });
   await expect(approval).toHaveCount(0);
   await expect(label).toHaveText(/^Generating response · /);
   await emitStatusEvents(page, sessionId, [{ kind: 'status', text: 'Stopping agent' }, { kind: 'text', text: 'Buffered response text.' }]);
   await page.clock.runFor(9000);
   await expect(label).toHaveText(/^Stopping agent · /);
   await page.evaluate(async sessionId => {
-    const { finishStatusTestTurn } = await import((window as any).__pandacodePreviewUrl);
+    const { finishStatusTestTurn } = await import((window as any).__indocodePreviewUrl);
     finishStatusTestTurn(sessionId);
   }, sessionId);
   await expect(page.locator('.live-activity')).toHaveCount(0);
@@ -2327,7 +2327,7 @@ test('marks a sent prompt active before the first agent response', async ({ page
   await expect(folderRows(page, sessionId).first()).toHaveAttribute('data-id', sessionId);
   await expect(page.locator('.streaming-content')).toBeEmpty();
   // Metadata can arrive before the native send has returned its persisted prompt.
-  await page.evaluate(async () => { const { refreshStatusTestSessions } = await import((window as any).__pandacodePreviewUrl); refreshStatusTestSessions(); });
+  await page.evaluate(async () => { const { refreshStatusTestSessions } = await import((window as any).__indocodePreviewUrl); refreshStatusTestSessions(); });
   await expect(taskRow(page, sessionId, 'active')).toBeVisible();
 });
 
@@ -2360,8 +2360,8 @@ test('saved user prompts keep old threads active until their own 24 hour boundar
   await page.reload();
   await expect(page.locator('.task-item[data-id="session-4"]')).toBeVisible();
   const sentAt = await page.evaluate(async () => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
-    const { refreshActivity } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
+    const { refreshActivity } = await import((window as any).__indocodePreviewUrl);
     const time = Date.now();
     // An accepted prompt from another view uses native session metadata on refresh.
     await invoke('update_session', { sessionId: 'session-4', lastPromptAt: time });
@@ -2369,7 +2369,7 @@ test('saved user prompts keep old threads active until their own 24 hour boundar
     return time;
   });
   await expect(taskRow(page, 'session-4', 'active')).toBeVisible();
-  // The newest work leads: pandacode's folder now sits above orbit's.
+  // The newest work leads: indocode's folder now sits above orbit's.
   await expect(page.locator('#navigation .folder-group').first()).toHaveAttribute('data-project', 'project-2');
   await page.clock.pauseAt(sentAt + 24 * 60 * 60 * 1000 - 1);
   await expect(taskRow(page, 'session-4', 'active')).toBeVisible();
@@ -2380,27 +2380,27 @@ test('saved user prompts keep old threads active until their own 24 hour boundar
 test('groups tasks into project folders and remembers a collapsed folder', async ({ page }) => {
   await expect(projectFilter(page)).toHaveText('All projects');
   const orbit = page.getByRole('region', { name: 'orbit tasks', exact: true });
-  const pandacode = page.getByRole('region', { name: 'pandacode tasks', exact: true });
+  const indocode = page.getByRole('region', { name: 'indocode tasks', exact: true });
   await expect(orbit.locator('.task-title')).toHaveText(['Make search feel instant', 'Refine the navigation', 'Add keyboard shortcuts']);
-  await expect(pandacode.locator('.task-title')).toHaveText(['Explore the project']);
+  await expect(indocode.locator('.task-title')).toHaveText(['Explore the project']);
   await expect(activeRows(page).locator('.task-title')).toHaveText(['Make search feel instant']);
   // The folder names the project; the row keeps it for assistive technology.
-  await expect(taskRow(page, 'session-4').locator('.task-project')).toHaveText('pandacode');
+  await expect(taskRow(page, 'session-4').locator('.task-project')).toHaveText('indocode');
   await expect(taskRow(page, 'session-4').locator('.task-project')).not.toBeInViewport();
-  const toggle = pandacode.getByRole('button', { name: 'pandacode', exact: true });
+  const toggle = indocode.getByRole('button', { name: 'indocode', exact: true });
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(pandacode.locator('.task-item:visible')).toHaveCount(0);
+  await expect(indocode.locator('.task-item:visible')).toHaveCount(0);
   await expect(orbit.locator('.task-item:visible')).toHaveCount(3);
   await page.reload();
-  await expect(page.getByRole('region', { name: 'pandacode tasks', exact: true }).getByRole('button', { name: 'pandacode', exact: true })).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('region', { name: 'indocode tasks', exact: true }).getByRole('button', { name: 'indocode', exact: true })).toHaveAttribute('aria-expanded', 'false');
   // Opening a task hidden in a collapsed folder opens that folder.
   await page.locator('.search-trigger').click();
   await page.getByRole('textbox', { name: 'Search tasks and commands', exact: true }).fill('Explore');
   await page.locator('#command-results [data-action="select-task"][data-id="session-4"]').click();
   await expect(taskRow(page, 'session-4')).toHaveAttribute('aria-current', 'page');
-  await expect(pandacode.getByRole('button', { name: 'pandacode', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await expect(indocode.getByRole('button', { name: 'indocode', exact: true })).toHaveAttribute('aria-expanded', 'true');
   await expect(taskRow(page, 'session-4')).toBeVisible();
 });
 
@@ -2409,7 +2409,7 @@ test('moves a task to inactive automatically at the 24 hour response boundary', 
   await page.reload();
   await expect(taskRow(page, 'session-1', 'active')).toBeVisible();
   const expiresAt = await page.evaluate(async () => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const sessions = await invoke('list_sessions', {});
     return sessions.find((session: { id: string }) => session.id === 'session-1').lastResponseAt + 24 * 60 * 60 * 1000;
   });
@@ -2455,7 +2455,7 @@ test('keeps an observed streaming response active when metadata reloads before p
   await expect(page.getByRole('button', { name: 'Stop task', exact: true })).toBeVisible();
   await expect(page.locator('#navigation .task-item.selected[data-activity="active"]')).toBeVisible();
   const observedResponseAt = await page.evaluate(async () => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const sessionId = document.querySelector<HTMLElement>('#prompt')!.dataset.sessionId;
     const sessions = await invoke('list_sessions', {});
     const responseAt = sessions.find((session: { id: string }) => session.id === sessionId).lastResponseAt;
@@ -2480,18 +2480,18 @@ test('keeps an observed streaming response active when metadata reloads before p
 });
 
 test('filters projects and keeps the active project when returning to all projects', async ({ page }) => {
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('#navigation .task-title')).toHaveText(['Explore the project']);
-  await expect(page.locator('#breadcrumb')).toContainText('pandacode');
+  await expect(page.locator('#breadcrumb')).toContainText('indocode');
   await chooseProjectFilter(page, 'All projects');
   await expect(page.locator('#navigation .task-item')).toHaveCount(4);
-  await expect(page.locator('#breadcrumb')).toContainText('pandacode');
+  await expect(page.locator('#breadcrumb')).toContainText('indocode');
   await page.reload();
   await expect(projectFilter(page)).toHaveText('All projects');
-  await expect(page.locator('#breadcrumb')).toContainText('pandacode');
+  await expect(page.locator('#breadcrumb')).toContainText('indocode');
   await page.locator('.new-task-button').click();
   await expect(newTaskHeading(page)).toBeVisible();
-  await expect(openTaskProject(page)).toHaveText('pandacode');
+  await expect(openTaskProject(page)).toHaveText('indocode');
   await expect(projectFilter(page)).toHaveText('All projects');
 });
 
@@ -2501,7 +2501,7 @@ test('removes the old project inspector actions while the new task history loads
     const source = await response.text();
     const marker = /case ["']get_messages["']\s*:/;
     expect(source).toMatch(marker);
-    const body = source.replace(marker, `$& if (args.sessionId === 'session-4') await new Promise(resolve => { window.__pandacodeReleaseMessages = resolve; });`);
+    const body = source.replace(marker, `$& if (args.sessionId === 'session-4') await new Promise(resolve => { window.__indocodeReleaseMessages = resolve; });`);
     await route.fulfill({ response, body: previewBody(body) });
   });
   await page.reload();
@@ -2510,16 +2510,16 @@ test('removes the old project inspector actions while the new task history loads
   await page.locator('[data-action="open-diff"]').first().click();
   await expect(page.locator('.diff-viewer')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Stage file', exact: true })).toBeVisible();
-  await chooseProjectFilter(page, 'pandacode');
-  await page.waitForFunction(() => typeof (window as any).__pandacodeReleaseMessages === 'function');
+  await chooseProjectFilter(page, 'indocode');
+  await page.waitForFunction(() => typeof (window as any).__indocodeReleaseMessages === 'function');
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Explore the project');
   await expect(page.locator('#inspector-content')).toContainText('Loading files…');
   await expect(page.getByRole('button', { name: 'Stage file', exact: true })).toHaveCount(0);
   await expect(page.locator('.diff-viewer,.change-row')).toHaveCount(0);
-  await page.evaluate(() => { (window as any).__pandacodeReleaseMessages(); delete (window as any).__pandacodeReleaseMessages; });
+  await page.evaluate(() => { (window as any).__indocodeReleaseMessages(); delete (window as any).__indocodeReleaseMessages; });
   await page.locator('.inspector-tabs [data-action="tab-changes"]').click();
   await expect(page.locator('.change-row')).toHaveCount(3);
-  await expect(page.locator('#breadcrumb')).toContainText('pandacode');
+  await expect(page.locator('#breadcrumb')).toContainText('indocode');
 });
 
 test('renders provider logos in task rows, composer, picker, and settings', async ({ page }) => {
@@ -2548,7 +2548,7 @@ test('renders provider logos in task rows, composer, picker, and settings', asyn
 });
 
 test('a new task is listed after its first prompt and an untouched one is discarded', async ({ page }) => {
-  const listed = () => page.evaluate(async () => { const { invoke } = await import((window as any).__pandacodePreviewUrl); return (await invoke('list_sessions', {})).map((task: any) => task.id); });
+  const listed = () => page.evaluate(async () => { const { invoke } = await import((window as any).__indocodePreviewUrl); return (await invoke('list_sessions', {})).map((task: any) => task.id); });
   const before = await listed();
   await page.locator('.new-task-button').click();
   await expect(newTaskHeading(page)).toBeVisible();
@@ -2559,7 +2559,7 @@ test('a new task is listed after its first prompt and an untouched one is discar
   // Leaving an untouched draft discards it.
   await page.locator('.task-item[data-id="session-2"]').click();
   await expect(page.locator('.task-item[data-id="session-2"]')).toHaveAttribute('aria-current', 'page');
-  await expect.poll(async () => page.evaluate(async id => { const { invoke } = await import((window as any).__pandacodePreviewUrl); try { await invoke('get_task', { sessionId: id }); return 'kept'; } catch { return 'gone'; } }, draftId)).toBe('gone');
+  await expect.poll(async () => page.evaluate(async id => { const { invoke } = await import((window as any).__indocodePreviewUrl); try { await invoke('get_task', { sessionId: id }); return 'kept'; } catch { return 'gone'; } }, draftId)).toBe('gone');
   // A draft with typed text stays hidden, and New task reopens it with the text.
   await page.locator('.new-task-button').click();
   await expect(newTaskHeading(page)).toBeVisible();
@@ -2601,13 +2601,13 @@ test('opens a new conversation in the active project without listing it', async 
   expect(mainBounds.y + mainBounds.height - composerBounds.y - composerBounds.height).toBeGreaterThanOrEqual(0);
   expect(mainBounds.y + mainBounds.height - composerBounds.y - composerBounds.height).toBeLessThan(90);
   await expect(page.getByRole('button', { name: 'Change task project', exact: true })).toHaveCount(2);
-  await page.screenshot({ path: '/private/tmp/pandacode-new-task.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-new-task.png' });
   await page.getByRole('button', { name: 'Choose harness and model', exact: true }).click();
   const picker = page.getByRole('dialog', { name: 'Harness and model', exact: true });
   await expect(picker.getByRole('button', { name: 'Claude Code · Default', exact: true })).toBeVisible();
   await expect(picker.getByRole('button', { name: 'Codex · Default', exact: true })).toBeVisible();
   await expect(picker.getByRole('button', { name: 'Kimi Code · Default', exact: true })).toBeVisible();
-  await page.screenshot({ path: '/private/tmp/pandacode-brand-picker.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-brand-picker.png' });
 });
 
 test('changes the empty task project while keeping its draft, harness, model, and identity', async ({ page }) => {
@@ -2616,7 +2616,7 @@ test('changes the empty task project while keeping its draft, harness, model, an
     const source = await response.text();
     const marker = /case ["']git_status["']\s*:/;
     expect(source).toMatch(marker);
-    const body = source.replace(marker, `$& if (args.projectId === 'project-2') { result = { ...git, branch: 'test/pandacode-project' }; break; }`);
+    const body = source.replace(marker, `$& if (args.projectId === 'project-2') { result = { ...git, branch: 'test/indocode-project' }; break; }`);
     await route.fulfill({ response, body: previewBody(body) });
   });
   await page.reload();
@@ -2636,22 +2636,22 @@ test('changes the empty task project while keeping its draft, harness, model, an
   await page.getByRole('button', { name: 'Change task project', exact: true }).first().click();
   const picker = taskProjectPicker(page);
   await picker.getByRole('searchbox', { name: 'Search projects', exact: true }).fill('panda');
-  await picker.getByRole('option', { name: /^pandacode — / }).click();
+  await picker.getByRole('option', { name: /^indocode — / }).click();
   await expect(picker).toHaveCount(0);
-  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in pandacode?');
+  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in indocode?');
   await expect(prompt(page)).toHaveAttribute('data-session-id', sessionId!);
-  await expect(openTaskProject(page)).toHaveText('pandacode');
-  await expect(page.locator('#composer-area').getByRole('button', { name: 'Change task project', exact: true })).toHaveText('pandacode');
+  await expect(openTaskProject(page)).toHaveText('indocode');
+  await expect(page.locator('#composer-area').getByRole('button', { name: 'Change task project', exact: true })).toHaveText('indocode');
   await expect(page.locator('.diff-viewer')).toHaveCount(0);
-  await expect(page.getByRole('complementary', { name: 'Project inspector' })).toContainText('test/pandacode-project');
+  await expect(page.getByRole('complementary', { name: 'Project inspector' })).toContainText('test/indocode-project');
   await expect(prompt(page)).toHaveValue('Keep this plan while I choose the right repository');
   await expect(page.locator('#composer')).toContainText('project-switch-model');
   await expect.poll(() => savedSelection(page)).toEqual({ provider: 'kimi', model: 'project-switch-model' });
   await expect(page.locator('.user-message,.agent-message')).toHaveCount(0);
   await page.reload();
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.project'))).toBe('project-2');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.project'))).toBe('project-2');
   await page.locator('.new-task-button').click();
-  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in pandacode?');
+  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in indocode?');
 });
 
 test('searches task projects by keyboard and cancels or reselects without changing the task', async ({ page }) => {
@@ -2665,7 +2665,7 @@ test('searches task projects by keyboard and cancels or reselects without changi
   const search = picker.getByRole('searchbox', { name: 'Search projects', exact: true });
   await expect(search).toBeFocused();
   await expect(picker.getByRole('option', { name: /^orbit — / })).toHaveAttribute('aria-selected', 'true');
-  await page.screenshot({ path: '/private/tmp/pandacode-project-picker.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-project-picker.png' });
   await search.fill('panda');
   await expect(picker.getByRole('option')).toHaveCount(1);
   await search.press('Escape');
@@ -2685,7 +2685,7 @@ test('searches task projects by keyboard and cancels or reselects without changi
   await search.fill('panda');
   await search.press('Enter');
   await expect(picker).toHaveCount(0);
-  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in pandacode?');
+  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in indocode?');
   await expect(prompt(page)).toHaveAttribute('data-session-id', sessionId!);
   await expect(prompt(page)).toHaveValue('A draft that stays with this empty task');
 });
@@ -2726,8 +2726,8 @@ test('applies a delayed project switch after leaving and reselecting the same em
     expect(source).toMatch(configureMarker);
     expect(source).toMatch(gitMarker);
     const body = source
-      .replace(configureMarker, `$& if (args.projectId && window.__pandacodeDelayConfigure) await new Promise(resolve => { window.__pandacodeReleaseConfigure = resolve; });`)
-      .replace(gitMarker, `$& if (args.projectId === 'project-2') { result = { ...git, branch: 'test/pandacode-project' }; break; }`);
+      .replace(configureMarker, `$& if (args.projectId && window.__indocodeDelayConfigure) await new Promise(resolve => { window.__indocodeReleaseConfigure = resolve; });`)
+      .replace(gitMarker, `$& if (args.projectId === 'project-2') { result = { ...git, branch: 'test/indocode-project' }; break; }`);
     await route.fulfill({ response, body: previewBody(body) });
   });
   await page.reload();
@@ -2735,37 +2735,37 @@ test('applies a delayed project switch after leaving and reselecting the same em
   await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in orbit?');
   const sessionId = await draftTaskId(page);
   await prompt(page).fill('Retain this draft when I return before the project write finishes');
-  await page.evaluate(() => { (window as any).__pandacodeDelayConfigure = true; });
+  await page.evaluate(() => { (window as any).__indocodeDelayConfigure = true; });
   await page.getByRole('button', { name: 'Change task project', exact: true }).first().click();
-  await taskProjectPicker(page).getByRole('option', { name: /^pandacode — / }).click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseConfigure)).toBe('function');
+  await taskProjectPicker(page).getByRole('option', { name: /^indocode — / }).click();
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseConfigure)).toBe('function');
   await page.locator('.task-item[data-id="session-4"]').click();
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Explore the project');
   // The draft keeps its typed text, so leaving hides it instead of discarding it.
   await expect(page.locator(`.task-item[data-id="${sessionId}"]`)).toHaveCount(0);
   await page.evaluate(() => {
-    (window as any).__pandacodeDelayConfigure = false;
-    (window as any).__pandacodeReleaseConfigure();
-    delete (window as any).__pandacodeReleaseConfigure;
+    (window as any).__indocodeDelayConfigure = false;
+    (window as any).__indocodeReleaseConfigure();
+    delete (window as any).__indocodeReleaseConfigure;
   });
-  // The delayed switch still lands, so New task in pandacode reopens the same draft there.
+  // The delayed switch still lands, so New task in indocode reopens the same draft there.
   await page.locator('.new-task-button').click();
   await expect(prompt(page)).toHaveAttribute('data-session-id', sessionId!);
   await expect(prompt(page)).toHaveValue('Retain this draft when I return before the project write finishes');
-  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in pandacode?');
+  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in indocode?');
   await expect(prompt(page)).toHaveAttribute('data-session-id', sessionId!);
-  await expect(openTaskProject(page)).toHaveText('pandacode');
-  await expect(page.locator('#composer-area').getByRole('button', { name: 'Change task project', exact: true })).toHaveText('pandacode');
+  await expect(openTaskProject(page)).toHaveText('indocode');
+  await expect(page.locator('#composer-area').getByRole('button', { name: 'Change task project', exact: true })).toHaveText('indocode');
   await expect(page.getByRole('complementary', { name: 'Project inspector' })).toBeVisible();
   await page.locator('.inspector-tabs [data-action="tab-changes"]').click();
-  await expect(page.getByRole('complementary', { name: 'Project inspector' })).toContainText('test/pandacode-project');
+  await expect(page.getByRole('complementary', { name: 'Project inspector' })).toContainText('test/indocode-project');
   await expect(prompt(page)).toHaveValue('Retain this draft when I return before the project write finishes');
   const projectId = await page.evaluate(async sessionId => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     return (await invoke('get_task', { sessionId })).projectId;
   }, sessionId);
   expect(projectId).toBe('project-2');
-  expect(await page.evaluate(() => localStorage.getItem('pandacode.project'))).toBe('project-2');
+  expect(await page.evaluate(() => localStorage.getItem('indocode.project'))).toBe('project-2');
 });
 
 for (const delayedCommand of ['add_project', 'list_projects']) {
@@ -2775,7 +2775,7 @@ for (const delayedCommand of ['add_project', 'list_projects']) {
       const source = await response.text();
       const marker = new RegExp(`case ["']${delayedCommand}["']\\s*:`);
       expect(source).toMatch(marker);
-      const body = source.replace(marker, `$& if (window.__pandacodeDelayFolder) await new Promise(resolve => { window.__pandacodeReleaseFolder = resolve; });`);
+      const body = source.replace(marker, `$& if (window.__indocodeDelayFolder) await new Promise(resolve => { window.__indocodeReleaseFolder = resolve; });`);
       await route.fulfill({ response, body: previewBody(body) });
     });
     await page.reload();
@@ -2787,9 +2787,9 @@ for (const delayedCommand of ['add_project', 'list_projects']) {
     await taskProjectPicker(page).getByRole('button', { name: 'Open project…', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('textbox', { name: 'Project folder', exact: true }).fill('/tmp/canceled-task-folder');
-    await page.evaluate(() => { (window as any).__pandacodeDelayFolder = true; });
+    await page.evaluate(() => { (window as any).__indocodeDelayFolder = true; });
     await dialog.getByRole('button', { name: 'Open project', exact: true }).click();
-    await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseFolder)).toBe('function');
+    await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseFolder)).toBe('function');
     await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
     const settings = await openSettings(page);
     await expect(settings.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
@@ -2797,15 +2797,15 @@ for (const delayedCommand of ['add_project', 'list_projects']) {
     await page.evaluate(() => {
       const navigation = document.querySelector('#navigation')!;
       const observer = new MutationObserver(() => {
-        (window as any).__pandacodeFolderNavigationUpdated = true;
+        (window as any).__indocodeFolderNavigationUpdated = true;
         observer.disconnect();
       });
       observer.observe(navigation, { childList: true });
-      (window as any).__pandacodeDelayFolder = false;
-      (window as any).__pandacodeReleaseFolder();
-      delete (window as any).__pandacodeReleaseFolder;
+      (window as any).__indocodeDelayFolder = false;
+      (window as any).__indocodeReleaseFolder();
+      delete (window as any).__indocodeReleaseFolder;
     });
-    await expect.poll(() => page.evaluate(() => (window as any).__pandacodeFolderNavigationUpdated)).toBe(true);
+    await expect.poll(() => page.evaluate(() => (window as any).__indocodeFolderNavigationUpdated)).toBe(true);
     expect(await previewProjectNames(page)).toContain('canceled-task-folder');
     await expect(settings.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
     // The workspace behind the page is hidden from assistive technology, so read the composer directly.
@@ -2864,17 +2864,17 @@ for (const config of [
 }
 
 test('restores the last active project and creates new conversations there', async ({ page }) => {
-  await chooseProjectFilter(page, 'pandacode');
+  await chooseProjectFilter(page, 'indocode');
   await expect(page.locator('.task-item.selected .task-title')).toHaveText('Explore the project');
   await page.locator('.new-task-button').click();
   await expect(newTaskHeading(page)).toBeVisible();
-  await expect(projectFilter(page)).toHaveText('pandacode');
-  await expect(openTaskProject(page)).toHaveText('pandacode');
+  await expect(projectFilter(page)).toHaveText('indocode');
+  await expect(openTaskProject(page)).toHaveText('indocode');
   await page.reload();
-  await expect(projectFilter(page)).toHaveText('pandacode');
+  await expect(projectFilter(page)).toHaveText('indocode');
   await page.locator('.new-task-button').click();
   await expect(newTaskHeading(page)).toBeVisible();
-  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in pandacode?');
+  await expect(newTaskHeading(page)).toHaveAccessibleName('What should we build in indocode?');
   await expect(prompt(page)).toBeFocused();
 });
 
@@ -2914,14 +2914,14 @@ test('opens a project by path and preserves the selected task when canceled', as
   expect(await previewProjectNames(page)).not.toContain('canceled-project');
 
   await page.getByRole('button', { name: 'Open project', exact: true }).click();
-  await dialog.getByRole('textbox', { name: 'Project folder', exact: true }).fill('/tmp/pandacode-ui-project');
+  await dialog.getByRole('textbox', { name: 'Project folder', exact: true }).fill('/tmp/indocode-ui-project');
   await dialog.getByRole('button', { name: 'Open project', exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  await expect.poll(() => previewProjectNames(page)).toContain('pandacode-ui-project');
-  await expect(page.locator('#breadcrumb')).toContainText('pandacode-ui-project');
+  await expect.poll(() => previewProjectNames(page)).toContain('indocode-ui-project');
+  await expect(page.locator('#breadcrumb')).toContainText('indocode-ui-project');
   await expect(page.getByRole('button', { name: 'Start a task', exact: true })).toBeVisible();
   await expect(page.locator('.task-item.selected')).toHaveCount(0);
-  await expect(page.locator('#toast')).toContainText('Opened pandacode-ui-project');
+  await expect(page.locator('#toast')).toContainText('Opened indocode-ui-project');
 });
 
 test('retains a completed conversation and model when switching fixture tasks', async ({ page }) => {
@@ -3096,7 +3096,7 @@ async function observeWorktreeCommands(page: Page, hook = ''): Promise<void> {
     const marker = /switch\s*\(command\)\s*\{/;
     expect(source).toMatch(marker);
     const body = source.replace(marker, `
-      (window.__pandacodeWorktreeCalls ??= []).push({ command, args: structuredClone(args) });
+      (window.__indocodeWorktreeCalls ??= []).push({ command, args: structuredClone(args) });
       ${hook}
       switch (command) {
     `);
@@ -3116,7 +3116,7 @@ async function submitWorktree(page: Page, branch: string): Promise<void> {
 }
 
 const previewWorktreeTasks = (page: Page) => page.evaluate(async () => {
-  const { invoke } = await import((window as any).__pandacodePreviewUrl);
+  const { invoke } = await import((window as any).__indocodePreviewUrl);
   return (await invoke('list_sessions', {})).filter((session: { worktreePath?: string | null }) => session.worktreePath);
 });
 
@@ -3169,7 +3169,7 @@ test('routes worktree files, Git, and terminals by task and retains each checkou
   await expect(newTaskHeading(page)).toBeVisible();
   const taskId = await page.locator('.task-item.selected').getAttribute('data-id');
   await expect(page.locator('#terminal-drawer')).toBeHidden();
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal').length)).toBe(0);
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal').length)).toBe(0);
   await expect(page.getByRole('complementary', { name: 'Project inspector' })).toBeVisible();
   await page.locator('.inspector-tabs [data-action="tab-changes"]').click();
   await expect(page.locator('#inspector-content')).toContainText('codex/worktree-routing');
@@ -3186,30 +3186,30 @@ test('routes worktree files, Git, and terminals by task and retains each checkou
   await page.getByRole('button', { name: 'Stop task', exact: true }).click();
   await page.getByRole('button', { name: 'Toggle terminal (⌘ J)', exact: true }).click();
   await expect(page.locator('#terminal-host .xterm-screen:visible')).toBeVisible();
-  const calls = await page.evaluate(() => (window as any).__pandacodeWorktreeCalls);
+  const calls = await page.evaluate(() => (window as any).__indocodeWorktreeCalls);
   for (const command of ['git_status', 'list_files', 'git_diff', 'read_file', 'start_terminal']) {
     expect(calls).toContainEqual(expect.objectContaining({ command, args: expect.objectContaining({ projectId: 'project-1', sessionId: taskId }) }));
   }
   expect(calls.filter((call: any) => call.command === 'read_file' && call.args.sessionId === taskId)).toHaveLength(2);
   await page.locator('.task-item[data-id="session-1"]').click();
   await expect(page.locator('#terminal-drawer')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal').length)).toBe(0);
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal').length)).toBe(0);
   await expect(page.locator('#terminal-host .xterm-screen:visible')).toBeVisible();
-  const terminalCalls = await page.evaluate(() => (window as any).__pandacodeWorktreeCalls.filter((call: any) => call.command === 'start_terminal').map((call: any) => call.args.sessionId));
+  const terminalCalls = await page.evaluate(() => (window as any).__indocodeWorktreeCalls.filter((call: any) => call.command === 'start_terminal').map((call: any) => call.args.sessionId));
   expect(terminalCalls).toEqual(['session-1', taskId]);
 });
 
 test('clears worktree inspector actions immediately and ignores stale same-project responses', async ({ page }) => {
   await observeWorktreeCommands(page, `
     if (command === 'git_status') return git;
-    if (command === 'get_messages' && args.sessionId === 'session-1' && window.__pandacodeDelayWorktreeHistory) {
-      await new Promise(resolve => { window.__pandacodeReleaseWorktreeHistory = resolve; });
+    if (command === 'get_messages' && args.sessionId === 'session-1' && window.__indocodeDelayWorktreeHistory) {
+      await new Promise(resolve => { window.__indocodeReleaseWorktreeHistory = resolve; });
     }
     if (command === 'git_diff') {
       const checkout = session(args.sessionId).worktreePath ? 'worktree-snapshot' : 'root-stale-snapshot';
-      if (window.__pandacodeDelayWorktreeDiff) {
-        await new Promise(resolve => { window.__pandacodeReleaseWorktreeDiff = resolve; });
-        window.__pandacodeWorktreeDiffFinished = true;
+      if (window.__indocodeDelayWorktreeDiff) {
+        await new Promise(resolve => { window.__indocodeReleaseWorktreeDiff = resolve; });
+        window.__indocodeWorktreeDiffFinished = true;
       }
       return ['diff --git a/check.txt b/check.txt', '--- a/check.txt', '+++ b/check.txt', '@@ -1 +1 @@', '-previous', '+' + checkout, ''].join('\\n');
     }
@@ -3221,25 +3221,25 @@ test('clears worktree inspector actions immediately and ignores stale same-proje
   await page.locator('.inspector-tabs [data-action="tab-changes"]').click();
   await page.locator('[data-action="open-diff"]').first().click();
   await expect(page.locator('.diff-viewer')).toBeVisible();
-  await page.evaluate(() => { (window as any).__pandacodeDelayWorktreeHistory = true; });
+  await page.evaluate(() => { (window as any).__indocodeDelayWorktreeHistory = true; });
   await page.locator('.task-item[data-id="session-1"]').click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseWorktreeHistory)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseWorktreeHistory)).toBe('function');
   await page.locator('.inspector-tabs [data-action="tab-changes"]').click();
   await expect(page.locator('.diff-viewer,.change-row')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Stage file', exact: true })).toHaveCount(0);
-  await page.evaluate(() => { (window as any).__pandacodeDelayWorktreeHistory = false; (window as any).__pandacodeReleaseWorktreeHistory(); });
+  await page.evaluate(() => { (window as any).__indocodeDelayWorktreeHistory = false; (window as any).__indocodeReleaseWorktreeHistory(); });
   await expect(page.locator('.change-row')).toHaveCount(3);
   await expect(page.getByRole('complementary', { name: 'Project inspector' })).toBeVisible();
-  await page.evaluate(() => { (window as any).__pandacodeDelayWorktreeDiff = true; });
+  await page.evaluate(() => { (window as any).__indocodeDelayWorktreeDiff = true; });
   await page.locator('[data-action="open-diff"]').first().click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseWorktreeDiff)).toBe('function');
-  await page.evaluate(() => { (window as any).__pandacodeDelayWorktreeDiff = false; });
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseWorktreeDiff)).toBe('function');
+  await page.evaluate(() => { (window as any).__indocodeDelayWorktreeDiff = false; });
   await page.locator(`.task-item[data-id="${taskId}"]`).click();
   await expect(newTaskHeading(page)).toBeVisible();
   await expect(page.locator('.diff-viewer')).toBeVisible();
   await expect(page.locator('.diff-viewer')).toContainText('worktree-snapshot');
-  await page.evaluate(() => { (window as any).__pandacodeReleaseWorktreeDiff(); });
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeWorktreeDiffFinished)).toBe(true);
+  await page.evaluate(() => { (window as any).__indocodeReleaseWorktreeDiff(); });
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeWorktreeDiffFinished)).toBe(true);
   await expect(page.locator('.diff-viewer')).toContainText('worktree-snapshot');
   await expect(page.locator('.diff-viewer')).not.toContainText('root-stale-snapshot');
   await expect(page.locator('.task-item.selected')).toHaveAttribute('data-id', taskId!);
@@ -3247,36 +3247,36 @@ test('clears worktree inspector actions immediately and ignores stale same-proje
 
 test('keeps delayed worktree creation with its original task without stealing navigation', async ({ page }) => {
   await observeWorktreeCommands(page, `
-    if (command === 'create_worktree') await new Promise(resolve => { window.__pandacodeReleaseWorktree = resolve; });
+    if (command === 'create_worktree') await new Promise(resolve => { window.__indocodeReleaseWorktree = resolve; });
   `);
   const projects = await previewProjectNames(page);
   await submitWorktree(page, 'codex/worktree-delayed');
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseWorktree)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseWorktree)).toBe('function');
   await page.locator('#dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.locator('.task-item[data-id="session-4"]').click();
   await prompt(page).fill('Keep the other project active');
-  await page.evaluate(() => { (window as any).__pandacodeReleaseWorktree(); });
+  await page.evaluate(() => { (window as any).__indocodeReleaseWorktree(); });
   await expect.poll(() => previewWorktreeTasks(page)).toHaveLength(1);
   await expect(page.locator('#navigation .task-worktree')).toHaveCount(1);
   await expect(page.locator('.task-item.selected')).toHaveAttribute('data-id', 'session-4');
-  await expect(page.locator('#breadcrumb')).toContainText('pandacode');
+  await expect(page.locator('#breadcrumb')).toContainText('indocode');
   await expect(prompt(page)).toHaveValue('Keep the other project active');
   expect(await previewProjectNames(page)).toEqual(projects);
   expect((await previewWorktreeTasks(page))[0]).toMatchObject({ projectId: 'project-1', provider: 'claude', model: 'sonnet' });
-  const request = await page.evaluate(() => (window as any).__pandacodeWorktreeCalls.find((call: any) => call.command === 'create_worktree'));
+  const request = await page.evaluate(() => (window as any).__indocodeWorktreeCalls.find((call: any) => call.command === 'create_worktree'));
   expect(request.args).toMatchObject({ sessionId: 'session-1', branch: 'codex/worktree-delayed' });
 });
 
 test('does not dismiss Settings when canceled worktree creation finishes', async ({ page }) => {
   await observeWorktreeCommands(page, `
-    if (command === 'create_worktree') await new Promise(resolve => { window.__pandacodeReleaseWorktree = resolve; });
+    if (command === 'create_worktree') await new Promise(resolve => { window.__indocodeReleaseWorktree = resolve; });
   `);
   await prompt(page).fill('Keep the original task draft');
   await submitWorktree(page, 'codex/worktree-canceled');
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeReleaseWorktree)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeReleaseWorktree)).toBe('function');
   await page.locator('#dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
   const settings = await openSettings(page);
-  await page.evaluate(() => { (window as any).__pandacodeReleaseWorktree(); });
+  await page.evaluate(() => { (window as any).__indocodeReleaseWorktree(); });
   await expect(page.locator('#navigation .task-worktree')).toHaveCount(1);
   await expect(settings).toBeVisible();
   await expect(page.locator('.task-item.selected')).toHaveAttribute('data-id', 'session-1');
@@ -3307,7 +3307,7 @@ test('keeps the worktree terminal open when the previous checkout terminal fails
   await observeWorktreeCommands(page, `
     if (command === 'start_terminal' && args.sessionId === 'session-1') {
       await new Promise((resolve, reject) => {
-        window.__pandacodeRejectOldTerminal = () => reject(new Error('The old checkout terminal failed to start.'));
+        window.__indocodeRejectOldTerminal = () => reject(new Error('The old checkout terminal failed to start.'));
       });
     }
   `);
@@ -3316,22 +3316,22 @@ test('keeps the worktree terminal open when the previous checkout terminal fails
   const taskId = await page.locator('.task-item.selected').getAttribute('data-id');
   await page.locator('.task-item[data-id="session-1"]').click();
   await page.getByRole('button', { name: 'Toggle terminal (⌘ J)', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => typeof (window as any).__pandacodeRejectOldTerminal)).toBe('function');
+  await expect.poll(() => page.evaluate(() => typeof (window as any).__indocodeRejectOldTerminal)).toBe('function');
   await page.locator(`.task-item[data-id="${taskId}"]`).click();
   await expect(page.locator('#terminal-drawer')).toBeHidden();
   await page.getByRole('button', { name: 'Toggle terminal (⌘ J)', exact: true }).click();
   await expect(page.locator('#terminal-host .xterm-screen:visible')).toBeVisible();
   await page.evaluate(() => {
-    (window as any).__pandacodeCurrentTerminal = document.querySelector('#terminal-host .terminal-tab-surface:not([hidden]) .xterm-screen');
-    (window as any).__pandacodeRejectOldTerminal();
+    (window as any).__indocodeCurrentTerminal = document.querySelector('#terminal-host .terminal-tab-surface:not([hidden]) .xterm-screen');
+    (window as any).__indocodeRejectOldTerminal();
   });
   await expect(page.locator('#terminal-drawer')).toBeVisible();
   await expect(page.locator('#terminal-host .xterm-screen:visible')).toBeVisible();
-  expect(await page.evaluate(() => (window as any).__pandacodeCurrentTerminal === document.querySelector('#terminal-host .terminal-tab-surface:not([hidden]) .xterm-screen'))).toBe(true);
-  expect(await page.evaluate(() => (window as any).__pandacodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal'))).toEqual([]);
+  expect(await page.evaluate(() => (window as any).__indocodeCurrentTerminal === document.querySelector('#terminal-host .terminal-tab-surface:not([hidden]) .xterm-screen'))).toBe(true);
+  expect(await page.evaluate(() => (window as any).__indocodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal'))).toEqual([]);
   await expect(page.getByText('The old checkout terminal failed to start.', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Close terminal', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).__pandacodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal').length)).toBe(1);
+  await expect.poll(() => page.evaluate(() => (window as any).__indocodeWorktreeCalls.filter((call: any) => call.command === 'close_terminal').length)).toBe(1);
 });
 
 test('the interface is instant: no transitions, no entrance motion, and presses keep a button in place', async ({ page }) => {

@@ -114,14 +114,14 @@ mod tests {
 
     #[test]
     fn descendant_fixture() {
-        let Some(path) = std::env::var_os("PANDACODE_WINDOWS_JOB_FIXTURE") else {
+        let Some(path) = std::env::var_os("INDOCODE_WINDOWS_JOB_FIXTURE") else {
             return;
         };
         // The parent assigns this process before allowing its descendant to spawn.
         std::io::stdin().read_exact(&mut [0]).unwrap();
         let mut child = Command::new(std::env::current_exe().unwrap())
             .args(["--exact", "providers::windows_job::tests::leaf_fixture"])
-            .env("PANDACODE_WINDOWS_JOB_LEAF", "1")
+            .env("INDOCODE_WINDOWS_JOB_LEAF", "1")
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn leaf_fixture() {
-        if std::env::var_os("PANDACODE_WINDOWS_JOB_LEAF").is_some() {
+        if std::env::var_os("INDOCODE_WINDOWS_JOB_LEAF").is_some() {
             loop {
                 std::thread::park();
             }
@@ -142,13 +142,13 @@ mod tests {
 
     #[test]
     fn dropping_job_terminates_child_and_descendant() {
-        let path = std::env::temp_dir().join(format!("pandacode-job-{}", uuid::Uuid::new_v4()));
+        let path = std::env::temp_dir().join(format!("indocode-job-{}", uuid::Uuid::new_v4()));
         let mut child = Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
                 "providers::windows_job::tests::descendant_fixture",
             ])
-            .env("PANDACODE_WINDOWS_JOB_FIXTURE", &path)
+            .env("INDOCODE_WINDOWS_JOB_FIXTURE", &path)
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
             .stderr(Stdio::null())

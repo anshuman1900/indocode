@@ -449,14 +449,14 @@ fn app_instructions(chat: bool) -> String {
     [session_titles::GUIDANCE, run, turn_changes::instruction(), TURN_ENDS, RICH_QUESTIONS, GENERATIVE_UI].concat()
 }
 
-/// PandaCode closes the harness when a turn ends, so background waits never come back.
-const TURN_ENDS: &str = "\n\nYour turn ends when you reply, and PandaCode then closes this session's process: background commands, monitors and scheduled wakeups started in this turn never report back. Wait for long-running commands in the foreground (or poll them) before you reply.";
+/// Indocode closes the harness when a turn ends, so background waits never come back.
+const TURN_ENDS: &str = "\n\nYour turn ends when you reply, and Indocode then closes this session's process: background commands, monitors and scheduled wakeups started in this turn never report back. Wait for long-running commands in the foreground (or poll them) before you reply.";
 
-/// Questions to the user render rich Markdown in PandaCode; agents only use it if told.
-const RICH_QUESTIONS: &str = "\n\nQuestions you ask through the request_user_input tool, where available, render Markdown in PandaCode: use links, images by workspace path (![alt](relative/path.png)), ```chart blocks with JSON {\"type\":\"bar\"|\"line\"|\"pie\",\"title\",\"labels\":[…],\"series\":[{\"name\",\"values\":[…]}]}, ```svg drawings, or static ```html views when a visual helps the user decide. Remote images show as links; scripts never run.";
+/// Questions to the user render rich Markdown in Indocode; agents only use it if told.
+const RICH_QUESTIONS: &str = "\n\nQuestions you ask through the request_user_input tool, where available, render Markdown in Indocode: use links, images by workspace path (![alt](relative/path.png)), ```chart blocks with JSON {\"type\":\"bar\"|\"line\"|\"pie\",\"title\",\"labels\":[…],\"series\":[{\"name\",\"values\":[…]}]}, ```svg drawings, or static ```html views when a visual helps the user decide. Remote images show as links; scripts never run.";
 
-/// Replies may carry generative UI blocks that PandaCode draws in the thread.
-const GENERATIVE_UI: &str = "\n\nGenerative UI: when a visual beats prose, a reply may include a ```ui block holding JSON {\"type\":…}; ```chart, ```svg and ```html work too. Types (fields): callout(tone info|success|warning|danger|note,title,body), card(title,body,footer,actions,children), stats(items[{label,value,delta,hint,spark[]}]), table(title,columns[],rows[[…]]), chart(chart bar|line|pie|area|sparkline,title,labels,series[{name,values}]), progress(label,value,max), plan|steps|timeline(title,summary,items[{title,detail,status done|active|pending|error|skipped,time}],actions), checklist(items[{text,done}]), tabs|accordion(items[{label,body,children}]), tree(paths[] or items[{name,status,children}]), diff(file,diff), code(file,language,code), terminal(command,output,exitCode), compare(items[{title,pros,cons,verdict}]), gallery(images[{path,caption}]), actions(buttons[{label,prompt,tone}]), chips|followups(options[{label,prompt}]), or inline :codex-followup[Label]{prompt=\"…\"}, form(title,fields[{name,label,type text|textarea|number|select|checkbox,options}],submit,prompt with {name}), stack|grid(columns,children), custom(html,css,state; data-ui-toggle=\"#id\", data-ui-tab/data-ui-panel, data-ui-set=\"k=v\", data-ui-bind=\"k\", data-ui-prompt). Bodies are Markdown. Buttons and forms only put a prompt in the user's composer; nothing runs, and remote URLs are not loaded. ```mermaid shows as labelled source. For a page that needs scripts, write an HTML file and open it with pandacode_preview_file.";
+/// Replies may carry generative UI blocks that Indocode draws in the thread.
+const GENERATIVE_UI: &str = "\n\nGenerative UI: when a visual beats prose, a reply may include a ```ui block holding JSON {\"type\":…}; ```chart, ```svg and ```html work too. Types (fields): callout(tone info|success|warning|danger|note,title,body), card(title,body,footer,actions,children), stats(items[{label,value,delta,hint,spark[]}]), table(title,columns[],rows[[…]]), chart(chart bar|line|pie|area|sparkline,title,labels,series[{name,values}]), progress(label,value,max), plan|steps|timeline(title,summary,items[{title,detail,status done|active|pending|error|skipped,time}],actions), checklist(items[{text,done}]), tabs|accordion(items[{label,body,children}]), tree(paths[] or items[{name,status,children}]), diff(file,diff), code(file,language,code), terminal(command,output,exitCode), compare(items[{title,pros,cons,verdict}]), gallery(images[{path,caption}]), actions(buttons[{label,prompt,tone}]), chips|followups(options[{label,prompt}]), or inline :codex-followup[Label]{prompt=\"…\"}, form(title,fields[{name,label,type text|textarea|number|select|checkbox,options}],submit,prompt with {name}), stack|grid(columns,children), custom(html,css,state; data-ui-toggle=\"#id\", data-ui-tab/data-ui-panel, data-ui-set=\"k=v\", data-ui-bind=\"k\", data-ui-prompt). Bodies are Markdown. Buttons and forms only put a prompt in the user's composer; nothing runs, and remote URLs are not loaded. ```mermaid shows as labelled source. For a page that needs scripts, write an HTML file and open it with indocode_preview_file.";
 
 /// Harnesses without a system prompt hear the app instructions again every few turns.
 const INSTRUCTION_REMINDER_EVERY: i64 = 8;
@@ -1104,7 +1104,7 @@ async fn prepare_command(
     };
     let resolution = slash_commands::resolve(&provider, &cwd, &original).await?;
     if resolution.action.is_some() {
-        return Err("This command opens a PandaCode control. Run it from the message box.".into());
+        return Err("This command opens a Indocode control. Run it from the message box.".into());
     }
     Ok(Some(PreparedCommand {
         provider,
@@ -1243,7 +1243,7 @@ fn prepare_task_run_in_project(
     let mut agents = state.agents.lock().map_err(|e| e.to_string())?;
     agent_updates::ensure_not_installing()?;
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is shutting down.".into());
+        return Err("Indocode is shutting down.".into());
     }
     if agents.contains_key(&session_id) || terminal::harness_running(&state.terminals, &session_id)?
     {
@@ -1496,7 +1496,7 @@ async fn launch_operation_admitted(
         team: team_admission,
     } = admission;
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is shutting down.".into());
+        return Err("Indocode is shutting down.".into());
     }
     let command = if goal.is_none() && team_admission.is_none() {
         prepare_command(&state, &session_id, text.as_deref()).await?
@@ -1594,7 +1594,7 @@ async fn launch_operation_admitted(
         let changes_cache = app
             .path()
             .app_cache_dir()
-            .unwrap_or_else(|_| std::env::temp_dir().join("pandacode"))
+            .unwrap_or_else(|_| std::env::temp_dir().join("indocode"))
             .join("turn-captures");
         // Goal inspection/pause/clear are control operations, not model turns.
         let tracker = if matches!(
@@ -2794,7 +2794,7 @@ async fn prepare_file_preview(
     path: String,
 ) -> Result<file_preview::FilePreview> {
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is shutting down.".into());
+        return Err("Indocode is shutting down.".into());
     }
     let root = state.root(&project_id, session_id.as_deref())?;
     blocking(move || app.state::<file_preview::FilePreviews>().prepare(&root, &path)).await
@@ -2856,7 +2856,7 @@ async fn start_run_script_terminal(
     cols: u16,
     rows: u16,
 ) -> Result<String> {
-    if state.shutdown.load(Ordering::SeqCst) != 0 { return Err("PandaCode is shutting down.".into()); }
+    if state.shutdown.load(Ordering::SeqCst) != 0 { return Err("Indocode is shutting down.".into()); }
     let root = state.root(&project_id, session_id.as_deref())?;
     let terms = state.terminals.clone();
     blocking(move || {
@@ -2879,7 +2879,7 @@ async fn start_terminal(
     rows: u16,
 ) -> Result<String> {
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is shutting down.".into());
+        return Err("Indocode is shutting down.".into());
     }
     let root = state.root(&project_id, session_id.as_deref())?;
     let terms = state.terminals.clone();
@@ -3028,7 +3028,7 @@ pub fn run() {
             }
             // Retain the database filename and bundle identifier so upgrades reuse existing data.
             let store =
-                Store::open(&dir.join("kingcode.sqlite3")).map_err(std::io::Error::other)?;
+                Store::open(&dir.join("indocode.sqlite3")).map_err(std::io::Error::other)?;
             if let Err(error) = store.discard_empty_drafts() {
                 eprintln!("Could not clear unsent new tasks: {error}");
             }
@@ -3396,7 +3396,7 @@ pub fn run() {
             handler(invoke)
         })
         .build(tauri::generate_context!())
-        .expect("Failed to launch PandaCode");
+        .expect("Failed to launch Indocode");
     app.run(|app, event| {
         if let tauri::RunEvent::ExitRequested { api, .. } = event {
             let state = app.state::<AppState>();
@@ -3443,7 +3443,7 @@ pub fn run() {
             });
         } else if matches!(event, tauri::RunEvent::Exit) {
             app.state::<file_preview::FilePreviews>().shutdown();
-            // VMs PandaCode started release their memory when it quits.
+            // VMs Indocode started release their memory when it quits.
             app.state::<vm::Vms>().shutdown();
             cloud::aws_screen::close(None);
             providers::shutdown_all();

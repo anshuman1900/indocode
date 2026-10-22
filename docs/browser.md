@@ -6,7 +6,7 @@ server or enter an HTTP(S) URL, hostname, or localhost port in the address bar.
 Back, forward, reload, element selection, and viewport capture stay in the toolbar.
 Some listening ports are not HTTP servers and may not serve a page.
 
-PandaCode creates one system webview only after navigation and destroys it when
+Indocode creates one system webview only after navigation and destroys it when
 the Browser tab closes. Page content has no application IPC permissions. App menus
 and dialogs temporarily hide the guest view so native content cannot cover them.
 There is no bundled browser engine, proxy server, or idle port polling. Browser

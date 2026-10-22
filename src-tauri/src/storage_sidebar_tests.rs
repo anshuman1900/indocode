@@ -28,7 +28,7 @@ fn without_sidebar(task: &Session) -> serde_json::Value {
 
 #[test]
 fn sidebar_preferences_persist_without_changing_activity_or_execution() {
-    let directory = std::env::temp_dir().join(format!("pandacode-sidebar-{}", id()));
+    let directory = std::env::temp_dir().join(format!("indocode-sidebar-{}", id()));
     std::fs::create_dir_all(&directory).unwrap();
     let path = directory.join("store.sqlite");
     let initial;
@@ -232,7 +232,7 @@ fn sidebar_forks_start_unpinned_unordered_and_deletion_preserves_other_preferenc
 
 #[test]
 fn sidebar_v20_migration_is_idempotent_and_retains_existing_preferences() {
-    let directory = std::env::temp_dir().join(format!("pandacode-sidebar-migration-{}", id()));
+    let directory = std::env::temp_dir().join(format!("indocode-sidebar-migration-{}", id()));
     std::fs::create_dir_all(&directory).unwrap();
     let path = directory.join("store.sqlite");
     let sid;

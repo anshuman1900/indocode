@@ -1,7 +1,7 @@
-# Contributing to PandaCode
+# Contributing to Indocode
 
-Thanks for helping. PandaCode is an open-source desktop app (MIT-based
-[PandaCode License](LICENSE)) built with Tauri 2
+Thanks for helping. Indocode is an open-source desktop app (MIT-based
+[Indocode License](LICENSE)) built with Tauri 2
 (Rust in `src-tauri/`), plain TypeScript (`src/`) and an Astro website
 (`website/`). This guide covers setup, checks and pull requests. Code
 conventions for humans and coding agents are in [AGENTS.md](AGENTS.md).
@@ -31,7 +31,7 @@ not in public issues.
 
 ```sh
 git clone https://github.com/aicodeking/pandacode.git
-cd pandacode
+cd indocode
 npm ci
 npm run tauri dev      # or: npm run desktop
 ```
@@ -43,7 +43,7 @@ for every new IPC command.
 
 Never point a development build at your real data with risky changes: pass a
 different identifier, for example
-`npx tauri dev --config '{"identifier":"ai.pandacode.dev"}'`.
+`npx tauri dev --config '{"identifier":"ai.indocode.dev"}'`.
 
 To build an installer for your OS: `npm run tauri build`, or
 `npm run release:build` for the same packaging the release workflow uses (see
@@ -110,4 +110,4 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`.
   OS keychain (`secret_store.rs`).
 - Keep files small and focused, and handle errors explicitly.
 - By contributing, you agree your contributions are licensed under the
-  [PandaCode License](LICENSE).
+  [Indocode License](LICENSE).

@@ -8,8 +8,8 @@ import { escape, icon } from './dom';
 export type SidebarView = 'tasks' | 'bots';
 export type BotsListContext = { bots: Bot[]; selectedProject: string | undefined; working: (bot: Bot) => boolean };
 
-const VIEW_KEY = 'pandacode.sidebarView';
-const SEEN_KEY = 'pandacode.botsSeen';
+const VIEW_KEY = 'indocode.sidebarView';
+const SEEN_KEY = 'indocode.botsSeen';
 // Vivid fills for avatars; a bot keeps its color because it is picked from its id.
 const AVATAR_COLORS = ['#8b5cf6', '#3b82f6', '#22c55e', '#14b8a6', '#f97316', '#ef4444', '#ec4899', '#6366f1', '#eab308', '#06b6d4'];
 

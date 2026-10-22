@@ -149,7 +149,7 @@ async fn end_turn(app: &tauri::AppHandle, local: &str, successful: bool, stopped
         return;
     }
     if let Err(error) = sync(app, local).await {
-        eprintln!("PandaCode Connect: could not copy a remote task's messages: {error}");
+        eprintln!("Indocode Connect: could not copy a remote task's messages: {error}");
     }
     finish(app, local, successful, stopped, text);
 }
@@ -172,7 +172,7 @@ fn finish(app: &tauri::AppHandle, local: &str, successful: bool, stopped: bool, 
     match lock(&app.state::<AppState>()).and_then(|store| finish_once(&store, local, successful, stopped)) {
         Ok(true) => {}
         Ok(false) => return,
-        Err(error) => eprintln!("PandaCode Connect: could not end a remote task's turn: {error}"),
+        Err(error) => eprintln!("Indocode Connect: could not end a remote task's turn: {error}"),
     }
     let done = AgentEvent { session_id: local.to_owned(), kind: "done".into(), text: text.to_owned(), request_id: None, data: None, tool: None };
     let _ = app.emit("agent-event", done);
@@ -291,7 +291,7 @@ pub(crate) async fn subscribe_all(app: tauri::AppHandle) {
         }
         match client::call(&app, &device, "subscribe", json!({"sessionIds": sessions})).await {
             Ok(reply) => catch_up(&app, &device, reply["tasks"].as_array().map(Vec::as_slice).unwrap_or_default()).await,
-            Err(error) => eprintln!("PandaCode Connect: could not follow tasks on {}: {error}", super::device_label(&device)),
+            Err(error) => eprintln!("Indocode Connect: could not follow tasks on {}: {error}", super::device_label(&device)),
         }
     }
 }
@@ -453,7 +453,7 @@ mod tests {
 
     #[test]
     fn version_26_adds_the_mirror_columns() {
-        let path = std::env::temp_dir().join(format!("pandacode-mirror-{}.sqlite3", uuid::Uuid::new_v4()));
+        let path = std::env::temp_dir().join(format!("indocode-mirror-{}.sqlite3", uuid::Uuid::new_v4()));
         {
             let store = Store::open(&path).unwrap();
             store.db.execute_batch("DROP INDEX sessions_remote; ALTER TABLE sessions DROP COLUMN remote_device; ALTER TABLE sessions DROP COLUMN remote_session; ALTER TABLE sessions DROP COLUMN remote_synced_id; PRAGMA user_version=25;").unwrap();
@@ -532,7 +532,7 @@ mod tests {
         assert_eq!((mirror.provider.as_str(), mirror.status.as_str(), mirror.draft), ("codex", "running", false));
         let other = store.create_session(&project.id, "claude", "sonnet", "full").unwrap();
         store.mark_draft(&other.id).unwrap();
-        store.attach_worktree(&other.id, &std::env::temp_dir(), "pandacode/x").unwrap();
+        store.attach_worktree(&other.id, &std::env::temp_dir(), "indocode/x").unwrap();
         let (fresh, created) = mirror_row(&store, "host", &project.id, "claude", "sonnet", None, None, Some(&other.id)).unwrap();
         assert!(created && fresh != other.id);
         assert_eq!(store.session(&other.id).unwrap().remote_device, None, "the worktree draft stays local");

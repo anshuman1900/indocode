@@ -82,7 +82,7 @@ pub async fn cloud_connect(app: AppHandle, provider: String, key: String, option
                 settings.railway_workspace = workspace;
                 super::save_settings(&settings)?;
             }
-            // Google Cloud uses gcloud's own login; PandaCode stores only the project and region.
+            // Google Cloud uses gcloud's own login; Indocode stores only the project and region.
             "gcloud" => {
                 let project = text("project").ok_or("Enter your Google Cloud project ID.")?;
                 if project.len() > 100 || project.starts_with('-') || !project.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b"-.:".contains(&b)) {
@@ -98,7 +98,7 @@ pub async fn cloud_connect(app: AppHandle, provider: String, key: String, option
                 settings.gcloud_region = region;
                 super::save_settings(&settings)?;
             }
-            // AWS uses the CLI's own login; PandaCode stores only the profile and region.
+            // AWS uses the CLI's own login; Indocode stores only the profile and region.
             "aws" => {
                 let region = text("region").ok_or("Choose an AWS region, such as us-east-1.")?;
                 if !region.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-') || region.len() > 32 {
@@ -149,7 +149,7 @@ async fn verify_railway(api: &str, token: &str, workspace: Option<&str>) -> Resu
     })
 }
 
-/// Deploy PandaCode's sandbox Worker to the connected Cloudflare account (needs Docker).
+/// Deploy Indocode's sandbox Worker to the connected Cloudflare account (needs Docker).
 #[tauri::command]
 pub async fn cloud_setup_sandboxes(app: AppHandle) -> Result<Vec<Connection>> {
     crate::blocking(move || {

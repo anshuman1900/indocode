@@ -174,7 +174,7 @@ impl HostTools {
 /// activity text and render them as protocol image blocks, not a base64 transcript.
 pub(super) fn image_content(value: &Value) -> Result<Option<(String, String, String)>, String> {
     use base64::{engine::general_purpose::STANDARD, Engine};
-    let Some(image) = value.get("_pandacodeImage") else {
+    let Some(image) = value.get("_indocodeImage") else {
         return Ok(None);
     };
     let mime = image["mimeType"].as_str().ok_or("Invalid image response")?;
@@ -472,14 +472,14 @@ mod tests {
     fn host() -> ToolHost {
         ToolHost {
             tools: vec![
-                json!({"type":"function","name":"pandacode_test","description":"test","inputSchema":{"type":"object"}}),
+                json!({"type":"function","name":"indocode_test","description":"test","inputSchema":{"type":"object"}}),
             ],
             handler: Arc::new(|_, args| Box::pin(async move { Ok(args) })),
             approval_tools: HashSet::new(),
         }
     }
     fn request() -> Value {
-        json!({"id":"rpc-1","params":{"namespace":null,"tool":"pandacode_test","arguments":{"ok":true},"callId":"call-1"}})
+        json!({"id":"rpc-1","params":{"namespace":null,"tool":"indocode_test","arguments":{"ok":true},"callId":"call-1"}})
     }
     #[tokio::test]
     async fn dispatch_preserves_rpc_and_returns_actual_json_result() {
@@ -496,7 +496,7 @@ mod tests {
     #[test]
     fn moodboard_images_use_native_image_blocks_and_remain_bounded() {
         use base64::{engine::general_purpose::STANDARD, Engine};
-        let image = json!({"_pandacodeImage":{"mimeType":"image/jpeg","data":STANDARD.encode([0xff,0xd8,0xff,0xd9]),"text":"A visual reference"}});
+        let image = json!({"_indocodeImage":{"mimeType":"image/jpeg","data":STANDARD.encode([0xff,0xd8,0xff,0xd9]),"text":"A visual reference"}});
         let result = reply(json!(1), Ok(image));
         assert_eq!(result["result"]["success"], true);
         assert_eq!(result["result"]["contentItems"][1]["type"], "inputImage");
@@ -507,7 +507,7 @@ mod tests {
         assert_eq!(
             reply(
                 json!(2),
-                Ok(json!({"_pandacodeImage":{"mimeType":"image/svg+xml","data":"PHN2Zz4="}}))
+                Ok(json!({"_indocodeImage":{"mimeType":"image/svg+xml","data":"PHN2Zz4="}}))
             )["result"]["success"],
             false
         );
@@ -515,7 +515,7 @@ mod tests {
             reply(
                 json!(3),
                 Ok(
-                    json!({"_pandacodeImage":{"mimeType":"image/jpeg","data":"a".repeat(3*1024*1024)}})
+                    json!({"_indocodeImage":{"mimeType":"image/jpeg","data":"a".repeat(3*1024*1024)}})
                 )
             )["result"]["success"],
             false
@@ -555,11 +555,11 @@ mod protocol_tests {
     fn host(protected: bool) -> ToolHost {
         ToolHost {
             tools: vec![
-                json!({"type":"function","name":"pandacode_test","description":"test","inputSchema":{"type":"object"}}),
+                json!({"type":"function","name":"indocode_test","description":"test","inputSchema":{"type":"object"}}),
             ],
             handler: Arc::new(|_, args| Box::pin(async move { Ok(args) })),
             approval_tools: if protected {
-                HashSet::from(["pandacode_test".into()])
+                HashSet::from(["indocode_test".into()])
             } else {
                 HashSet::new()
             },
@@ -575,7 +575,7 @@ mod protocol_tests {
         p
     }
     fn request() -> Value {
-        json!({"id":"rpc","method":"item/tool/call","params":{"threadId":"thread","turnId":"turn","namespace":null,"tool":"pandacode_test","arguments":{"ok":true},"callId":"call"}})
+        json!({"id":"rpc","method":"item/tool/call","params":{"threadId":"thread","turnId":"turn","namespace":null,"tool":"indocode_test","arguments":{"ok":true},"callId":"call"}})
     }
     fn question() -> Value {
         json!({"id":7,"method":"item/tool/requestUserInput","params":{"threadId":"thread","turnId":"turn","itemId":"q-item","isBlocking":true,"questions":[{"id":"q","header":"Choice","question":"Which?","isOther":false,"isSecret":false,"options":[{"label":"A","description":"First"}]}]}})
@@ -591,7 +591,7 @@ mod protocol_tests {
         let step = p.receive(json!({"id":1,"result":{}})).unwrap();
         assert_eq!(
             step.write[1]["params"]["dynamicTools"][0]["name"],
-            "pandacode_test"
+            "indocode_test"
         );
         p.remote_id = "thread".into();
         let resume = p.receive(json!({"id":1,"result":{}})).unwrap();
@@ -632,11 +632,11 @@ mod protocol_tests {
     fn cloud_cli_asks_even_in_full_mode() {
         let mut p = protocol("full", false);
         let mut cloud = host(false);
-        cloud.tools[0]["name"] = json!("pandacode_cloud_cli");
-        cloud.approval_tools.insert("pandacode_cloud_cli".into());
+        cloud.tools[0]["name"] = json!("indocode_cloud_cli");
+        cloud.approval_tools.insert("indocode_cloud_cli".into());
         p.host = Some(HostTools::new(cloud).unwrap());
         let mut req = request();
-        req["params"]["tool"] = json!("pandacode_cloud_cli");
+        req["params"]["tool"] = json!("indocode_cloud_cli");
         let step = p.receive(req).unwrap();
         assert!(step.calls.is_empty());
         let event = step.events.iter().find(|event| event.kind == "approval").unwrap();
@@ -759,7 +759,7 @@ IFS= read -r initialized
 IFS= read -r start
 printf '%s\n' '{"id":2,"result":{"thread":{"id":"thread"}}}'
 IFS= read -r turn
-printf '%s\n' '{"id":3,"result":{"turn":{"id":"turn"}}}' '{"id":"rpc","method":"item/tool/call","params":{"threadId":"thread","turnId":"turn","namespace":null,"tool":"pandacode_test","arguments":{},"callId":"call"}}' '{"method":"item/agentMessage/delta","params":{"threadId":"thread","turnId":"turn","itemId":"message","delta":"Still streaming"}}'
+printf '%s\n' '{"id":3,"result":{"turn":{"id":"turn"}}}' '{"id":"rpc","method":"item/tool/call","params":{"threadId":"thread","turnId":"turn","namespace":null,"tool":"indocode_test","arguments":{},"callId":"call"}}' '{"method":"item/agentMessage/delta","params":{"threadId":"thread","turnId":"turn","itemId":"message","delta":"Still streaming"}}'
 while IFS= read -r reply; do
 case "$reply" in *turn/interrupt*) exit 0;; esac
 done

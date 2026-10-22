@@ -22,7 +22,7 @@ const sampleSource = '// Browser preview — sample source\nexport function crea
 const previewWorkspaceFiles = ['index.html', '.gitignore', 'README.md', 'package.json', 'tsconfig.json', 'src/main.ts', 'src/style.css', 'src/components/search.ts', 'src/components/search.test.ts', 'src/lib/search-index.ts', 'public/favicon.svg', 'docs/design notes.md'];
 const sampleTestOutput = 'PASS src/components/search.test.ts\n  ✓ filters results as the query changes\n  ✓ preserves keyboard selection\n\nTests: 12 passed, 12 total\nTime: 0.8s\nSample output — no command was executed.';
 function encodeTool(tool: ToolActivity): string { return JSON.stringify({ type: 'tool_activity', version: 1, ...tool }); }
-let projects: Project[] = [{ id: 'project-1', name: 'orbit', path: '/Users/you/Projects/orbit' }, { id: 'project-2', name: 'pandacode', path: '/Users/you/Projects/pandacode' }];
+let projects: Project[] = [{ id: 'project-1', name: 'orbit', path: '/Users/you/Projects/orbit' }, { id: 'project-2', name: 'indocode', path: '/Users/you/Projects/indocode' }];
 let sessions: Session[] = [
   { id: 'session-1', projectId: 'project-1', title: 'Make search feel instant', provider: 'claude', model: 'sonnet', mode: 'ask', status: 'idle', createdAt: now - 420000, updatedAt: now, archived: false, worktreePath: null, resumeId: 'preview-session', lastResponseAt: now - 300000 },
   { id: 'session-2', projectId: 'project-1', title: 'Refine the navigation', provider: 'codex', model: '', mode: 'ask', status: 'idle', createdAt: now - 8200000, updatedAt: now - 8000000, archived: false, worktreePath: null, resumeId: null, lastResponseAt: null },
@@ -31,7 +31,7 @@ let sessions: Session[] = [
 ];
 if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('trace')) sessions = [...sessions, { id: 'session-5', projectId: 'project-1', title: 'Polish the trace view', provider: 'claude', model: 'sonnet', mode: 'ask', status: 'idle', createdAt: now - 60000, updatedAt: now + 1000, archived: false, worktreePath: null, resumeId: null, lastResponseAt: now }];
 // The preview persists sidebar preferences only, never sample conversation data.
-const THREAD_ORDER_KEY = 'pandacode.preview.threadOrder';
+const THREAD_ORDER_KEY = 'indocode.preview.threadOrder';
 type ThreadOrder = { id: string; pinned: boolean; sidebarOrder: number | null };
 function loadThreadOrder(): void {
   let saved: unknown;
@@ -144,7 +144,7 @@ function previewSaveConnection(input: { id?: string | null; provider: ProviderId
   return previewConnections;
 }
 // Representative catalog fixtures only; the native app queries installed harnesses.
-/** Another computer's smaller catalog (PandaCode Connect). */
+/** Another computer's smaller catalog (Indocode Connect). */
 const remoteProviders = (): Provider[] => ['claude', 'codex'].map(id => providers.find(p => p.id === id)!).map(p => ({ ...p, models: remoteCatalog(p.id) }));
 function remoteCatalog(id: ProviderId): ProviderModel[] {
   if (id === 'claude') return ['sonnet', 'opus'].map(model => fallbackModel('claude', model));
@@ -205,7 +205,7 @@ function previewWorktree(source: Session, args: Record<string, any>): { path: st
   const parent = projects.find(p => p.id === source.projectId)!;
   const name = String(args.branch ?? '').trim();
   if (!name || name.length > 120 || name.includes('..') || !/^[A-Za-z0-9_/-]+$/.test(name)) throw new Error('Use a branch name with letters, numbers, hyphens, underscores, and slashes');
-  const branch = /^(codex|pandacode|kingcode)\//.test(name) ? name : 'pandacode/' + name;
+  const branch = /^(codex|indocode|kingcode)\//.test(name) ? name : 'indocode/' + name;
   const exists = previewBranches.has(branch);
   if (args.existing && !exists) throw new Error(`Branch ${branch} does not exist yet. Create it instead.`);
   if (!args.existing && exists) throw new Error(`Branch ${branch} already exists. Use the existing branch or choose another name.`);
@@ -297,7 +297,7 @@ const previewSimulator = (() => {
   const poses = new Map<string, 'closed' | 'book' | 'open'>();
   const inners: Record<string, { width: number; height: number }> = { A1B2: { width: 951, height: 669 } };
   const screens: Record<string, { width: number; height: number; scale: number; homeButton: boolean }> = { '5B7E': { width: 820, height: 1180, scale: 2, homeButton: false }, '6C1D': { width: 420, height: 912, scale: 3, homeButton: false }, '7D2E': { width: 402, height: 874, scale: 3, homeButton: false }, 'A1B2': { width: 466, height: 678, scale: 3, homeButton: false }, '8E3F': { width: 1032, height: 1376, scale: 2, homeButton: false }, '9F40': { width: 390, height: 844, scale: 3, homeButton: false }, andr: { width: 412, height: 915, scale: 2.625, homeButton: false } };
-  (window as any).__simSetPose = (udid: string, pose: 'closed' | 'book' | 'open') => { poses.set(udid, pose); seq++; }; // tests: the hinge moved outside PandaCode
+  (window as any).__simSetPose = (udid: string, pose: 'closed' | 'book' | 'open') => { poses.set(udid, pose); seq++; }; // tests: the hinge moved outside Indocode
   const screenOf = (udid: string | null) => ({ ...(screens[udid?.slice(0, 4) ?? ''] ?? { width: 402, height: 874, scale: 3, homeButton: false }), inner: inners[udid?.slice(0, 4) ?? ''] ?? null });
   /** The display frames and taps use: the Duo's inner display when it is not closed. */
   const activeOf = (udid: string) => { const screen = screenOf(udid); return screen.inner && (poses.get(udid) ?? 'closed') !== 'closed' ? screen.inner : screen; };
@@ -508,9 +508,9 @@ function sampleDailyTokens(): { date: string; tokens: number }[] {
 /** Preview queues persist in localStorage so a reload behaves like a restart. */
 type PreviewQueued = { id: string; sessionId: string; position: number; text: string; attachments: unknown[]; createdAt: number; updatedAt: number };
 function previewQueue(): PreviewQueued[] {
-  try { return (JSON.parse(localStorage.getItem('pandacode.preview.queue') ?? '[]') as PreviewQueued[]).filter(e => sessions.some(task => task.id === e.sessionId)).sort((a, b) => a.sessionId.localeCompare(b.sessionId) || a.position - b.position); } catch { return []; }
+  try { return (JSON.parse(localStorage.getItem('indocode.preview.queue') ?? '[]') as PreviewQueued[]).filter(e => sessions.some(task => task.id === e.sessionId)).sort((a, b) => a.sessionId.localeCompare(b.sessionId) || a.position - b.position); } catch { return []; }
 }
-function savePreviewQueue(queue: PreviewQueued[]): void { try { localStorage.setItem('pandacode.preview.queue', JSON.stringify(queue)); } catch { /* preview only */ } }
+function savePreviewQueue(queue: PreviewQueued[]): void { try { localStorage.setItem('indocode.preview.queue', JSON.stringify(queue)); } catch { /* preview only */ } }
 /** Sample conversations from the Claude Code and Codex CLIs for the Import conversations window. */
 const previewImportables: Record<'claude' | 'codex', { id: string; title: string; folder: string; updatedAt: number; messages: number | null; model: string | null }[]> = {
   claude: [
@@ -519,7 +519,7 @@ const previewImportables: Record<'claude' | 'codex', { id: string; title: string
     { id: '9f8e7d6c-5b4a-4938-8271-6a5b4c3d2e1f', title: 'Old scratch experiment', folder: '/missing/scratch', updatedAt: now - 40 * 86400000, messages: 3, model: null },
   ],
   codex: [
-    { id: '4c5d6e7f-8a9b-4c0d-9e1f-2a3b4c5d6e7f', title: 'Speed up the search index', folder: '/Users/you/Projects/pandacode', updatedAt: now - 5 * 3600000, messages: null, model: 'gpt-6-astra' },
+    { id: '4c5d6e7f-8a9b-4c0d-9e1f-2a3b4c5d6e7f', title: 'Speed up the search index', folder: '/Users/you/Projects/indocode', updatedAt: now - 5 * 3600000, messages: null, model: 'gpt-6-astra' },
   ],
 };
 /** Mirrors native storage: a New task draft is published by its first saved prompt. */
@@ -554,7 +554,7 @@ function slashCatalog(provider: ProviderId) {
     ['new', 'Start a new task in this project', 'new'],
     ['model', 'Choose a harness, model, and reasoning effort', 'model'],
     ['permissions', 'Choose this task’s approval behavior', 'permissions'],
-    ['settings', 'Open PandaCode settings', 'settings'],
+    ['settings', 'Open Indocode settings', 'settings'],
     ['theme', 'Switch appearance', 'theme'],
     ['help', 'Browse available slash commands', 'help'],
     ['skills', 'Browse harness skills', 'skills'],
@@ -584,7 +584,7 @@ function slashCatalog(provider: ProviderId) {
     ['stop', 'Choose jobs to stop', 'jobs'], ['clean', 'Choose jobs to stop', 'jobs'],
   ];
   const accepts = new Set(['rename', 'goal', 'usage', 'conversations', 'fork', 'export', 'worktree', 'plan', 'fast', 'mention', 'cd', 'init', 'recap', 'console']);
-  const commands = [...local, ...(provider === 'codex' ? codex : [])].map(([name, description, action]) => ({ id: `pandacode:${name}`, name: `/${name}`, description, kind: 'action', source: 'PandaCode', action, argumentHint: accepts.has(action) ? '[arguments]' : undefined }));
+  const commands = [...local, ...(provider === 'codex' ? codex : [])].map(([name, description, action]) => ({ id: `indocode:${name}`, name: `/${name}`, description, kind: 'action', source: 'Indocode', action, argumentHint: accepts.has(action) ? '[arguments]' : undefined }));
   const native = provider === 'codex' ? ['review', 'compact', 'project-guide'] : provider === 'claude' ? ['compact', 'review', 'project-guide'] : ['compact', 'usage', 'tasks', 'skill:project-guide'];
   const terminal = provider === 'codex' ? ['exit', 'quit', 'keymap', 'vim', 'raw', 'title', 'statusline', 'pets', 'pet', 'clear', 'app', 'ide', 'logout', 'feedback', 'approve'] : provider === 'claude' ? ['exit', 'quit', 'login', 'logout', 'doctor'] : ["yolo", "yes", "auto", "permission", "config", "plan", "swarm", "effort", "thinking", "provider", "providers", "btw", "h", "?", "clear", "sessions", "task", "plugins", "add-dir", "experiments", "experimental", "reload", "reload-tui", "goal", "init", "fork", "title", "feedback", "undo", "editor", "logout", "disconnect", "login", "export-md", "export", "export-debug-zip", "web", "exit", "quit", "q", "version"];
   return { commands: [...commands, ...native.map(name => ({ id: `${provider}:${name}`, name: `/${name}`, description: `Sample ${provider} command`, kind: 'prompt', source: provider, action: undefined, argumentHint: '[arguments]' })), ...terminal.map(name => ({ id: `${provider}:${name}`, name: `/${name}`, description: `Open /${name} in the harness console`, kind: 'action', source: `${provider} console`, action: `console:${name}`, argumentHint: '[arguments]' }))], warnings: [] };
@@ -594,7 +594,7 @@ function resolveSlash(provider: ProviderId, text: string): { action: string | nu
   if (!match) return { action: null, arguments: '' };
   const command = slashCatalog(provider).commands.find(command => command.name === `/${match[1]}`);
   if (!command) throw new Error(`Unknown command /${match[1]}. Type / to browse this harness’s commands, or refresh the list.`);
-  if (command.action && match[2] && !command.argumentHint) throw new Error(`${command.name} opens a PandaCode control and does not accept arguments.`);
+  if (command.action && match[2] && !command.argumentHint) throw new Error(`${command.name} opens a Indocode control and does not accept arguments.`);
   return { action: command.action ?? null, arguments: match[2] ?? '' };
 }
 
@@ -620,7 +620,7 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
   if (command.includes('moodboard')) return (await import('./preview-moodboards')).invokeMoodboards<T>(command, args);
   if (command === 'bots_list' || command.startsWith('bot_')) return invokeBots<T>(command, args, {
     invoke, emit,
-    addProject: name => { const p = { id: crypto.randomUUID(), name, path: `/Users/you/PandaCode Bots/${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` }; projects.push(p); return p; },
+    addProject: name => { const p = { id: crypto.randomUUID(), name, path: `/Users/you/Indocode Bots/${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` }; projects.push(p); return p; },
   });
   if (command === 'remote_repo_check') {
     // `window.__remoteBehind` lets tests make GitHub lag this computer.
@@ -873,7 +873,7 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
         const created = await invoke<Session>('create_session', { projectId: project.id, provider: source, model: found.model ?? args.model, mode: 'full' });
         const task = session(created.id);
         Object.assign(task, { resumeId: conversationId, title: found.title, taskStage: 'in_progress', createdAt: found.updatedAt - 600000, updatedAt: found.updatedAt, lastPromptAt: found.updatedAt - 600000, lastResponseAt: found.updatedAt });
-        messages[task.id] = [{ id: ++id, sessionId: task.id, role: 'user', content: `Imported: ${found.title}`, createdAt: found.updatedAt - 600000 }, { id: ++id, sessionId: task.id, role: 'assistant', content: 'This conversation was imported into PandaCode.', createdAt: found.updatedAt }];
+        messages[task.id] = [{ id: ++id, sessionId: task.id, role: 'user', content: `Imported: ${found.title}`, createdAt: found.updatedAt - 600000 }, { id: ++id, sessionId: task.id, role: 'assistant', content: 'This conversation was imported into Indocode.', createdAt: found.updatedAt }];
         imported.push(taskSummary(task));
       }
       if (imported.length) emit('sessions-changed', undefined);
@@ -912,7 +912,7 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
     case 'list_slash_commands': result = slashCatalog(session(args.sessionId).provider); break;
     case 'resolve_slash_command': result = resolveSlash(session(args.sessionId).provider, String(args.text)); break;
     case 'list_agent_integrations': result = { servers: [{ name: 'Preview documentation', description: 'Sample MCP integration', status: 'ready', authStatus: 'not required', tools: [{ name: 'search_docs', description: 'Search sample documentation.' }] }], skills: [{ name: 'Project guidelines', description: 'Sample skill', status: 'enabled' }], apps: [], warnings: [] }; break;
-    case 'list_app_tools': result = [{ name: 'pandacode_list_tasks', description: 'List project tasks.' }, { name: 'pandacode_code_search', description: 'Search the checkout with the local codedb index.' }, { name: 'pandacode_open_browser', description: 'Open a URL in the app browser.' }]; break;
+    case 'list_app_tools': result = [{ name: 'indocode_list_tasks', description: 'List project tasks.' }, { name: 'indocode_code_search', description: 'Search the checkout with the local codedb index.' }, { name: 'indocode_open_browser', description: 'Open a URL in the app browser.' }]; break;
     case 'run_turn_checks': result = { checked: false, reason: 'Browser preview has no project checks.' }; break;
     case 'agent_ui_request_active': result = true; break;
     case 'resolve_agent_ui_action': break;
@@ -928,7 +928,7 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
       result = [...new Set(args.modelIds)];
       localStorage.setItem(openCodePreviewKey, JSON.stringify(result));
       emit('provider-models-changed', {provider:'opencode'});
-      window.dispatchEvent(new Event('pandacode-preview-models-changed'));
+      window.dispatchEvent(new Event('indocode-preview-models-changed'));
       break;
     }
     case 'add_project': { const p = { id: crypto.randomUUID(), name: args.path.split('/').pop() || 'Project', path: args.path }; projects.push(p); result = p; break; }
@@ -949,11 +949,11 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
     }
     case 'create_session': { const s: Session = { id: crypto.randomUUID(), ...args, pinned: false, sidebarOrder: null, draft: Boolean(args.draft), mode: args.mode ?? 'full', title: 'New conversation', status: 'idle', createdAt: Date.now(), updatedAt: Date.now(), archived: false, worktreePath: null, resumeId: null, lastResponseAt: null, lastPromptAt: null, reasoningEffort: null, contextUsage: null, taskStage: 'pending', taskDescription: '', completedAt: null } as Session; sessions.unshift(s); messages[s.id] = []; architect.inherit(s.id); result = s; break; }
     case 'chat_create': {
-      const project = { id: crypto.randomUUID(), name: 'Chat', path: `/Users/you/PandaCode Chats/chat-${crypto.randomUUID().slice(0, 8)}` }; projects.push(project);
+      const project = { id: crypto.randomUUID(), name: 'Chat', path: `/Users/you/Indocode Chats/chat-${crypto.randomUUID().slice(0, 8)}` }; projects.push(project);
       result = await invoke<Session>('create_session', { projectId: project.id, provider: args.provider, model: args.model, mode: args.mode }); break;
     }
     case 'chat_cleanup': {
-      const chat = projects.some(p => p.id === args.projectId && p.path.includes('/PandaCode Chats/')) && !sessions.some(s => s.projectId === args.projectId);
+      const chat = projects.some(p => p.id === args.projectId && p.path.includes('/Indocode Chats/')) && !sessions.some(s => s.projectId === args.projectId);
       if (chat) projects = projects.filter(p => p.id !== args.projectId);
       result = chat; break;
     }
@@ -1024,12 +1024,12 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
       break;
     }
     case 'send_message': {
-      if (resolveSlash(session(args.sessionId).provider, String(args.text)).action) throw new Error('This command opens a PandaCode control.');
+      if (resolveSlash(session(args.sessionId).provider, String(args.text)).action) throw new Error('This command opens a Indocode control.');
       const s = session(args.sessionId); assertIdle(s);
       let moodboardContext = '';
       for (const boardId of args.moodboardIds ?? []) {
         const board = await invoke<import('./moodboards').MoodboardDetail>('read_moodboard', { projectId: s.projectId, boardId });
-        moodboardContext += `\n\nMoodboard: ${board.name} (ID: ${board.id}). Use pandacode_read_moodboard and pandacode_read_moodboard_image to see these visual references.`;
+        moodboardContext += `\n\nMoodboard: ${board.name} (ID: ${board.id}). Use indocode_read_moodboard and indocode_read_moodboard_image to see these visual references.`;
       }
       if (architect.get(s.id)) { architect.start(s.id, String(args.text) + moodboardContext, args.imageIds); break; }
       if (s.archived) throw new Error('Restore this task before starting it.');
@@ -1044,7 +1044,7 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
       messages[s.id].push(toolMessage);
       activeTools.set(s.id, { activity: tool, message: toolMessage });
       agent({ sessionId: s.id, kind: 'tool', text: 'Bash', tool: { ...tool } });
-      const output = 'This is the browser preview. Your task and conversation are saved in this preview session, but no agent or shell is running here.\n\nOpen the native PandaCode app to work with your files using Claude Code, Codex, or Kimi Code. The desktop app connects to the CLI tools installed on your machine.';
+      const output = 'This is the browser preview. Your task and conversation are saved in this preview session, but no agent or shell is running here.\n\nOpen the native Indocode app to work with your files using Claude Code, Codex, or Kimi Code. The desktop app connects to the CLI tools installed on your machine.';
       let cursor = 0;
       const tick = () => {
         const next = output.slice(cursor, cursor + 13); cursor += 13;
@@ -1339,7 +1339,7 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
     case 'start_run_script_terminal':
     case 'start_harness_terminal': case 'start_terminal': {
       const terminalId = 'preview-terminal-' + crypto.randomUUID(); result = terminalId;
-      window.setTimeout(() => emit('terminal-event', { terminalId, data: '\x1b[38;5;108mPandaCode browser preview\x1b[0m\r\nA real PTY is available in the desktop app.\r\n\r\n$ ' }), 100); break;
+      window.setTimeout(() => emit('terminal-event', { terminalId, data: '\x1b[38;5;108mIndocode browser preview\x1b[0m\r\nA real PTY is available in the desktop app.\r\n\r\n$ ' }), 100); break;
     }
     case 'write_terminal': emit('terminal-event', { terminalId: args.terminalId, data: args.data === '\r' ? '\r\nPreview mode — no commands executed.\r\n$ ' : args.data }); break;
     case 'resize_terminal': case 'close_terminal': break;

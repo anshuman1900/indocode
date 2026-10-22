@@ -42,7 +42,7 @@ function listItems(chunk: string): Item[] {
 export function parse(source: string): { title?: string; blocks: Block[] } {
   const lines = source.replace(/\r\n/g, '\n').trim().split('\n');
   const heading = lines[0]?.match(/^#\s+(.+)$/)?.[1];
-  const title = heading && !/^PandaCode \d/.test(heading) ? heading : undefined;
+  const title = heading && !/^Indocode \d/.test(heading) ? heading : undefined;
   // A list may follow its lead-in paragraph without a blank line between them.
   const leadIn = (chunk: string): string[] => {
     const at = chunk.search(/\n- /);

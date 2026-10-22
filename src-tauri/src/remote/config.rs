@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Keychain service for the relay token and the device's X25519 private key.
-pub(crate) const SERVICE: &str = "app.pandacode.remote";
+pub(crate) const SERVICE: &str = "app.indocode.remote";
 
 /// Keychain account names for one install, scoped by its data folder. A dev build and the
 /// installed app (each its own device) must not share one item: macOS ties an item to the
@@ -31,7 +31,7 @@ pub(crate) fn legacy_accounts() -> Accounts {
 /// Only the installed app (data folder named after its identifier) ever owned the legacy
 /// items; a dev build must never take them.
 pub(crate) fn default_install(dir: &Path) -> bool {
-    dir.file_name().is_some_and(|name| name == "ai.pandacode.desktop")
+    dir.file_name().is_some_and(|name| name == "ai.indocode.desktop")
 }
 
 /// Legacy values to copy to the scoped names: the token, and the key when it differs
@@ -89,7 +89,7 @@ fn setting(name: &str, built: Option<&'static str>) -> Option<String> {
 }
 
 pub(crate) fn build() -> Option<Build> {
-    parse_build(setting("PANDACODE_RELAY_URL", option_env!("PANDACODE_RELAY_URL")), setting("PANDACODE_GITHUB_CLIENT_ID", option_env!("PANDACODE_GITHUB_CLIENT_ID")))
+    parse_build(setting("INDOCODE_RELAY_URL", option_env!("INDOCODE_RELAY_URL")), setting("INDOCODE_GITHUB_CLIENT_ID", option_env!("INDOCODE_GITHUB_CLIENT_ID")))
 }
 
 pub(crate) fn parse_build(relay: Option<String>, client_id: Option<String>) -> Option<Build> {
@@ -166,8 +166,8 @@ pub(crate) fn read_key(account: &str) -> crate::Result<Option<String>> {
             Ok(bytes) => Ok(String::from_utf8(bytes).ok()),
             Err(error) if error.code() == -25300 => Ok(None),
             // -25293 (auth failed) and -128 (cancelled): the access prompt was denied or dismissed.
-            Err(error) if matches!(error.code(), -25293 | -128) => Err("macOS did not let PandaCode read its Connect key. Choose Always Allow when Keychain asks, or sign out and sign in again.".into()),
-            Err(error) => Err(format!("Could not read this computer's PandaCode Connect key from Keychain ({}).", error.code())),
+            Err(error) if matches!(error.code(), -25293 | -128) => Err("macOS did not let Indocode read its Connect key. Choose Always Allow when Keychain asks, or sign out and sign in again.".into()),
+            Err(error) => Err(format!("Could not read this computer's Indocode Connect key from Keychain ({}).", error.code())),
         }
     }
     #[cfg(all(not(test), any(target_os = "linux", target_os = "windows")))]
@@ -175,7 +175,7 @@ pub(crate) fn read_key(account: &str) -> crate::Result<Option<String>> {
         match keyring::Entry::new(SERVICE, account).and_then(|entry| entry.get_password()) {
             Ok(text) => Ok(Some(text)),
             Err(keyring::Error::NoEntry) => Ok(None),
-            Err(_) => Err("Could not read this computer's PandaCode Connect key from secure storage.".into()),
+            Err(_) => Err("Could not read this computer's Indocode Connect key from secure storage.".into()),
         }
     }
     #[cfg(all(not(test), not(any(target_os = "macos", target_os = "linux", target_os = "windows"))))]
@@ -258,7 +258,7 @@ mod tests {
 
     #[test]
     fn legacy_items_are_adopted_only_when_they_belong_here() {
-        let installed = Path::new("/Users/me/Library/Application Support/ai.pandacode.desktop");
+        let installed = Path::new("/Users/me/Library/Application Support/ai.indocode.desktop");
         let good = token(r#"{"acct":"gh:1","dev":"d1","iat":100,"exp":200}"#);
         let legacy_key = super::super::crypto::encode_secret(&super::super::crypto::generate());
         let scoped_key = super::super::crypto::encode_secret(&super::super::crypto::generate());
@@ -273,7 +273,7 @@ mod tests {
         // Another device's token, an expired one, or a dev build: nothing.
         assert_eq!(adoption(installed, "d2", 150, &Ok(None), &Ok(None), legacy(&good, &legacy_key)), None);
         assert_eq!(adoption(installed, "d1", 200, &Ok(None), &Ok(None), legacy(&good, &legacy_key)), None);
-        assert_eq!(adoption(Path::new("/Users/me/Library/Application Support/ai.pandacode.dev"), "d1", 150, &Ok(None), &Ok(None), || panic!("a dev build read the legacy items")), None);
+        assert_eq!(adoption(Path::new("/Users/me/Library/Application Support/ai.indocode.dev"), "d1", 150, &Ok(None), &Ok(None), || panic!("a dev build read the legacy items")), None);
         // Both scoped items present, or the token unreadable: the legacy items are never read.
         assert_eq!(adoption(installed, "d1", 150, &Ok(Some(good.clone())), &Ok(Some(scoped_key)), || panic!("read")), None);
         assert_eq!(adoption(installed, "d1", 150, &Err("locked".into()), &Err("locked".into()), || panic!("read")), None);
@@ -318,10 +318,10 @@ mod tests {
 
     #[test]
     fn keychain_accounts_are_scoped_per_install() {
-        let installed = accounts(Path::new("/Users/me/Library/Application Support/ai.pandacode.desktop"));
-        let dev = accounts(Path::new("/Users/me/Library/Application Support/ai.pandacode.dev"));
+        let installed = accounts(Path::new("/Users/me/Library/Application Support/ai.indocode.desktop"));
+        let dev = accounts(Path::new("/Users/me/Library/Application Support/ai.indocode.dev"));
         assert_ne!(installed, dev);
-        assert_eq!(installed, accounts(Path::new("/Users/me/Library/Application Support/ai.pandacode.desktop")));
+        assert_eq!(installed, accounts(Path::new("/Users/me/Library/Application Support/ai.indocode.desktop")));
         assert!(installed.key.starts_with("device-key:") && installed.token.starts_with("relay-token:"));
     }
 
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn settings_keep_one_device_id_and_default_host_off() {
-        let dir = std::env::temp_dir().join(format!("pandacode-remote-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("indocode-remote-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
         let first = load(&dir);
         assert!(!first.host_enabled);

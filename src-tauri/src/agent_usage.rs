@@ -283,7 +283,7 @@ pub(crate) fn http_client() -> Result<reqwest::Client, FetchError> {
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(Duration::from_secs(5))
         .timeout(Duration::from_secs(12))
-        .user_agent(concat!("PandaCode/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("Indocode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|_| FetchError::Unavailable)
 }
@@ -458,7 +458,7 @@ fn parse_claude_credential(bytes: &[u8], now: u64) -> Result<ClaudeCredential, B
 }
 
 fn claude_override(inherit: bool, env: impl Fn(&str) -> Option<String>, settings: &Value) -> bool {
-    // Settings apply to the CLI even when PandaCode strips inherited credential
+    // Settings apply to the CLI even when Indocode strips inherited credential
     // environment variables. Helpers are detected, never executed here.
     if settings["apiKeyHelper"]
         .as_str()
@@ -957,7 +957,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "Opt-in real read-only usage checks; no inference or explicit token refresh"]
     async fn live_installed_usage() {
-        let configured = std::env::var("PANDACODE_USAGE_SMOKE_PROVIDERS")
+        let configured = std::env::var("INDOCODE_USAGE_SMOKE_PROVIDERS")
             .unwrap_or_else(|_| "codex,claude".into());
         for provider in configured
             .split(',')

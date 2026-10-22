@@ -501,7 +501,7 @@ mod tests {
     const PNG: &str = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC";
 
     fn temp_dir(label: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("pandacode-{label}-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("indocode-{label}-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }
@@ -588,10 +588,10 @@ mod tests {
 
         // A minimal PDF goes through Spotlight's PDF importer.
         let pdf = dir.join("brief.pdf");
-        std::fs::write(&pdf, b"%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 300 144] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length 44 >> stream\nBT /F1 24 Tf 20 60 Td (Hello PandaCode) Tj ET\nendstream endobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n").unwrap();
+        std::fs::write(&pdf, b"%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 300 144] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length 44 >> stream\nBT /F1 24 Tf 20 60 Td (Hello Indocode) Tj ET\nendstream endobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n").unwrap();
         let document = read_document(&pdf).unwrap();
         assert_eq!(document.method, "spotlight");
-        assert!(document.text.contains("Hello PandaCode"), "{}", document.text);
+        assert!(document.text.contains("Hello Indocode"), "{}", document.text);
 
         // Binary data with no importer is refused rather than pasted as garbage.
         let blob = dir.join("page.unknownext");

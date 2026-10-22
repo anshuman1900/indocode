@@ -32,7 +32,7 @@ export function bindThreadReordering(nav: HTMLElement, options: {
     const row = (event.target as Element).closest<HTMLElement>('.task-item');
     if (!row || options.busy() || !event.dataTransfer) { event.preventDefault(); return; }
     source = row; event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('application/x-pandacode-thread', row.dataset.id!);
+    event.dataTransfer.setData('application/x-indocode-thread', row.dataset.id!);
     row.classList.add('task-dragging'); options.dragging(true);
   });
   nav.addEventListener('dragover', event => {

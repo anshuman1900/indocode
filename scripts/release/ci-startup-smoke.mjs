@@ -66,7 +66,7 @@ function removeSmokeFiles(directory) {
 
 export async function cleanupSmokeDirectory(directory, { runnerTemp = process.env.RUNNER_TEMP, platform = process.platform, removeRuntime = rmdir, removeDirectory = removeSmokeFiles, warn = console.warn } = {}) {
   // Only a direct mkdtemp child owned by this check may be removed.
-  if (!runnerTemp || dirname(resolve(directory)) !== resolve(runnerTemp) || !basename(directory).startsWith('pandacode-startup-')) {
+  if (!runnerTemp || dirname(resolve(directory)) !== resolve(runnerTemp) || !basename(directory).startsWith('indocode-startup-')) {
     warn('Startup cleanup skipped a directory outside the owned CI temporary path.');
     return;
   }
@@ -143,7 +143,7 @@ async function main() {
   const size = (await stat(installer)).size;
   console.log(`Packaged installer: ${size} bytes (${(size / 1024 / 1024).toFixed(1)} MiB; release limit 200 MiB).`);
   validatePackageSize(size);
-  const directory = await mkdtemp(join(process.env.RUNNER_TEMP, 'pandacode-startup-'));
+  const directory = await mkdtemp(join(process.env.RUNNER_TEMP, 'indocode-startup-'));
   const env = smokeEnvironment(process.env, directory);
   try {
     for (const name of ['home', 'roaming', 'local', 'config', 'data', 'cache', 'runtime']) await mkdir(join(directory, name), { mode: 0o700 });
@@ -156,7 +156,7 @@ async function main() {
       // WebView2 bootstrap may download its runtime on a clean runner.
       await observeProcess(installer, installArguments(destination), { env, cwd: directory, durationMs: 120_000, expectExit: true, windowsVerbatimArguments: true });
       const names = await readdir(destination);
-      const binaries = names.filter(name => name.toLowerCase() === 'pandacode.exe');
+      const binaries = names.filter(name => name.toLowerCase() === 'indocode.exe');
       if (names.length > 100 || binaries.length !== 1) throw new Error('NSIS did not install the expected app executable.');
       await observeProcess(join(destination, binaries[0]), [], { env, cwd: directory, durationMs: 30_000 });
     }

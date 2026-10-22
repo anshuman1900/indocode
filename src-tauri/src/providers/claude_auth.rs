@@ -187,7 +187,7 @@ mod tests {
     #[ignore = "Uses the installed Claude CLI with isolated synthetic credentials; sends no prompt"]
     fn installed_claude_status_reads_saved_login_with_environment_overrides_removed() {
         let path = super::super::executable("claude").expect("Claude is installed");
-        let directory = std::env::temp_dir().join(format!("pandacode-claude-auth-{}", uuid::Uuid::new_v4()));
+        let directory = std::env::temp_dir().join(format!("indocode-claude-auth-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&directory).unwrap();
         let expires_at = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() + 3_600_000) as u64;
         std::fs::write(directory.join(".credentials.json"), json!({"claudeAiOauth":{

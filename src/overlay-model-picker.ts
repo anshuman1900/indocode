@@ -13,8 +13,8 @@ function watchModelPreferences(): Promise<unknown> {
     if (nativeOverlay) {
       await (await import('@tauri-apps/api/event')).listen<{provider:string}>('provider-models-changed', event => { if (event.payload.provider === 'opencode') invalidate(); });
     } else {
-      window.addEventListener('storage', event => { if (event.key === 'pandacode.preview.opencode-models') invalidate(); });
-      window.addEventListener('pandacode-preview-models-changed', invalidate);
+      window.addEventListener('storage', event => { if (event.key === 'indocode.preview.opencode-models') invalidate(); });
+      window.addEventListener('indocode-preview-models-changed', invalidate);
     }
   })().catch(error => { watching = undefined; throw error; });
 }
@@ -39,7 +39,7 @@ export async function openOverlayModelPicker(options: {
   const available = await providers();
   if (!options.valid()) return;
   available.forEach(provider => options.catalog(provider.id,provider.models));
-  if (!available.length) throw new Error('No harnesses found. Check your agent connections in PandaCode.');
+  if (!available.length) throw new Error('No harnesses found. Check your agent connections in Indocode.');
   // Native discovery lists a saved OpenCode selection as its models; with none, shorten the full catalog.
   const openCodeSaved = (available.find(provider => provider.id === 'opencode')?.models.length ?? 0) > 1;
   return openModelPicker({

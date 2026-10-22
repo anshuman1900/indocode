@@ -1,6 +1,6 @@
 //! Per-harness adapters: the one place that knows where each harness reads skills and rules.
 //! Skills become folders of files; rules become a marked block in the harness's instruction
-//! file. Harnesses without a file surface get `Surface::Prompt`, which PandaCode injects.
+//! file. Harnesses without a file surface get `Surface::Prompt`, which Indocode injects.
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -12,7 +12,7 @@ use super::{sha256_hex, Kind, Scope, Written};
 
 /// Harnesses with file-based skills and instruction files.
 pub const FILE_HARNESSES: &[&str] = &["claude", "codex"];
-/// Every other PandaCode harness; their skills and rules ride in the prompt.
+/// Every other Indocode harness; their skills and rules ride in the prompt.
 pub const PROMPT_HARNESSES: &[&str] = &["kimi", "opencode", "glm", "antigravity", "grok", "mimo", "pi", "deepseek", "commandcode", "omp"];
 
 pub enum Surface {
@@ -46,10 +46,10 @@ pub fn installed(harness: &str, home: &Path) -> bool {
 }
 
 fn begin(id: &str) -> String {
-    format!("<!-- pandacode:rule:{id} -->")
+    format!("<!-- indocode:rule:{id} -->")
 }
 fn end(id: &str) -> String {
-    format!("<!-- /pandacode:rule:{id} -->")
+    format!("<!-- /indocode:rule:{id} -->")
 }
 
 /// The body of `id`'s managed block in `text`, and the byte range of the whole block.
@@ -69,8 +69,8 @@ pub fn block(text: &str, id: &str) -> Option<(String, std::ops::Range<usize>)> {
 pub fn blocks_in(text: &str) -> (Vec<String>, bool) {
     let mut ids = Vec::new();
     let mut rest = text.to_string();
-    while let Some(at) = rest.find("<!-- pandacode:rule:") {
-        let tail = &rest[at + "<!-- pandacode:rule:".len()..];
+    while let Some(at) = rest.find("<!-- indocode:rule:") {
+        let tail = &rest[at + "<!-- indocode:rule:".len()..];
         let Some(id) = tail.split(" -->").next().map(str::to_string) else { break };
         let Some((_, range)) = block(&rest, &id) else { break };
         rest.replace_range(range, "");
@@ -79,17 +79,17 @@ pub fn blocks_in(text: &str) -> (Vec<String>, bool) {
     (ids, !rest.trim().is_empty())
 }
 
-/// Write `files` as `<dir>/<id>/…`. Refuses a folder PandaCode did not create, and files
-/// edited since PandaCode wrote them (`previous` is what it wrote last time).
+/// Write `files` as `<dir>/<id>/…`. Refuses a folder Indocode did not create, and files
+/// edited since Indocode wrote them (`previous` is what it wrote last time).
 pub fn write_folder(dir: &Path, id: &str, files: &[(String, Vec<u8>)], previous: &[Written]) -> Result<Vec<Written>, String> {
     let target = dir.join(id);
     if target.exists() && previous.is_empty() {
-        return Err(format!("{} already exists and PandaCode did not create it.", target.display()));
+        return Err(format!("{} already exists and Indocode did not create it.", target.display()));
     }
     for written in previous {
         let path = Path::new(&written.path);
         if path.exists() && file_hash(path).as_deref() != Some(written.sha256.as_str()) {
-            return Err(format!("{} was edited on disk; PandaCode will not overwrite it.", written.path));
+            return Err(format!("{} was edited on disk; Indocode will not overwrite it.", written.path));
         }
     }
     for written in previous {
@@ -107,7 +107,7 @@ pub fn write_folder(dir: &Path, id: &str, files: &[(String, Vec<u8>)], previous:
     Ok(out)
 }
 
-/// Remove the files PandaCode wrote that still match; returns the ones left because they changed.
+/// Remove the files Indocode wrote that still match; returns the ones left because they changed.
 pub fn remove_folder(written: &[Written]) -> Vec<String> {
     let mut kept = Vec::new();
     for file in written {
@@ -135,7 +135,7 @@ pub fn write_block(file: &Path, id: &str, body: &str, previous: Option<&Written>
     let next = match block(&text, id) {
         Some((current, range)) => {
             if previous.is_none_or(|p| sha256_hex(current.as_bytes()) != p.sha256) {
-                return Err(format!("The {id} block in {} was edited on disk; PandaCode will not overwrite it.", file.display()));
+                return Err(format!("The {id} block in {} was edited on disk; Indocode will not overwrite it.", file.display()));
             }
             let mut next = text.clone();
             next.replace_range(range, &block_text);

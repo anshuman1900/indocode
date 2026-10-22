@@ -195,7 +195,7 @@ pub(crate) fn add(store: &Store, bot_id: &str, input: &ChannelInput) -> Result<C
     let mut config = if input.config.is_object() { input.config.clone() } else { json!({}) };
     if input.kind == "whatsapp" {
         // The verify token only proves to Meta that the webhook is ours; it is shown so it can be pasted there.
-        config["verifyToken"] = json!(format!("pandacode-{}", &uuid::Uuid::new_v4().simple().to_string()[..16]));
+        config["verifyToken"] = json!(format!("indocode-{}", &uuid::Uuid::new_v4().simple().to_string()[..16]));
     }
     if input.kind == "whatsapp" && config["phoneNumberId"].as_str().is_none_or(|id| id.trim().is_empty() || !id.chars().all(|c| c.is_ascii_digit())) {
         return Err("Enter the WhatsApp phone number ID from Meta's API setup page.".into());
@@ -321,7 +321,7 @@ pub(crate) async fn handle_inbound(app: &tauri::AppHandle, channel_id: &str, sen
         Err((channel, Some(code), bot)) => {
             let _ = app.emit("bots-changed", ());
             let _ = app.emit("bot-pairing", json!({"botId": channel.bot_id, "channelId": channel_id, "senderName": sender_name, "code": code}));
-            let _ = send(app, channel_id, thread, &format!("Hi! I'm {bot}. To talk with me, the owner needs to approve pairing code {code} in PandaCode (Bots → {bot} → Channels).")).await;
+            let _ = send(app, channel_id, thread, &format!("Hi! I'm {bot}. To talk with me, the owner needs to approve pairing code {code} in Indocode (Bots → {bot} → Channels).")).await;
         }
         Err(_) => {}
     }
@@ -359,7 +359,7 @@ pub(crate) fn client() -> Result<reqwest::Client> {
         .https_only(true)
         .connect_timeout(std::time::Duration::from_secs(10))
         .timeout(std::time::Duration::from_secs(70))
-        .user_agent(concat!("PandaCode/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("Indocode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| e.to_string())
 }

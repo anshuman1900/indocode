@@ -38,7 +38,7 @@ pub(super) fn configure(command: &mut Command, config: &RunConfig) {
     match config.provider.as_str() {
         "deepseek" => {
             command.args(DEEPSEEK_ARGS);
-            // Overrides any inherited value so PandaCode's mode picks the sandbox.
+            // Overrides any inherited value so Indocode's mode picks the sandbox.
             command.env(super::deepseek::PERMISSION_ENV, super::deepseek::sandbox(&config.mode));
         }
         "commandcode" => {
@@ -51,7 +51,7 @@ pub(super) fn configure(command: &mut Command, config: &RunConfig) {
         }
         "grok" => {
             // Global flags precede `agent`; agent flags precede the `stdio` transport.
-            // The permission mode overrides the user's config.toml so PandaCode's
+            // The permission mode overrides the user's config.toml so Indocode's
             // approval choice, not the TUI's saved yolo setting, decides prompts.
             command.args(["--no-auto-update", "--permission-mode", grok_permission_mode(&config.mode), "agent"]);
             if config.mode == "full" {
@@ -109,7 +109,7 @@ pub(super) fn configuration(mode: &str) -> String {
     };
     // Inline settings have the highest documented precedence and are private
     // to this process. Preserve existing inline settings, except permissions
-    // which must follow the explicitly selected PandaCode policy.
+    // which must follow the explicitly selected Indocode policy.
     let mut inline = std::env::var("OPENCODE_CONFIG_CONTENT")
         .ok()
         .and_then(|text| serde_json::from_str::<Value>(&text).ok())
@@ -226,7 +226,7 @@ impl Protocol {
                     if self.mcp_server.is_some() && capabilities["mcpCapabilities"]["http"] != true
                     {
                         if self.mcp_required {
-                            return Err("This harness does not advertise HTTP MCP support required for PandaCode tools. Update its ACP server.".into());
+                            return Err("This harness does not advertise HTTP MCP support required for Indocode tools. Update its ACP server.".into());
                         }
                         // Title suggestions are optional metadata. Older ACP
                         // agents can continue normally using the local fallback.
@@ -507,7 +507,7 @@ impl Protocol {
             return self.acp_model(step);
         }
         let candidates: &[&str] = if self.config.provider == "commandcode" {
-            // Command Code's ACP modes are its permission modes, so each PandaCode
+            // Command Code's ACP modes are its permission modes, so each Indocode
             // choice has exactly one, and a missing one must not widen access.
             &[super::commandcode::mode_id(&self.config.mode)]
         } else if self.config.provider == "github-copilot" {
@@ -585,7 +585,7 @@ impl Protocol {
     }
     fn acp_copilot_permissions(&mut self, step: &mut Step) -> Result<(), String> {
         let option = options(&self.acp_config, "allow_all")
-            .ok_or("GitHub Copilot CLI does not advertise the Allow All setting required for PandaCode permissions. Update Copilot CLI, then retry.")?;
+            .ok_or("GitHub Copilot CLI does not advertise the Allow All setting required for Indocode permissions. Update Copilot CLI, then retry.")?;
         let wanted = if self.config.mode == "full" {
             "on"
         } else {
@@ -715,7 +715,7 @@ pub(crate) async fn handshake(command: Command, cwd: &Path) -> Result<Value, Str
     let mut pipe = Pipe::spawn(command, cwd, DISCOVERY_STARTUP)
         .map_err(|_| "Could not start ACP metadata discovery")?;
     let result = async {
-        pipe.send(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"pandacode","version":"0.1.0"}}})).await.map_err(|_| transport_error(&pipe, "initialize"))?;
+        pipe.send(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"indocode","version":"0.1.0"}}})).await.map_err(|_| transport_error(&pipe, "initialize"))?;
         loop {
             let frame = pipe.read().await.map_err(|_| transport_error(&pipe, "initialize"))?;
             if frame.get("method").is_some() && frame.get("id").is_some() {
@@ -847,7 +847,7 @@ async fn inspect_state(
     let mut authentication_required = false;
     let mut stage = "initialize";
     let result: Result<(Value, Option<Value>), String> = async {
-        pipe.send(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"pandacode","version":"0.1.0"}}})).await.map_err(|_| transport_error(&pipe, stage))?;
+        pipe.send(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"indocode","version":"0.1.0"}}})).await.map_err(|_| transport_error(&pipe, stage))?;
         let mut metadata = None;
         let mut commands = None;
         let session = json!({"jsonrpc":"2.0","id":2,"method":"session/new","params":{"cwd":launch::external_path(cwd),"mcpServers":[]}});
@@ -1330,10 +1330,10 @@ mod tests {
     #[ignore = "Needs installed OpenCode; metadata only, never sends a prompt"]
     async fn installed_opencode_negotiates_selected_model_without_prompt() {
         let mut cfg = config("opencode");
-        cfg.model = std::env::var("PANDACODE_OPENCODE_SMOKE_MODEL")
-            .expect("Set PANDACODE_OPENCODE_SMOKE_MODEL to an available provider/model ID");
-        cfg.reasoning_effort = std::env::var("PANDACODE_OPENCODE_SMOKE_EFFORT").ok();
-        cfg.cwd = std::env::temp_dir().join(format!("pandacode-acp-smoke-{}", uuid::Uuid::new_v4()));
+        cfg.model = std::env::var("INDOCODE_OPENCODE_SMOKE_MODEL")
+            .expect("Set INDOCODE_OPENCODE_SMOKE_MODEL to an available provider/model ID");
+        cfg.reasoning_effort = std::env::var("INDOCODE_OPENCODE_SMOKE_EFFORT").ok();
+        cfg.cwd = std::env::temp_dir().join(format!("indocode-acp-smoke-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&cfg.cwd).unwrap();
         let path = executable("opencode").expect("Install OpenCode first");
         let mut command = super::super::command(&path).unwrap();
@@ -1553,7 +1553,7 @@ mod tests {
         let mut cfg = config("grok");
         cfg.model = chosen.id.clone();
         cfg.reasoning_effort = Some(chosen.reasoning_efforts.last().unwrap().id.clone());
-        cfg.cwd = std::env::temp_dir().join(format!("pandacode-grok-smoke-{}", uuid::Uuid::new_v4()));
+        cfg.cwd = std::env::temp_dir().join(format!("indocode-grok-smoke-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&cfg.cwd).unwrap();
         let mut command = super::super::command(&path).unwrap();
         configure(&mut command, &cfg);

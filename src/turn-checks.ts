@@ -3,7 +3,7 @@
 //! queue, where the user sees and can edit or cancel it. One repair per run:
 //! a repair turn's own failure waits for the user instead of looping.
 
-const KEY = 'pandacode.turnChecks';
+const KEY = 'indocode.turnChecks';
 const repaired = new Set<string>();
 /** Manual sends per task, so a check that started before one can tell it is stale. */
 const manualSends = new Map<string, number>();

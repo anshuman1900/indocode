@@ -30,7 +30,7 @@ type ModelPickerOptions = {
 };
 
 const RECENT_LIMIT = 5;
-const recentKey = (provider: ProviderId) => `pandacode.recent-models.${provider}`;
+const recentKey = (provider: ProviderId) => `indocode.recent-models.${provider}`;
 function storedRecent(provider: ProviderId): string[] {
   try {
     const stored = JSON.parse(localStorage.getItem(recentKey(provider)) || '[]');

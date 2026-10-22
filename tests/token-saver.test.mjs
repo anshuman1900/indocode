@@ -11,7 +11,7 @@ test('guidance rides along when it changes and as a periodic reminder, never eve
   assert.equal(contextFor('t1', noRtk), '', 'nothing is sent while the saver is off');
   updateThread('t1', { packs: ['caveman'], level: 'full' });
   const first = contextFor('t1', noRtk);
-  assert.match(first, /^\n\nResponse style \(PandaCode token saver/);
+  assert.match(first, /^\n\nResponse style \(Indocode token saver/);
   assert.match(first, /Respond like smart caveman/);
   assert.match(first, /plain full sentences for security warnings/);
   for (let i = 1; i < REMIND_EVERY; i++) assert.equal(contextFor('t1', noRtk), '', `message ${i} stays quiet`);

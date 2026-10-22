@@ -153,10 +153,10 @@ async fn events(app: &tauri::AppHandle, channel: &Channel, after: u64) -> Value 
 }
 
 pub(crate) async fn api(app: &tauri::AppHandle, channel_id: &str, action: &str, request: &Request) -> Response {
-    let Some(channel) = authorized(app, channel_id, request) else { return Response::json(401, &json!({"error": "This link is no longer valid. Copy a fresh one from PandaCode."})) };
+    let Some(channel) = authorized(app, channel_id, request) else { return Response::json(401, &json!({"error": "This link is no longer valid. Copy a fresh one from Indocode."})) };
     // Other host names mean a tunnel or a rebound domain; allow them only when the owner turned on remote access.
     if !request.loopback_host() && channel.config["remote"].as_bool() != Some(true) {
-        return Response::json(403, &json!({"error": "Use from other devices is off for this bot. Turn it on in PandaCode (Bots → Channels → Web chat)."}));
+        return Response::json(403, &json!({"error": "Use from other devices is off for this bot. Turn it on in Indocode (Bots → Channels → Web chat)."}));
     }
     match (request.method.as_str(), action) {
         ("GET", "history") => Response::json(200, &history(app, &channel)),
@@ -246,7 +246,7 @@ textarea{flex:1;resize:none;border:0;background:transparent;color:var(--ink);pad
 <script>
 (() => {
   const channel = "__CHANNEL__";
-  const key = "pandacode-bot-" + channel;
+  const key = "indocode-bot-" + channel;
   let token = location.hash.slice(1);
   try { if (token) sessionStorage.setItem(key, token); else token = sessionStorage.getItem(key) || ""; } catch {}
   if (location.hash) history.replaceState(null, "", location.pathname);
@@ -375,7 +375,7 @@ textarea{flex:1;resize:none;border:0;background:transparent;color:var(--ink);pad
     }
   }
   async function start() {
-    if (!token) { status.textContent = "Open this page from the link in PandaCode."; sendButton.disabled = true; return; }
+    if (!token) { status.textContent = "Open this page from the link in Indocode."; sendButton.disabled = true; return; }
     try {
       // Give the parser a moment so history renders with it; replies never wait on it.
       await Promise.race([engine, new Promise(resolve => setTimeout(resolve, 1500))]);

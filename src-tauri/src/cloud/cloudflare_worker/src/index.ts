@@ -1,4 +1,4 @@
-// PandaCode's sandbox Worker. PandaCode deploys it to your account and calls it with a
+// Indocode's sandbox Worker. Indocode deploys it to your account and calls it with a
 // random bearer token kept in your OS keychain. Each name gets its own container that
 // stops itself after IDLE_MS without use.
 import { DurableObject } from "cloudflare:workers";
@@ -10,7 +10,7 @@ const WORKSPACE = "/workspace";
 
 interface Env {
   SANDBOX: DurableObjectNamespace<Sandbox>;
-  PANDACODE_TOKEN: string;
+  INDOCODE_TOKEN: string;
 }
 
 type Result = { exitCode: number | null; stdout: string; stderr: string; timedOut: boolean; truncated: boolean };
@@ -66,9 +66,9 @@ export class Sandbox extends DurableObject<Env> {
 }
 
 async function authorized(request: Request, env: Env): Promise<boolean> {
-  const expected = new TextEncoder().encode(`Bearer ${env.PANDACODE_TOKEN ?? ""}`);
+  const expected = new TextEncoder().encode(`Bearer ${env.INDOCODE_TOKEN ?? ""}`);
   const given = new TextEncoder().encode(request.headers.get("authorization") ?? "");
-  if (!env.PANDACODE_TOKEN || expected.byteLength !== given.byteLength) return false;
+  if (!env.INDOCODE_TOKEN || expected.byteLength !== given.byteLength) return false;
   return crypto.subtle.timingSafeEqual(expected, given);
 }
 

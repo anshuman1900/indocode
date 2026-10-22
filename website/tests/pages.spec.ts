@@ -4,7 +4,7 @@ import { readdir, readFile } from 'node:fs/promises';
 const repo = 'https://github.com/aicodeking/pandacode';
 
 /* The reading pages: /changelog lists every releases/X.Y.Z.md, /privacy states that
- * PandaCode collects nothing, /license carries the LICENSE text word for word, and all three work without scripts. */
+ * Indocode collects nothing, /license carries the LICENSE text word for word, and all three work without scripts. */
 const test = base.extend<{ browserHealth: void }>({
   browserHealth: [async ({ page }, use) => {
     const errors: string[] = [];
@@ -31,7 +31,7 @@ async function expectNoOverflow(page: Page) {
 test('changelog lists every release, newest first, with dates and working anchors', async ({ page }) => {
   const versions = await releaseFiles();
   await page.goto('/changelog/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('What’s new in PandaCode.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('What’s new in Indocode.');
   await expect(page.locator('.release')).toHaveCount(versions.length);
   const latest = newest(versions);
   const first = page.locator('.release').first();
@@ -56,14 +56,14 @@ test('changelog lists every release, newest first, with dates and working anchor
   await expect(page.locator('.nav-links a[aria-current="page"]')).toHaveText('Changelog');
 });
 
-test('privacy policy says PandaCode collects nothing, with a contents rail', async ({ page }) => {
+test('privacy policy says Indocode collects nothing, with a contents rail', async ({ page }) => {
   await page.goto('/privacy/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy, plainly put.');
   await expect(page.locator('.legal-updated time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
   const prose = page.locator('.legal-prose');
   for (const fact of [
-    'PandaCode collects nothing.',
-    'no accounts, no license checks, no telemetry, no analytics, no crash reports and no PandaCode servers',
+    'Indocode collects nothing.',
+    'no accounts, no license checks, no telemetry, no analytics, no crash reports and no Indocode servers',
     'formulae.brew.sh', 'downloads.claude.ai', 'api.github.com', 'cdn.kimi.com', 'about every 6 hours',
     'raw.githubusercontent.com', 'at most once a day',
     'It sets no cookies, runs no analytics',
@@ -78,21 +78,21 @@ test('privacy policy says PandaCode collects nothing, with a contents rail', asy
   await expect(page.locator('.legal-toc a.is-current')).toHaveText('This website');
   await expect(prose.getByRole('link', { name: 'GitHub issues' })).toHaveAttribute('href', `${repo}/issues`);
   await expect(prose.getByRole('link', { name: 'security policy' })).toHaveAttribute('href', `${repo}/security/policy`);
-  await expect(prose.getByRole('link', { name: 'PandaCode License' })).toHaveAttribute('href', '/license/');
+  await expect(prose.getByRole('link', { name: 'Indocode License' })).toHaveAttribute('href', '/license/');
   await expect(page.locator('.nav-links a[aria-current="page"]')).toHaveText('Privacy');
   await expectNoOverflow(page);
 });
 
 test('license page carries LICENSE word for word, including the fork credit, and the agent permissions note', async ({ page }) => {
   await page.goto('/license/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('The PandaCode License.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('The Indocode License.');
   // Same paragraphs as the repository's LICENSE; only quote marks are typeset.
   const normalize = (text: string) => text.replace(/[“”]/g, '"').replace(/’/g, "'").replace(/\s+/g, ' ').trim();
   const license = (await readFile(new URL('../../LICENSE', import.meta.url), 'utf8')).split(/\n\s*\n/).map(normalize).filter(Boolean);
   const shown = (await page.locator('.license-text p').allTextContents()).map(normalize);
   expect(shown).toEqual(license);
-  expect(license.join(' ')).toContain('"This is a fork of PandaCode" together with a link to https://github.com/aicodeking/pandacode');
-  await expect(page.locator('#summary')).toContainText('This is a fork of PandaCode');
+  expect(license.join(' ')).toContain('"This is a fork of Indocode" together with a link to https://github.com/aicodeking/pandacode');
+  await expect(page.locator('#summary')).toContainText('This is a fork of Indocode');
   await expect(page.locator('#agents')).toContainText('act with the permissions you grant');
   await expect(page.locator('.legal-prose').getByRole('link', { name: 'GitHub issues' })).toHaveAttribute('href', `${repo}/issues`);
   await expect(page.locator('.legal-prose').getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy/');

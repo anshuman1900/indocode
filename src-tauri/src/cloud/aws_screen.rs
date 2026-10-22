@@ -1,6 +1,6 @@
 //! AWS desktop screens: an SSM port-forwarding session per instance carries the VNC
 //! server (bound to the instance's localhost) to a free local port, and the shared RFB
-//! client does the rest. Tunnels close when the instance stops or PandaCode quits.
+//! client does the rest. Tunnels close when the instance stops or Indocode quits.
 use std::{
     collections::HashMap,
     net::{SocketAddr, TcpListener, TcpStream},
@@ -55,7 +55,7 @@ fn open(aws: &Aws, instance: &str, os: &str) -> Result<Tunnel, String> {
 
 /// Use an AWS desktop's screen, opening the tunnel and VNC session on first use.
 pub fn with_screen<T>(aws: &Aws, instance: &str, os: &str, mut action: impl FnMut(&mut Rfb) -> Result<T, String>) -> Result<T, String> {
-    let password = super::secret(&password_key(instance)).ok_or("PandaCode did not create this desktop, so it has no screen password. Use vm_exec for commands.")?;
+    let password = super::secret(&password_key(instance)).ok_or("Indocode did not create this desktop, so it has no screen password. Use vm_exec for commands.")?;
     let mut map = tunnels().lock().map_err(|_| "Screen state is unavailable.")?;
     for attempt in 0..2 {
         let alive = map.get_mut(instance).is_some_and(|t| t.child.try_wait().ok().flatten().is_none());

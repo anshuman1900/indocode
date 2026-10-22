@@ -159,7 +159,7 @@ test.describe('Agent updates', () => {
 
   test('glass popup and dialog fit a narrow window at 140 percent text size', async ({ page }, testInfo) => {
     await page.setViewportSize({width:460,height:740});
-    await page.addInitScript(() => localStorage.setItem('pandacode.uiScale', '1.4'));
+    await page.addInitScript(() => localStorage.setItem('indocode.uiScale', '1.4'));
     await open(page); await automatic(page);
     const check = async (surface: ReturnType<typeof popup>) => {
       const bounds = (await surface.boundingBox())!;
@@ -168,7 +168,7 @@ test.describe('Agent updates', () => {
       expect(await surface.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
     };
     await check(popup(page));
-    await page.screenshot({path:`/private/tmp/pandacode-agent-updates-${testInfo.project.name || testInfo.project.use.browserName || 'chrome'}.png`, animations:'disabled'});
+    await page.screenshot({path:`/private/tmp/indocode-agent-updates-${testInfo.project.name || testInfo.project.use.browserName || 'chrome'}.png`, animations:'disabled'});
     await popup(page).getByRole('button', {name:'Later',exact:true}).click();
     await manual(page); await check(dialog(page));
   });

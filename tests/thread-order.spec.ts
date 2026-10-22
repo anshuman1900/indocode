@@ -1,13 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const KEY = 'pandacode.preview.threadOrder';
+const KEY = 'indocode.preview.threadOrder';
 const row = (page: Page, id: string) => page.locator(`.task-item[data-id="${id}"]`);
 const group = (page: Page, name: string) => page.locator(`[data-thread-group="${name}"]`);
 const menu = (page: Page) => page.getByRole('dialog', { name: 'Task actions', exact: true });
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent', exact: true });
 const ids = (page: Page, name: string) => group(page, name).locator('.task-item').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.id));
-// Unpinned tasks sit in one folder per project: orbit holds sessions 1–3, pandacode holds session 4.
-const ORBIT = 'project:project-1', PANDACODE = 'project:project-2';
+// Unpinned tasks sit in one folder per project: orbit holds sessions 1–3, indocode holds session 4.
+const ORBIT = 'project:project-1', INDOCODE = 'project:project-2';
 
 async function open(page: Page, seed = ''): Promise<void> {
   await page.route('**/src/preview.ts*', async route => {
@@ -73,7 +73,7 @@ test.describe('thread order', () => {
     const after = await saved(page);
     const timestamps = (tasks: any[]) => tasks.map(task => [task.id, task.updatedAt, task.lastResponseAt, task.lastPromptAt]).sort((a, b) => a[0].localeCompare(b[0]));
     expect(timestamps(after)).toEqual(timestamps(before));
-    await page.screenshot({ path: `/private/tmp/pandacode-thread-pinned-${browserName}.png`, animations: 'disabled' });
+    await page.screenshot({ path: `/private/tmp/indocode-thread-pinned-${browserName}.png`, animations: 'disabled' });
     await page.reload();
     await expect(group(page, 'pinned').locator('.task-item')).toHaveAttribute('data-id', 'session-2');
     await row(page, 'session-2').click();
@@ -106,18 +106,18 @@ test.describe('thread order', () => {
   });
 
   test('keeps hidden project tasks in their slots when reordering a filtered group', async ({ page }) => {
-    await page.addInitScript(() => localStorage.setItem('pandacode.projectFilter', 'project-1'));
+    await page.addInitScript(() => localStorage.setItem('indocode.projectFilter', 'project-1'));
     await open(page, `for (const [index,id] of ['session-1','session-4','session-2','session-3'].entries()) { session(id).lastResponseAt = now - (index + 1) * 1000; }`);
     expect(await ids(page, ORBIT)).toEqual(['session-1', 'session-2', 'session-3']);
     await expect(row(page, 'session-4')).toHaveCount(0);
-    await expect(group(page, PANDACODE)).toHaveCount(0);
+    await expect(group(page, INDOCODE)).toHaveCount(0);
     await dragBefore(page, 'session-3', 'session-1');
     await expect.poll(() => ids(page, ORBIT)).toEqual(['session-3', 'session-1', 'session-2']);
     expect((await calls(page, 'reorder_sessions'))[0].args.sessionIds).toEqual(['session-3', 'session-1', 'session-2']);
     expect((await saved(page)).find(task => task.id === 'session-4').sidebarOrder).toBe(1);
     await page.locator('[data-action="show-all-projects"]').click();
     await expect.poll(() => ids(page, ORBIT)).toEqual(['session-3', 'session-1', 'session-2']);
-    expect(await ids(page, PANDACODE)).toEqual(['session-4']);
+    expect(await ids(page, INDOCODE)).toEqual(['session-4']);
     await expect(row(page, 'session-1')).toHaveAttribute('aria-current', 'page');
   });
 
@@ -129,7 +129,7 @@ test.describe('thread order', () => {
     expect(await calls(page, 'reorder_sessions')).toEqual([]);
     expect(await ids(page, 'pinned')).toEqual(['session-2']);
     expect(await ids(page, ORBIT)).toEqual(['session-1', 'session-3']);
-    expect(await ids(page, PANDACODE)).toEqual(['session-4']);
+    expect(await ids(page, INDOCODE)).toEqual(['session-4']);
     await expect(page.locator('.drop-before,.drop-after,.task-dragging')).toHaveCount(0);
   });
 

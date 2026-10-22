@@ -740,7 +740,7 @@ mod tests {
     }
     #[test]
     fn candidate_paths_are_fixed_and_never_recursively_scanned() {
-        let root = std::env::temp_dir().join("pandacode-terminal-path-fixture");
+        let root = std::env::temp_dir().join("indocode-terminal-path-fixture");
         let paths = candidates(|key| match key {
             "HOME" => Some(root.join("home")),
             "XDG_CONFIG_HOME" => Some(root.join("config")),
@@ -759,7 +759,7 @@ mod tests {
     #[test]
     fn discovery_uses_newest_usable_file_and_skips_size_only_or_unusable_files() {
         let dir =
-            std::env::temp_dir().join(format!("pandacode-terminal-prefs-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-terminal-prefs-{}", uuid::Uuid::new_v4()));
         fs::create_dir_all(&dir).unwrap();
         let (old, new, size_only, unrelated, oversized) = (
             dir.join("old"),
@@ -796,7 +796,7 @@ mod tests {
         assert_eq!(result.source.as_deref(), Some("Kitty"));
         assert_eq!(result.font_family.as_deref(), Some("Fira Code"));
         let encoded = serde_json::to_string(&result).unwrap();
-        assert!(!encoded.contains("pandacode-terminal-prefs"));
+        assert!(!encoded.contains("indocode-terminal-prefs"));
         assert!(!encoded.contains("command"));
         fs::remove_dir_all(dir).unwrap();
     }

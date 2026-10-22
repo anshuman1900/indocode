@@ -1,5 +1,5 @@
 //! Command Code (`command-code acp`) over the shared ACP transport. The CLI keeps
-//! its own login; a key saved in PandaCode (or `COMMAND_CODE_API_KEY`) authenticates
+//! its own login; a key saved in Indocode (or `COMMAND_CODE_API_KEY`) authenticates
 //! the same account and is passed only to that process.
 use super::*;
 use crate::provider_settings::COMMANDCODE_KEY;
@@ -7,7 +7,7 @@ use crate::provider_settings::COMMANDCODE_KEY;
 /// Command Code serves ACP from its `acp` command.
 pub(super) const ACP_ARGS: [&str; 1] = ["acp"];
 
-/// Command Code's ACP session modes are its own permission modes, so PandaCode's
+/// Command Code's ACP session modes are its own permission modes, so Indocode's
 /// choice maps onto one of them.
 pub(super) fn mode_id(mode: &str) -> &'static str {
     match mode {

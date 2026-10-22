@@ -49,10 +49,10 @@ const GUIDANCE: Record<Exclude<PackId, 'caveman'>, string> = {
   rtk: 'rtk is installed and compresses command output. Prefix shell commands with rtk: rtk git status, rtk git diff, rtk git log, rtk ls, rtk read <file>, rtk grep <pattern>, rtk find, and test runners such as rtk npm test or rtk cargo test. If rtk rejects a command, run it plainly.',
 };
 
-const KEY = 'pandacode.tokenSaver';
+const KEY = 'indocode.tokenSaver';
 /** Guidance is restated this many messages after it was last sent, so long threads keep it. */
 export const REMIND_EVERY = 8;
-export const HEADER = 'Response style (PandaCode token saver';
+export const HEADER = 'Response style (Indocode token saver';
 
 function read(): Store {
   try {

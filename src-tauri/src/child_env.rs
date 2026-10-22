@@ -1,4 +1,4 @@
-//! A Linux AppImage starts PandaCode with its own libraries and runtimes on the search paths
+//! A Linux AppImage starts Indocode with its own libraries and runtimes on the search paths
 //! (`LD_LIBRARY_PATH`, `PYTHONHOME`, `GIO_*`, `GTK_*`, `XDG_DATA_DIRS`, `PATH`…), all pointing
 //! into the mounted image. External tools must not inherit them: the system `/usr/bin/env`,
 //! `curl` or `python3` then load the bundled copies and fail. Every spawn of an external
@@ -109,9 +109,9 @@ mod tests {
     fn appimage_entries_are_removed_and_the_rest_is_kept() {
         let mount = "/tmp/.mount_pandacjIIGkD";
         let found = overrides(&[
-            ("APPIMAGE", "/home/me/.local/bin/pandacode"),
+            ("APPIMAGE", "/home/me/.local/bin/indocode"),
             ("APPDIR", mount),
-            ("ARGV0", "pandacode"),
+            ("ARGV0", "indocode"),
             ("OWD", "/home/me"),
             ("PATH", "/tmp/.mount_pandacjIIGkD/usr/bin:/home/me/.local/bin:/usr/bin"),
             ("LD_LIBRARY_PATH", "/tmp/.mount_pandacjIIGkD/usr/lib:/tmp/.mount_pandacjIIGkD/lib"),

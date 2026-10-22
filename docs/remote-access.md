@@ -1,4 +1,4 @@
-# Remote access (PandaCode Connect)
+# Remote access (Indocode Connect)
 
 Opt-in. Off by default. Signing in lets a task *run on another computer*: one of the user's
 computers signed in to the same account, trusted, with **Allow remote control of this computer**
@@ -50,7 +50,7 @@ Sign in with GitHub using the OAuth **device flow** (no client secret anywhere):
 3. Desktop → relay `POST /v1/auth/github` `{ githubToken, device: { id, name, platform, publicKey } }`.
    The relay calls `GET https://api.github.com/user` and gets the numeric id, login and avatar_url. It
    registers the device and returns `{ token, account: { id: "gh:<id>", login, avatarUrl } }`.
-4. The desktop stores only the relay token in the keychain (`app.pandacode.remote`, with account names scoped to the install's data folder, so a dev build and the installed app never share an item). It discards the GitHub token.
+4. The desktop stores only the relay token in the keychain (`app.indocode.remote`, with account names scoped to the install's data folder, so a dev build and the installed app never share an item). It discards the GitHub token.
 
 The device key is made once, at sign-in, behind a lock (so two sign-ins cannot race) and before
 polling starts. A keychain *error* (a denied prompt, a locked keychain) fails sign-in; only a
@@ -81,13 +81,13 @@ token is read again after 5 s, 15 s and 60 s; when it reads, the socket starts a
 
 **Adopting pre-0.3.20 items.** Before 0.3.20 the keychain accounts were `relay-token` and
 `device-key`. At startup, when the scoped token or key is missing, the installed app (data
-folder `ai.pandacode.desktop`, never a dev build) reads those once per launch. It adopts them only
+folder `ai.indocode.desktop`, never a dev build) reads those once per launch. It adopts them only
 if the legacy token parses, is unexpired and its `dev` is this device id: the token is written
 to the scoped name, and so is the legacy key when it differs from the scoped one (the relay
 registered the legacy key for this device id). After both writes succeed the legacy items are
 deleted.
 
-Build config is `option_env!("PANDACODE_RELAY_URL")` and `option_env!("PANDACODE_GITHUB_CLIENT_ID")`.
+Build config is `option_env!("INDOCODE_RELAY_URL")` and `option_env!("INDOCODE_GITHUB_CLIENT_ID")`.
 Environment variables of the same names override them at run time. If either is missing, remote
 access is shown as "not configured in this build".
 
@@ -151,7 +151,7 @@ sockets cost no duration. Device rows live in the Durable Object's SQLite storag
 Each device has an X25519 key pair. The private key stays in the keychain, and the public key is
 registered with the device. For a pair of devices:
 
-`key = HKDF-SHA256(ikm = X25519(mine, theirs), salt = sorted(idA, idB).join("|"), info = "pandacode-remote v1")`.
+`key = HKDF-SHA256(ikm = X25519(mine, theirs), salt = sorted(idA, idB).join("|"), info = "indocode-remote v1")`.
 
 `body = base64(nonce24 || XChaCha20-Poly1305(key, nonce24, plaintext, aad = from + "|" + to))`.
 Pair keys are cached by `(deviceId, publicKey)`, so a key change derives a new one.
@@ -215,9 +215,9 @@ A host refuses a session id that is itself a mirror, so tasks never hop twice.
 1. Refuses a provider that isn't installed there: `<Provider> is not installed on <host>.`
 2. Finds a project whose `origin` is that GitHub repository (as `github_project_repos`, case
    insensitive). With none, it clones it with `gh` (as `github_clone_repo`, at most 6 minutes)
-   into `~/PandaCode/<name>`, or `<name>-2`, `-3`… when taken, and adds the project.
+   into `~/Indocode/<name>`, or `<name>-2`, `-3`… when taken, and adds the project.
 3. Fetches `origin` (at most 90 s), then uses the viewer's branch if origin has it, otherwise
-   origin's default branch. With a worktree it creates `pandacode/remote-<id>` from
+   origin's default branch. With a worktree it creates `indocode/remote-<id>` from
    `origin/<branch>` the normal way. Without one, a fresh clone is checked out on that branch;
    an existing checkout is never switched: it runs in place only when it is clean, has no local
    agent running in it and is already on that branch (then it is fast-forwarded to origin when

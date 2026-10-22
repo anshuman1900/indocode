@@ -198,7 +198,7 @@ async fn refresh_token(app: tauri::AppHandle, old: String) {
         inner.token = Some(fresh.to_owned());
     }
     if let Err(error) = crate::secret_store::set(config::SERVICE, &state.accounts.token, fresh) {
-        eprintln!("Could not save the refreshed PandaCode Connect token: {error}");
+        eprintln!("Could not save the refreshed Indocode Connect token: {error}");
     }
 }
 
@@ -220,7 +220,7 @@ fn frame(app: &tauri::AppHandle, text: &str, peers: &mut HashMap<String, mpsc::S
                 remote(app).lock().fail_ref(to, value["ref"].as_str(), error);
             }
         }
-        Some("error") => eprintln!("PandaCode Connect relay: {}", value["error"].as_str().unwrap_or("error")),
+        Some("error") => eprintln!("Indocode Connect relay: {}", value["error"].as_str().unwrap_or("error")),
         _ => {
             let (Some(from), Some(to), Some(body)) = (value["from"].as_str(), value["to"].as_str(), value["body"].as_str()) else { return };
             if host::valid_id(from).is_err() {
@@ -278,7 +278,7 @@ fn queue(app: &tauri::AppHandle, from: &str, request: Request, peers: &mut HashM
         peers.insert(from.to_owned(), tx);
     }
     if peers[from].try_send(request).is_err() {
-        eprintln!("PandaCode Connect: dropped a request from a busy peer");
+        eprintln!("Indocode Connect: dropped a request from a busy peer");
     }
 }
 
@@ -339,7 +339,7 @@ fn parse_devices(list: &[Value]) -> Vec<Device> {
 /// Fetches the account's devices; used only before the socket's first presence frame.
 pub(crate) async fn refresh_devices(app: &tauri::AppHandle) -> Result<()> {
     let build = config::build().ok_or("Remote access is not configured in this build.")?;
-    let token = remote(app).lock().token.clone().ok_or("Sign in to PandaCode Connect first.")?;
+    let token = remote(app).lock().token.clone().ok_or("Sign in to Indocode Connect first.")?;
     let reply = match auth::relay(&build, &token, reqwest::Method::GET, "/v1/devices").await {
         Err(error) if error == auth::SIGNED_OUT => {
             sign_out_local(app, Some(&token));

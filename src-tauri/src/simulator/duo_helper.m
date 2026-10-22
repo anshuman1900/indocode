@@ -1,6 +1,6 @@
 // Vendored from duoctl by Karolina Samorek (https://github.com/skarol/duoctl),
 // skills/duoctl/scripts/duoctl-helper.m, unchanged below this notice except for
-// two PandaCode additions: `home` (consumer Menu key) and `elements` (accessibility
+// two Indocode additions: `home` (consumer Menu key) and `elements` (accessibility
 // elements of one display) — not part of duoctl.
 //
 // MIT License
@@ -57,7 +57,7 @@ typedef struct __IOHIDEventSystemClient *IOHIDEventSystemClientRef;
 typedef struct __IOHIDServiceClient *IOHIDServiceClientRef;
 
 extern IOHIDEventSystemClientRef IOHIDEventSystemClientCreateWithType(CFAllocatorRef, int, CFDictionaryRef);
-// PandaCode addition: home.
+// Indocode addition: home.
 extern IOHIDEventRef IOHIDEventCreateKeyboardEvent(CFAllocatorRef, uint64_t, uint32_t usagePage, uint32_t usage,
     Boolean down, uint32_t options);
 extern void IOHIDEventSystemClientDispatchEvent(IOHIDEventSystemClientRef, IOHIDEventRef);
@@ -290,7 +290,7 @@ static int swipe(NSString *displayUUID, double x1, double y1, double x2, double 
 
 #pragma mark - Entry point
 
-// PandaCode addition: the hardware home button, as the consumer Menu key (page 0x0C, usage 0x40).
+// Indocode addition: the hardware home button, as the consumer Menu key (page 0x0C, usage 0x40).
 static int pressHome(void) {
     IOHIDEventSystemClientRef client = IOHIDEventSystemClientCreateWithType(NULL, kClientTypeSimple, NULL);
     if (!client) return 1;
@@ -305,7 +305,7 @@ static int pressHome(void) {
     return 0;
 }
 
-// PandaCode addition: labeled accessibility elements on one display as JSON
+// Indocode addition: labeled accessibility elements on one display as JSON
 // [{"label", "frame": [x, y, w, h], "ui": bool}]. AXe's frames for SpringBoard's icon
 // list on the inner display come in the list's own space, so the elements are read here
 // in VoiceOver order, and a frame is kept only when hit-testing its center finds the
@@ -412,8 +412,8 @@ int main(int argc, char **argv) {
             return swipe(@(argv[2]), clamp01(argv[3]), clamp01(argv[4]), clamp01(argv[5]), clamp01(argv[6]),
                          argc == 8 ? fmax(atof(argv[7]), 0.05) : 0.3);
         }
-        if ([command isEqualToString:@"home"] && argc == 2) return pressHome(); // PandaCode addition
-        if ([command isEqualToString:@"elements"] && argc == 6) { // PandaCode addition
+        if ([command isEqualToString:@"home"] && argc == 2) return pressHome(); // Indocode addition
+        if ([command isEqualToString:@"elements"] && argc == 6) { // Indocode addition
             return listElements((unsigned)atoi(argv[2]), atof(argv[3]), atof(argv[4]), atoi(argv[5]));
         }
         if ([command isEqualToString:@"touchscreens"] && argc == 2) {

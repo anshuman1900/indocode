@@ -6,7 +6,7 @@
 export type Spring = { damping?: number; response?: number; velocity?: number };
 
 export const reducedMotion = (): boolean => matchMedia('(prefers-reduced-motion: reduce)').matches;
-/** PandaCode is instant: surfaces appear and leave without motion. Every caller has an
+/** Indocode is instant: surfaces appear and leave without motion. Every caller has an
  *  instant path for this, so flipping it back restores the springs. */
 const MOTION = false;
 const canAnimate = (element: Element): boolean => MOTION && !document.hidden && typeof element.animate === 'function';

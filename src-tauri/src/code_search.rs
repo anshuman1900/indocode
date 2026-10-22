@@ -11,13 +11,13 @@ use std::{
 
 use crate::workspace::run_process;
 
-const MISSING: &str = "codedb is not installed (or not on the app's PATH), so pandacode_code_search is unavailable. Install codedb and put it on PATH, or use the harness's own file search tools instead.";
+const MISSING: &str = "codedb is not installed (or not on the app's PATH), so indocode_code_search is unavailable. Install codedb and put it on PATH, or use the harness's own file search tools instead.";
 const QUERY_MAX: usize = 4096;
 const OUTPUT_LIMIT: usize = 64 * 1024;
 const TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Locates codedb where an interactive shell would find it, including common
-/// per-user installation folders, even when PandaCode was opened from Finder
+/// per-user installation folders, even when Indocode was opened from Finder
 /// with a minimal PATH.
 pub(crate) fn executable() -> Option<PathBuf> {
     crate::providers::tool_path("codedb")
@@ -82,7 +82,7 @@ mod tests {
     struct Scratch(PathBuf);
     impl Scratch {
         fn new(name: &str) -> Self {
-            let path = std::env::temp_dir().join(format!("pandacode-code-search-{name}"));
+            let path = std::env::temp_dir().join(format!("indocode-code-search-{name}"));
             let _ = fs::remove_dir_all(&path);
             fs::create_dir_all(&path).unwrap();
             Self(path)

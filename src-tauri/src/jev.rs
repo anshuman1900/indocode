@@ -302,7 +302,7 @@ pub(crate) fn with_task_admission<T>(
 }
 fn admission(shutdown: u8) -> Result<()> {
     if shutdown != 0 {
-        return Err("PandaCode is closing. Reopen it to use Jev.".into());
+        return Err("Indocode is closing. Reopen it to use Jev.".into());
     }
     Ok(())
 }
@@ -885,7 +885,7 @@ impl ProfileDirectory {
             process_id: std::process::id(),
         };
         if let Err(error) = private_write(
-            &path.join(".pandacode-owner.json"),
+            &path.join(".indocode-owner.json"),
             &serde_json::to_vec(&owner)
                 .map_err(|_| "Could not encode browser profile ownership.")?,
         ) {
@@ -944,7 +944,7 @@ fn cleanup_profile(run_id: &str, only_if_owner_exited: bool) {
     if !meta.is_dir() || meta.file_type().is_symlink() {
         return;
     }
-    let marker = path.join(".pandacode-owner.json");
+    let marker = path.join(".indocode-owner.json");
     if !std::fs::symlink_metadata(&marker)
         .is_ok_and(|meta| meta.is_file() && !meta.file_type().is_symlink())
     {
@@ -1081,7 +1081,7 @@ pub fn read_for_task(
 fn mark_interrupted(report: &mut Report) {
     if matches!(report.status.as_str(), "starting" | "running") {
         report.status = "failed".into();
-        report.summary = "This browser test was interrupted when PandaCode closed. Start it again to continue testing.".into();
+        report.summary = "This browser test was interrupted when Indocode closed. Start it again to continue testing.".into();
         report.verification = "not_checked".into();
     }
 }
@@ -1650,7 +1650,7 @@ mod tests {
         }
     }
     fn temp() -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("pandacode-jev-test-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("indocode-jev-test-{}", uuid::Uuid::new_v4()));
         private_dir(&dir).unwrap();
         dir
     }
@@ -2023,7 +2023,7 @@ mod tests {
             "A live process still owns this profile"
         );
         private_write(
-            &profile.path.join(".pandacode-owner.json"),
+            &profile.path.join(".indocode-owner.json"),
             &serde_json::to_vec(&ProfileOwner {
                 run_id: report.id.clone(),
                 process_id: i32::MAX as u32,

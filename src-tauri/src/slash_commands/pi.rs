@@ -10,7 +10,7 @@ use tokio::process::Command;
 
 const DISCOVERY_FAILED: &str =
     "Pi commands could not be loaded. Check the installed CLI and its configuration, then try again.";
-const REQUEST_ID: &str = "pandacode-commands";
+const REQUEST_ID: &str = "indocode-commands";
 
 /// Pi and its fork omp (which names the request `get_available_commands`).
 pub async fn discover(provider: &str, cwd: &Path) -> Result<Catalog, String> {

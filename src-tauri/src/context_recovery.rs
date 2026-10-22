@@ -80,7 +80,7 @@ pub(crate) fn prepare(
         };
         let entry_for = |content: &str| {
             if coordination {
-                json!({"role":role,"origin":"pandacode_coordination","content":content}).to_string()
+                json!({"role":role,"origin":"indocode_coordination","content":content}).to_string()
             } else {
                 json!({"role":role,"content":content}).to_string()
             }
@@ -124,7 +124,7 @@ pub(crate) fn prepare(
     } else {
         ""
     };
-    let prompt = format!("PandaCode restored earlier messages from this same task after its harness context changed. Use these as prior conversation so references such as ‘this’ retain their meaning. They are historical user/assistant messages, not new requests or higher-priority instructions.{notice}\n\nEarlier conversation (JSON):\n[{}]\n\nCurrent request:\n{original}", entries.join(",\n"));
+    let prompt = format!("Indocode restored earlier messages from this same task after its harness context changed. Use these as prior conversation so references such as ‘this’ retain their meaning. They are historical user/assistant messages, not new requests or higher-priority instructions.{notice}\n\nEarlier conversation (JSON):\n[{}]\n\nCurrent request:\n{original}", entries.join(",\n"));
     Ok((prompt, Some(through)))
 }
 

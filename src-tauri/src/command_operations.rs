@@ -184,7 +184,7 @@ async fn execute_with(
                     "The source setup changed. Refresh the import preview before importing.".into(),
                 );
             }
-            let result = client.request("externalAgentConfig/import", json!({"migrationItems":selected,"source":"pandacode","providerId":"pandacode","migrationSource":"claude"})).await?;
+            let result = client.request("externalAgentConfig/import", json!({"migrationItems":selected,"source":"indocode","providerId":"indocode","migrationSource":"claude"})).await?;
             // Invalidate these selections after success; stale clicks cannot import twice.
             remove_imports(cwd, include_home, &ids);
             Ok(

@@ -9,11 +9,11 @@ export function approvalModes(provider: ProviderId): ApprovalMode[] {
   const standard: ApprovalMode = { id: 'ask', label: 'Standard', icon: 'check', description: provider === 'codex'
     ? 'Work in this project. Ask you when an action needs extra permission.'
     : provider === 'github-copilot'
-    ? 'Use Copilot Agent mode with Allow All off. PandaCode asks before permission requests.'
+    ? 'Use Copilot Agent mode with Allow All off. Indocode asks before permission requests.'
     : provider === 'grok'
     ? 'Grok asks before edits and commands, whatever its own config says.'
     : pi
-    ? `${pi} runs without its own approvals; PandaCode asks before edits, commands and other non-read tools.`
+    ? `${pi} runs without its own approvals; Indocode asks before edits, commands and other non-read tools.`
     : provider === 'deepseek'
     ? 'DeepSeek edits and runs commands inside this project freely; it asks you before going outside it.'
     : 'Use the harness’s normal rules. Ask you when approval is needed.' };

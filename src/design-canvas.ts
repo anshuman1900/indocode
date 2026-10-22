@@ -2,9 +2,9 @@ import './design-canvas.css';
 import { escape, icon } from './dom';
 
 /* The inspector's Design view: a pan/zoom canvas of the task's artboards
- * (`.pandacode/design/*.html`), each in a sandboxed iframe that runs no scripts.
+ * (`.indocode/design/*.html`), each in a sandboxed iframe that runs no scripts.
  * Clicking an element in comment mode pins a comment to it; the agent reads them
- * through pandacode_design_comments and resolves them. */
+ * through indocode_design_comments and resolves them. */
 
 export type Artboard = { name: string; path: string; size: number; modified: number };
 export type Bbox = { x: number; y: number; width: number; height: number };
@@ -40,8 +40,8 @@ export function selectorPath(element: Element): string {
 export function commentPrompt(comments: DesignComment[]): string {
   const open = comments.filter(c => c.status === 'open');
   if (!open.length) return '';
-  const lines = open.map((c, i) => `${i + 1}. [${c.id}] .pandacode/design/${c.artboard}, element \`${c.selector}\` (x ${Math.round(c.bbox.x)}, y ${Math.round(c.bbox.y)}, ${Math.round(c.bbox.width)}×${Math.round(c.bbox.height)}): ${c.text.trim()}`);
-  return `Please address my design comments on the Design canvas artboards. Edit each artboard, then call pandacode_design_resolve with the comment id (and a short note).\n\n${lines.join('\n')}`;
+  const lines = open.map((c, i) => `${i + 1}. [${c.id}] .indocode/design/${c.artboard}, element \`${c.selector}\` (x ${Math.round(c.bbox.x)}, y ${Math.round(c.bbox.y)}, ${Math.round(c.bbox.width)}×${Math.round(c.bbox.height)}): ${c.text.trim()}`);
+  return `Please address my design comments on the Design canvas artboards. Edit each artboard, then call indocode_design_resolve with the comment id (and a short note).\n\n${lines.join('\n')}`;
 }
 
 /** Width an artboard asks for with `<meta name="artboard-width" content="390">`. */
@@ -138,7 +138,7 @@ export function mountDesignCanvas(root: HTMLElement, host: DesignHost) {
       comments = saved;
       layout();
       if (!fitted && boards.length) { fitted = true; fit(); }
-      say(boards.length ? '' : 'No artboards yet. Ask the agent to design a screen; it saves HTML artboards in .pandacode/design/.');
+      say(boards.length ? '' : 'No artboards yet. Ask the agent to design a screen; it saves HTML artboards in .indocode/design/.');
     } catch (error) { say(failure(error)); }
     renderComments();
   }

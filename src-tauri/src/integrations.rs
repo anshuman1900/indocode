@@ -397,7 +397,7 @@ impl Rpc {
 }
 
 async fn initialize(rpc: &mut Rpc, deadline: Instant) -> Result<(), String> {
-    rpc.request("initialize", json!({"clientInfo":{"name":"pandacode","title":"PandaCode","version":env!("CARGO_PKG_VERSION")},"capabilities":{"experimentalApi":true,"requestAttestation":false}}), deadline)
+    rpc.request("initialize", json!({"clientInfo":{"name":"indocode","title":"Indocode","version":env!("CARGO_PKG_VERSION")},"capabilities":{"experimentalApi":true,"requestAttestation":false}}), deadline)
         .await.map_err(|error| error.warning("Codex integration discovery"))?;
     tokio::time::timeout_at(
         deadline,
@@ -895,13 +895,13 @@ sleep 30
             .await;
         for cancelled in [false, true] {
             let file = std::env::temp_dir()
-                .join(format!("pandacode-inventory-pid-{}", uuid::Uuid::new_v4()));
+                .join(format!("indocode-inventory-pid-{}", uuid::Uuid::new_v4()));
             let mut command = Command::new("/bin/sh");
             command
                 .args([
                     "-c",
                     "sleep 30 & printf '%s %s' \"$$\" \"$!\" > \"$1\"; wait",
-                    "pandacode-fixture",
+                    "indocode-fixture",
                 ])
                 .arg(&file);
             let limits = Limits {

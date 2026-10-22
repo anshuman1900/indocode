@@ -60,7 +60,7 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement by contacting the
-PandaCode maintainers privately on GitHub, through the contact options on the
+Indocode maintainers privately on GitHub, through the contact options on the
 maintainer profile at [github.com/aicodeking](https://github.com/aicodeking).
 Please do not report conduct issues in public issues or discussions.
 All complaints will be reviewed and investigated promptly and fairly.

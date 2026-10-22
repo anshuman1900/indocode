@@ -152,7 +152,7 @@ export async function showJevSettings(dialog: HTMLDialogElement): Promise<void> 
       <p class="jev-privacy">Browser tests send your goal and visible page text to TypeSafe and your text model provider, using a separate Chrome profile. Decision assistance sends selected task text and diffs to TypeSafe. Reports stay on this device.</p>
       <section class="jev-section"><div class="jev-section-heading"><h3>Connections</h3><span>Usage is billed by your providers</span></div>
         ${keyField('typesafe', 'TypeSafe API key')}${keyField('text', 'Text model API key')}
-        <p class="jev-hint">PandaCode works without Jev or a TypeSafe key. Optional decision assistance only needs the TypeSafe key. Keys are saved privately on this device, outside the keychain. Leave a field empty to keep its saved key.</p>
+        <p class="jev-hint">Indocode works without Jev or a TypeSafe key. Optional decision assistance only needs the TypeSafe key. Keys are saved privately on this device, outside the keychain. Leave a field empty to keep its saved key.</p>
       </section>
       <details class="jev-section jev-advanced" data-jev-browser-runtime><summary>Browser runtime <span class="jev-runtime-badge" role="status">Checking setup…</span>${icon('down')}</summary>
         <p class="jev-hint">Only browser tests need Python 3.12+, Chrome, and a text model key. Decision assistance works without the browser runtime. Jev is installed separately and only runs when testing.</p>
@@ -221,7 +221,7 @@ export async function showJevSettings(dialog: HTMLDialogElement): Promise<void> 
     }
     void operate(async () => {
       const saved = await call<JevConfiguration>('jev_save_configuration', args);
-      window.dispatchEvent(new CustomEvent('pandacode:jev-settings', { detail: saved }));
+      window.dispatchEvent(new CustomEvent('indocode:jev-settings', { detail: saved }));
       if (!view.alive()) return;
       config = saved; removed.clear(); renderKeys(); tell(saved.enabled || saved.decisionsEnabled ? 'Saved. Your enabled Jev features are available for new runs.' : 'Saved. Jev features are disabled.');
       await checkDoctor('jev_doctor');

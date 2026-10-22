@@ -1,5 +1,5 @@
 //! Linux VMs get a desktop on their own: the Cirrus Labs images are console-only, so
-//! whenever PandaCode starts a Linux VM without one, it installs a light Xfce desktop
+//! whenever Indocode starts a Linux VM without one, it installs a light Xfce desktop
 //! with automatic login in the background. The panel streams the console meanwhile and
 //! shows the progress; agents can use commands right away.
 use std::{thread, time::{Duration, Instant}};
@@ -8,8 +8,8 @@ use tauri::{Emitter, Manager};
 use super::{tart, Vms};
 
 pub const SCRIPT: &str = include_str!("scripts/linux-desktop.sh");
-/// PandaCode's desktop, or any display manager the user set up themselves.
-const HAS_DESKTOP: &str = "test -f /etc/lightdm/lightdm.conf.d/50-pandacode.conf || systemctl is-active --quiet display-manager";
+/// Indocode's desktop, or any display manager the user set up themselves.
+const HAS_DESKTOP: &str = "test -f /etc/lightdm/lightdm.conf.d/50-indocode.conf || systemctl is-active --quiet display-manager";
 /// The guest agent answers a few seconds after boot.
 const AGENT_WAIT: Duration = Duration::from_secs(120);
 
@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn the_check_accepts_any_display_manager() {
-        assert!(HAS_DESKTOP.contains("50-pandacode.conf") && HAS_DESKTOP.contains("display-manager"));
+        assert!(HAS_DESKTOP.contains("50-indocode.conf") && HAS_DESKTOP.contains("display-manager"));
         assert!(SCRIPT.contains("autologin-user"));
     }
 }
@@ -93,7 +93,7 @@ mod live {
     #[ignore]
     fn a_new_linux_vm_ends_up_with_a_desktop() {
         let vms = Vms::default();
-        let name = "pandacode-desktop-check";
+        let name = "indocode-desktop-check";
         let _ = vms.delete(name);
         vms.create("ubuntu", name).unwrap();
         vms.start(name, None).unwrap();
@@ -104,7 +104,7 @@ mod live {
         assert!(has_desktop(name).unwrap());
         thread::sleep(Duration::from_secs(8));
         let shot = vms.with_screen(name, true, |rfb| super::super::screen::screenshot(rfb, 80)).unwrap();
-        std::fs::write(std::env::temp_dir().join("pandacode-desktop-check.jpg"), &shot.jpeg).unwrap();
+        std::fs::write(std::env::temp_dir().join("indocode-desktop-check.jpg"), &shot.jpeg).unwrap();
         vms.delete(name).unwrap();
     }
 }

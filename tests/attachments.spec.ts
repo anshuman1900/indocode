@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // Prompt attachments in the browser preview: the attach menu, image/document/folder
 // chips, paste and drop, the shared image cap, send-time context, and folder mentions.
-const previewBody = (source: string) => source + '\nwindow.__pandacodePreviewUrl = import.meta.url;\n';
+const previewBody = (source: string) => source + '\nwindow.__indocodePreviewUrl = import.meta.url;\n';
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent' });
 const attachButton = (page: Page) => page.getByRole('button', { name: 'Attach files for context' });
 const attachMenu = (page: Page) => page.getByRole('dialog', { name: 'Attach', exact: true });

@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn a_warm_agent_is_used_only_for_the_exact_launch_it_was_started_for() {
         let base = crate::providers::tests::config("claude");
-        let tools = vec![json!({"type":"function","name":"pandacode_title"})];
+        let tools = vec![json!({"type":"function","name":"indocode_title"})];
         let original = key(&base, &tools);
         assert_eq!(original, key(&base.clone(), &tools));
         let changed = |edit: fn(&mut RunConfig)| { let mut config = base.clone(); edit(&mut config); key(&config, &tools) };

@@ -59,7 +59,7 @@ export async function showJevAssist(dialog: HTMLDialogElement, context: AssistCo
         <div class="jev-assist-setup" role="status" hidden><span></span><button type="button" class="jev-text-button" data-assist-settings>Set up Jev ${icon('forward')}</button></div>
         <div class="jev-assist-preview"></div><p class="jev-feedback" role="status" aria-live="polite"></p>
         <div class="jev-assist-run-row"><button type="button" class="secondary-button" data-assist-prepare>${icon('file')}Preview evidence</button><button type="submit" class="primary-button" data-assist-run disabled>${icon('spark')}<span></span></button></div>
-        <p class="jev-assist-disclosure">Optional · selected task evidence is sent to TypeSafe when you run. Provider usage charges apply. PandaCode works without Jev. Advice does not change files, models, or permissions.</p>
+        <p class="jev-assist-disclosure">Optional · selected task evidence is sent to TypeSafe when you run. Provider usage charges apply. Indocode works without Jev. Advice does not change files, models, or permissions.</p>
       </form>
     </section><section class="jev-assist-results" aria-label="Saved Jev reports"><div class="jev-assist-history-heading"><h3>Reports</h3><select aria-label="Saved Jev report" hidden></select></div><div class="jev-assist-report"><p class="jev-empty">Your reports will appear here and stay on this device.</p></div></section>`;
   dialog.className = 'settings-dialog jev-dialog jev-assist-dialog';

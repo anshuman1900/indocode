@@ -11,7 +11,7 @@ export interface Ledger {
   rows: LedgerRow[];
   sessions: { provider: ProviderId; first: number; last: number }[];
 }
-/** `[unixHour, provider, prompts]` sent from PandaCode. */
+/** `[unixHour, provider, prompts]` sent from Indocode. */
 export type PromptActivity = [number, ProviderId, number][];
 
 export type Range = 'week' | 'month' | 'year';
@@ -90,7 +90,7 @@ export function summarize(ledger: Ledger, range: Range, today = new Date()): Sum
   return { range, days, totals, sessions: inRange.length, agents, models, series: [...series].map(([provider, values]) => ({ provider, values })), buckets, dailyCost: daily };
 }
 
-/** Daily totals for one agent's year calendar: tokens from logs when it has any, else PandaCode prompts. */
+/** Daily totals for one agent's year calendar: tokens from logs when it has any, else Indocode prompts. */
 export function calendarFor(provider: ProviderId, ledger: Ledger | null, prompts: PromptActivity | null): { unit: 'tokens' | 'prompts'; daily: { date: string; tokens: number }[] } | null {
   const add = (map: Map<string, number>, date: string, value: number) => map.set(date, (map.get(date) ?? 0) + value);
   const tokens = new Map<string, number>();

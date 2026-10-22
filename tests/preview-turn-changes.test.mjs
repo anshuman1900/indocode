@@ -42,7 +42,7 @@ test('preview change storage is bounded and rejects unavailable snapshots explic
   let oldest;
   for (let id = 1; id <= 60; id++) { const user = message('task', id); changes.finish(user); oldest ??= user.turnChanges; }
   assert.throws(() => changes.diff('task', oldest.id, oldest.files[0].path), /not found|available/);
-  assert(storage.getItem('pandacode.preview.turn-changes').length < 256 * 1024);
+  assert(storage.getItem('indocode.preview.turn-changes').length < 256 * 1024);
   assert.throws(() => changes.diff('task', 'unknown', 'README.md'), /not found|available/);
 });
 

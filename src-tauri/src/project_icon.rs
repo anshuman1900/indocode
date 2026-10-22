@@ -67,7 +67,7 @@ mod tests {
     use super::*;
 
     fn project() -> std::path::PathBuf {
-        let root = std::env::temp_dir().join(format!("pandacode-icon-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("indocode-icon-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&root).unwrap();
         root
     }

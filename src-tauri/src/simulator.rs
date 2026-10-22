@@ -235,7 +235,7 @@ impl Simulators {
             None => list
                 .into_iter()
                 .find(|d| d.state == "Booted")
-                .ok_or("No simulator is running. Boot one from the Simulator tab or with pandacode_simulator_manage.")?,
+                .ok_or("No simulator is running. Boot one from the Simulator tab or with indocode_simulator_manage.")?,
         };
         if booted && device.state != "Booted" {
             return Err(format!("{} is {}. Boot it first.", device.name, device.state.to_lowercase()));
@@ -407,7 +407,7 @@ pub fn frame(udid: &str, display: Option<&str>) -> Result<Vec<u8>, String> {
     if android::avd(udid).is_some() {
         return screenshot(udid, None, display);
     }
-    let dir = std::env::temp_dir().join("pandacode-simulator");
+    let dir = std::env::temp_dir().join("indocode-simulator");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let path = dir.join(format!("{}-{}.jpg", udid, crate::storage::id()));
     let display = display.map(|d| format!("--display={d}"));
@@ -423,7 +423,7 @@ pub fn frame(udid: &str, display: Option<&str>) -> Result<Vec<u8>, String> {
 /// A PNG of the screen at full resolution, or JPEG resized to points when `points` is set.
 /// `display` picks a Duo's `primary` (cover) or `primary-1` (inner) display.
 pub fn screenshot(udid: &str, points: Option<Screen>, display: Option<&str>) -> Result<Vec<u8>, String> {
-    let dir = std::env::temp_dir().join("pandacode-simulator");
+    let dir = std::env::temp_dir().join("indocode-simulator");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let stem = dir.join(format!("{}-{}", udid, crate::storage::id()));
     let (raw, out) = (stem.with_extension("png"), stem.with_extension("jpg"));

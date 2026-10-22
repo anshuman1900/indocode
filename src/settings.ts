@@ -45,7 +45,7 @@ interface SettingsOptions {
   cloud?: CloudSettingsHost;
   /** Skills library and rules registry. */
   skills?: SkillsLibraryHost;
-  /** PandaCode Connect: sign-in, remote control and devices. */
+  /** Indocode Connect: sign-in, remote control and devices. */
   remote?: RemoteHost;
   embed: { colors: Embed; wallpapers: Embed; providerConnections: Embed; openCodeModels: Embed };
   /** Leaves Settings for the workspace. */
@@ -63,7 +63,7 @@ export const SECTIONS: { id: SettingsSection; label: string; icon: string; descr
   { id: 'tools', label: 'Tools & add-ons', icon: 'widget', description: 'App tools, MCP servers, skills and Jev.' },
   { id: 'skills', label: 'Skills & rules', icon: 'widget', description: 'Import skills and rules once, turn them on per harness, and check for drift.' },
   { id: 'cloud', label: 'Cloud sandboxes', icon: 'globe', description: 'Daytona, Cloudflare and AWS machines for your agents.' },
-  { id: 'remote', label: 'Remote access', icon: 'server', description: 'Reach your other computers with PandaCode Connect, end-to-end encrypted.' },
+  { id: 'remote', label: 'Remote access', icon: 'server', description: 'Reach your other computers with Indocode Connect, end-to-end encrypted.' },
   { id: 'github', label: 'GitHub', icon: 'github', description: 'Issues, pull requests and repositories through the GitHub CLI.' },
   { id: 'about', label: 'About & updates', icon: 'info', description: 'Version, updates, resource usage, license and support.' },
 ];
@@ -176,7 +176,7 @@ export function mountSettings(host: HTMLElement, options: SettingsOptions): Sett
     const draw = () => {
       const rows = projects.list();
       slot.innerHTML = rows.length ? rows.map(project => confirming === project.id
-        ? `<div class="setting-row project-row" data-project="${escape(project.id)}"><div><strong>Remove ${escape(project.name)}?</strong><small>Its tasks are removed from PandaCode. The folder stays on disk.</small>${error ? `<small class="settings-embed-error" role="alert">${escape(error)}</small>` : ''}</div><div class="project-row-actions"><button type="button" class="secondary-button" data-project-cancel>Cancel</button><button type="button" class="secondary-button" data-project-confirm>Remove project</button></div></div>`
+        ? `<div class="setting-row project-row" data-project="${escape(project.id)}"><div><strong>Remove ${escape(project.name)}?</strong><small>Its tasks are removed from Indocode. The folder stays on disk.</small>${error ? `<small class="settings-embed-error" role="alert">${escape(error)}</small>` : ''}</div><div class="project-row-actions"><button type="button" class="secondary-button" data-project-cancel>Cancel</button><button type="button" class="secondary-button" data-project-confirm>Remove project</button></div></div>`
         : `<div class="setting-row project-row" data-project="${escape(project.id)}"><div><strong>${escape(project.name)}</strong><small class="project-path">${escape(project.path)}</small></div><button type="button" class="secondary-button" data-project-remove aria-label="Remove ${escape(project.name)}">Remove</button></div>`).join('')
         : '<div class="setting-row"><div><small>No projects yet.</small></div></div>';
     };

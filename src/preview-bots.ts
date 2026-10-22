@@ -58,7 +58,7 @@ function previewIdentity(input: any): { name: string; link: string | null; invit
   switch (input?.kind) {
     case 'telegram':
       if (!/^\d+:.{30,}$/.test(secret('token'))) throw new Error("That doesn't look like a Telegram bot token. It looks like 123456789:AAE… — copy the whole line BotFather sent.");
-      return { name: '@preview_pandacode_bot', link: 'https://t.me/preview_pandacode_bot', invite: null, warnings: [] };
+      return { name: '@preview_indocode_bot', link: 'https://t.me/preview_indocode_bot', invite: null, warnings: [] };
     case 'slack':
       if (secret('token').startsWith('xapp-') && secret('app_token').startsWith('xoxb-')) throw new Error('The two Slack tokens are swapped: the bot token starts with xoxb-, the app-level token with xapp-.');
       if (!secret('token').startsWith('xoxb-')) throw new Error('The bot token starts with xoxb-. Find it under OAuth & Permissions → Bot User OAuth Token (install the app first).');
@@ -188,7 +188,7 @@ export async function invokeBots<T>(command: string, args: Record<string, any>, 
       const required: Record<string, string[]> = { telegram: ['token'], discord: ['token'], slack: ['token', 'app_token'], whatsapp: ['access_token', 'signing_secret'], web: [] };
       if (input.kind === 'whatsapp' && !/^\d+$/.test(String(input.config?.phoneNumberId ?? ''))) throw new Error("Enter the WhatsApp phone number ID from Meta's API setup page.");
       for (const name of required[input.kind]) if (!String(input.secrets?.[name] ?? '').trim()) throw new Error(`Enter the ${name.replace('_', ' ')} for this channel.`);
-      const config = { ...(input.config ?? {}), identity, ...(input.kind === 'whatsapp' ? { verifyToken: 'pandacode-preview0123456789' } : {}) };
+      const config = { ...(input.config ?? {}), identity, ...(input.kind === 'whatsapp' ? { verifyToken: 'indocode-preview0123456789' } : {}) };
       const channel: Channel = { id: crypto.randomUUID(), botId: entry.bot.id, kind: input.kind, label: String(input.label ?? '').trim(), config, enabled: true, status: input.kind === 'web' ? 'Ready on this computer' : 'Preview · not connected', secrets: required[input.kind] };
       entry.channels.push(channel); log(entry, 'channel', `Added a ${input.kind} channel`); result = channel; changed();
       simulatePairing(host, entry, channel); break;

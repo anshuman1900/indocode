@@ -33,7 +33,7 @@ impl TestRun {
             let _ = emit.send(event);
         });
         let mut command = Command::new("/bin/sh");
-        command.args(["-c", script, "pandacode-test", id]);
+        command.args(["-c", script, "indocode-test", id]);
         let task = tokio::spawn(run_process(config, sink, receiver, command, Vec::new()));
         Self {
             input,
@@ -76,7 +76,7 @@ impl TestRun {
 
 const APPROVAL_SCRIPT: &str = r#"
 IFS= read -r init
-printf '%s\n' '{"type":"control_response","response":{"request_id":"pandacode-init","subtype":"success","response":{}}}'
+printf '%s\n' '{"type":"control_response","response":{"request_id":"indocode-init","subtype":"success","response":{}}}'
 IFS= read -r prompt
 printf '{"type":"system","subtype":"init","session_id":"%s"}\n' "$$"
 printf '{"type":"assistant","message":{"id":"same-message-id","content":[{"type":"text","text":"%s before "}]}}\n' "$1"

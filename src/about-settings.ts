@@ -4,10 +4,11 @@ import { appUpdates, describeUpdate } from './app-updates';
 
 /** Public project links. Opening one is user-initiated; only the update check runs on its own. */
 export const PROJECT_LINKS = {
-  repository: 'https://github.com/aicodeking/pandacode',
-  issues: 'https://github.com/aicodeking/pandacode/issues',
-  releases: 'https://github.com/aicodeking/pandacode/releases',
+  repository: 'https://github.com/anshuman1900/indocode',
+  issues: 'https://github.com/anshuman1900/indocode/issues',
+  releases: 'https://github.com/anshuman1900/indocode/releases',
   license: 'https://github.com/aicodeking/pandacode/blob/main/LICENSE',
+  upstream: 'https://github.com/aicodeking/pandacode',
 } as const;
 
 const link = (label: string, url: string) =>
@@ -16,8 +17,8 @@ const link = (label: string, url: string) =>
 /** The About group: app version, license, updates from GitHub Releases, and links. */
 export function aboutSettingsHtml(): string {
   return `<div class="settings-group settings-about" aria-labelledby="settings-about-heading">
-    <div class="setting-row"><div><strong id="settings-about-heading">About PandaCode</strong><small class="settings-about-version">Version …</small></div></div>
-    <div class="setting-row"><div><strong>License</strong><small>Open source (MIT-based). No account, no telemetry.</small></div>${link('PandaCode License', PROJECT_LINKS.license)}</div>
+    <div class="setting-row"><div><strong id="settings-about-heading">About Indocode</strong><small class="settings-about-version">Version …</small></div></div>
+    <div class="setting-row"><div><strong>License</strong><small>Open source (MIT-based). This is a fork of <a href="#" data-action="open-url" data-url="${PROJECT_LINKS.upstream}">PandaCode</a>. No account, no telemetry.</small></div>${link('PandaCode License', PROJECT_LINKS.license)}</div>
     <div class="setting-row settings-updates"><div><strong>Updates</strong><small class="settings-update-status" aria-live="polite">Checks GitHub Releases automatically.</small></div><div class="settings-row-actions"><button type="button" class="secondary-button settings-update-action" hidden></button>${link('Releases', PROJECT_LINKS.releases)}</div></div>
     <div class="setting-row settings-updates-auto"><div><strong>Install updates automatically</strong><small>Downloads in the background and restarts when no agent is working.</small></div><input type="checkbox" class="settings-switch" data-update-automatic aria-label="Install updates automatically"></div>
     <div class="setting-row"><div><strong>Source code</strong><small>Report bugs and follow development.</small></div><div class="settings-row-actions">${link('GitHub repository', PROJECT_LINKS.repository)}${link('Issues', PROJECT_LINKS.issues)}</div></div>

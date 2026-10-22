@@ -87,7 +87,7 @@ test.describe('moodboards', () => {
       return module.invoke('get_messages', { sessionId: 'session-1' });
     });
     const message = saved.messages.find((message: any) => message.content.startsWith('Follow the attached visual direction'));
-    expect(message.content).toContain(boardId); expect(message.content).toContain('pandacode_read_moodboard_image');
+    expect(message.content).toContain(boardId); expect(message.content).toContain('indocode_read_moodboard_image');
     await open(page); await dialog(page).getByRole('button', { name: 'Attach to task', exact: true }).click();
     await page.evaluate(async id => {
       const module = await import('/src/preview.ts');

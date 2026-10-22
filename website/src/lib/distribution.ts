@@ -1,4 +1,4 @@
-// Where PandaCode lives. Builds are published on GitHub Releases; update the notes
+// Where Indocode lives. Builds are published on GitHub Releases; update the notes
 // below once release builds are signed (Apple notarization, Authenticode).
 const repoUrl = 'https://github.com/aicodeking/pandacode';
 
@@ -14,9 +14,9 @@ export const project = {
 // points at the newest build. Each has a matching .sha256 beside it.
 const latest = `${repoUrl}/releases/latest/download`;
 export const platformDownloads = [
-  { label: 'macOS', detail: 'Apple silicon', href: `${latest}/PandaCode-macOS-arm64.dmg` },
-  { label: 'Windows', detail: 'x64', href: `${latest}/PandaCode-Windows-x64-setup.exe` },
-  { label: 'Linux', detail: 'AppImage', href: `${latest}/PandaCode-Linux-x86_64.AppImage` },
+  { label: 'macOS', detail: 'Apple silicon', href: `${latest}/Indocode-macOS-arm64.dmg` },
+  { label: 'Windows', detail: 'x64', href: `${latest}/Indocode-Windows-x64-setup.exe` },
+  { label: 'Linux', detail: 'AppImage', href: `${latest}/Indocode-Linux-x86_64.AppImage` },
 ] as const;
 
 export const distribution = {

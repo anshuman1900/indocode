@@ -1,6 +1,6 @@
 //! DeepSeek Harness (`dsh --profile acp`) over the shared ACP transport. dsh reads
 //! `DEEPSEEK_API_KEY` from its launch environment ahead of its own credential file,
-//! so a key saved in PandaCode is passed only to that process.
+//! so a key saved in Indocode is passed only to that process.
 use super::*;
 use crate::provider_settings::DEEPSEEK_KEY;
 
@@ -28,7 +28,7 @@ pub(super) fn configure(command: &mut Command) -> Result<Option<String>, String>
 /// dsh picks its sandbox from this variable when a process starts.
 pub(super) const PERMISSION_ENV: &str = "DSH_PERMISSION_MODE";
 
-/// The dsh sandbox for a PandaCode mode. dsh cannot ask before each workspace
+/// The dsh sandbox for a Indocode mode. dsh cannot ask before each workspace
 /// edit: Standard = workspace-write sandbox + ask on escalation.
 pub(super) fn sandbox(mode: &str) -> &'static str {
     match mode {
@@ -39,10 +39,10 @@ pub(super) fn sandbox(mode: &str) -> &'static str {
 }
 
 /// A dsh session pins its sandbox in its own log at creation and `session/resume`
-/// replays it, ignoring the new process's environment. So PandaCode saves the
+/// replays it, ignoring the new process's environment. So Indocode saves the
 /// sandbox with the session ID (`<id>#<sandbox>`) and resumes only when it still
 /// matches; after a mode change the next turn starts a fresh dsh session, which
-/// loses dsh's own history of the task (the PandaCode transcript stays).
+/// loses dsh's own history of the task (the Indocode transcript stays).
 pub(super) fn saved_session(resume_id: &str, mode: &str) -> Option<String> {
     // IDs saved before the sandbox was recorded ran under dsh's default.
     let (id, saved) = resume_id.rsplit_once('#').unwrap_or((resume_id, "workspace-write"));

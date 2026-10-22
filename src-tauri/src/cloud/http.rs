@@ -15,7 +15,7 @@ pub fn client(timeout: Duration) -> Result<reqwest::Client, String> {
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(Duration::from_secs(10))
         .timeout(timeout)
-        .user_agent(concat!("PandaCode/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("Indocode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| format!("Could not prepare a network client: {e}"))
 }

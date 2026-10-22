@@ -54,7 +54,7 @@ that folder using the parent's inherited access. The temporary project above
 worked in a normal launch. This identifies a macOS privacy/access limitation of
 the tested launch context; no privacy settings were changed during validation.
 
-Use **Browse** to select the folder. If macOS still blocks access, allow PandaCode
+Use **Browse** to select the folder. If macOS still blocks access, allow Indocode
 under **System Settings → Privacy & Security → Files & Folders**, then use
 **Retry** in the app. Recheck access after changing launch method or app location.
 
@@ -288,7 +288,7 @@ capture/send, preserving newer attachments, and restoring the guest while a clos
 menu's exit animation is suspended. The final snapshot identity guard also passed
 the three targeted browser Rust tests and Clippy.
 
-Native verification used a synthetic page served on localhost:8787. PandaCode
+Native verification used a synthetic page served on localhost:8787. Indocode
 discovered the listener, navigated between two pages, selected a button without
 activating it, and captured a legible PNG through WKWebView. An attempted guest
 call to list_projects was rejected. A Codex turn receiving the screenshot and
@@ -710,10 +710,10 @@ nested Playwright artifact directories; the affected case passed separately in
 each engine with independent output directories. Dark and light screenshots
 were inspected. TypeScript, 15 Node checks, and the signed Mac package passed.
 
-## PandaCode identity — September 15, 2026
+## Indocode identity — September 15, 2026
 
 Renamed the visible UI, native product/window name, provider client identity,
-package metadata, preview fixtures, and release artifacts to PandaCode. Original
+package metadata, preview fixtures, and release artifacts to Indocode. Original
 bamboo vector artwork now appears in the app icon, sidebar, welcome page, board,
 browser home, and resource indicator. Existing yellow actions and both themes
 remain. Decorative vectors add no timers or third-party dependencies.
@@ -737,7 +737,7 @@ Validation:
   app. An isolated check confirmed the bamboo mark fits the 58px collapsed
   sidebar at a 580px viewport with no document overflow.
 - Visually inspected the new icon and dark/light welcome and board views.
-- Built `release/PandaCode.app`, verified its app name, executable, unchanged data
+- Built `release/Indocode.app`, verified its app name, executable, unchanged data
   identifier, and strict ad-hoc signature. The new arm64 ZIP is 3,062,600 bytes.
   The previous app and archive are retained in a hidden release backup; running
   app processes were not restarted. Public notarization was not performed.
@@ -824,7 +824,7 @@ See [command compatibility](slash-commands.md) for unsupported terminal-only
 commands and Kimi's session-discovery behavior. The normal app approval policies
 remain in effect when a command requests agent work.
 
-Built and staged `release/PandaCode.app` and the 5,829,721-byte arm64 ZIP. Strict
+Built and staged `release/Indocode.app` and the 5,829,721-byte arm64 ZIP. Strict
 ad-hoc signature verification passed. The previous bundle remains in a hidden
 rollback directory, and the running application was not restarted. No public
 notarization or release publication was performed. Temporary preview stopped.
@@ -854,9 +854,9 @@ notarization or release publication was performed. Temporary preview stopped.
 - Reviewed goal dialog at enlarged text size in a narrow window. Goal controls
   retain their nodes during updates, including errors and task switching.
 
-Built and staged `release/PandaCode.app` and the **5,990,647-byte** macOS arm64 ZIP.
+Built and staged `release/Indocode.app` and the **5,990,647-byte** macOS arm64 ZIP.
 Strict ad-hoc signature verification passed. Previous bundle retained under
-`release/.pandacode-update-x__5dp2q`; the running application was not restarted.
+`release/.indocode-update-x__5dp2q`; the running application was not restarted.
 Public notarization and publication are outside this local build.
 
 ## Architect and workers — 2026-09-15
@@ -896,9 +896,9 @@ coordination boundaries, not filesystem sandboxes. Token savings depend on model
 choice and workload; no billing or savings percentage is claimed. See
 [architect and workers](architect-workers.md) for operation and recovery details.
 
-Built and staged `release/PandaCode.app` and the **6,320,423-byte** macOS arm64 ZIP.
+Built and staged `release/Indocode.app` and the **6,320,423-byte** macOS arm64 ZIP.
 Strict ad-hoc signature verification passed. The previous bundle remains under
-`release/.pandacode-update-98ku3or9`; the running application was not restarted.
+`release/.indocode-update-98ku3or9`; the running application was not restarted.
 No public notarization or publication was performed.
 
 ## Persistent team defaults and profiles — 2026-09-15
@@ -928,9 +928,9 @@ No public notarization or publication was performed.
 Validation used disposable preview data and local native fixtures; no paid model
 inference or user project edits were performed by the sample agents.
 
-Built and staged `release/PandaCode.app` and the **6,351,758-byte** macOS arm64 ZIP.
+Built and staged `release/Indocode.app` and the **6,351,758-byte** macOS arm64 ZIP.
 Strict ad-hoc signature verification passed. The previous bundle remains under
-`release/.pandacode-update-sbmg55pu`; the running application was not restarted.
+`release/.indocode-update-sbmg55pu`; the running application was not restarted.
 Temporary preview and browser processes were stopped. No public publication or
 notarization was performed.
 
@@ -968,9 +968,9 @@ inference or changes to user projects were required. See
 [turn changes](turn-changes.md) for precise scope, partial-capture behavior, and
 platform support.
 
-Built and staged `release/PandaCode.app` and the **8,236,265-byte** macOS arm64 ZIP.
+Built and staged `release/Indocode.app` and the **8,236,265-byte** macOS arm64 ZIP.
 Strict ad-hoc signature verification passed; the prior bundle is retained under
-`release/.pandacode-update-abgschmw`. The running app was not restarted, and no app
+`release/.indocode-update-abgschmw`. The running app was not restarted, and no app
 data was moved. No public publication or notarization was performed.
 
 
@@ -1094,7 +1094,7 @@ data was moved. No public publication or notarization was performed.
   approvals, resumption, and image transport were verified with deterministic
   protocol tests. Antigravity's official ACP executable was not installed locally;
   its adapter is protocol-tested. No paid provider inference was used.
-- A separate native bundle (`dev.pandacode.overlay-smoke`) built and stayed running
+- A separate native bundle (`dev.indocode.overlay-smoke`) built and stayed running
   without startup errors in a direct launch. Native UI automation stalled before
   keyboard/window checks, so global-hotkey and focus behavior still needs an
   interactive macOS check. The isolated test process was closed afterward.
@@ -1194,7 +1194,7 @@ data was moved. No public publication or notarization was performed.
   build with a generated SHA-256 checksum. The page states its unnotarized preview
   status and provider prerequisites. The static output includes Cloudflare
   cache/security headers, canonical metadata, sitemap, robots.txt, and a 404.
-- Packaged `release/PandaCode-website.zip` for direct upload. No Cloudflare account
+- Packaged `release/Indocode-website.zip` for direct upload. No Cloudflare account
   was connected, so no public deployment or domain/DNS change was made.
 
 ## Conversation memory and overlay refresh — 2026-09-18

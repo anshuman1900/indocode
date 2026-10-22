@@ -14,7 +14,7 @@ export type RichContext = {
 type Block = { kind: 'chart' | 'svg' | 'html'; code: string };
 type Picture = { alt: string; src: string };
 
-const TOKEN = 'PANDACODERICH';
+const TOKEN = 'INDOCODERICH';
 const FENCE = /```(chart|svg|html)[ \t]*\n([\s\S]*?)```/g;
 const IMAGE = /!\[([^\]\n]*)\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
 const BLOCK_LIMIT = 64 * 1024;

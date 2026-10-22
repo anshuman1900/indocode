@@ -2,15 +2,15 @@
 //! EC2 desktops for Linux (Ubuntu, arm64) and Windows Server, reached only through
 //! Systems Manager. Instances have no inbound ports or key pairs; commands run with SSM
 //! Run Command and the screen is VNC bound to the instance's localhost, forwarded by an
-//! SSM port-forwarding session. Instances are tagged `pandacode=sandbox`.
+//! SSM port-forwarding session. Instances are tagged `indocode=sandbox`.
 use serde_json::{json, Value};
 use std::{process::Command, time::Duration};
 
 use super::Machine;
 use crate::workspace::run_process;
 
-pub const ROLE: &str = "PandaCodeSandboxRole";
-pub const PROFILE: &str = "PandaCodeSandboxProfile";
+pub const ROLE: &str = "IndocodeSandboxRole";
+pub const PROFILE: &str = "IndocodeSandboxProfile";
 const QUICK: Duration = Duration::from_secs(90);
 
 #[derive(Clone, Debug, PartialEq)]
@@ -57,9 +57,9 @@ printf '%s\n' {password} | vncpasswd -f > /home/ubuntu/.vnc/passwd
 chown ubuntu:ubuntu /home/ubuntu/.vnc/passwd && chmod 600 /home/ubuntu/.vnc/passwd
 printf '#!/bin/sh\nunset SESSION_MANAGER DBUS_SESSION_BUS_ADDRESS\nxset s off -dpms\nexec startxfce4\n' > /home/ubuntu/.vnc/xstartup
 chown ubuntu:ubuntu /home/ubuntu/.vnc/xstartup && chmod 755 /home/ubuntu/.vnc/xstartup
-cat > /etc/systemd/system/pandacode-vnc.service <<'UNIT'
+cat > /etc/systemd/system/indocode-vnc.service <<'UNIT'
 [Unit]
-Description=PandaCode desktop (VNC on localhost:5901)
+Description=Indocode desktop (VNC on localhost:5901)
 After=network.target
 [Service]
 Type=forking
@@ -72,7 +72,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 UNIT
 systemctl daemon-reload
-systemctl enable --now pandacode-vnc.service
+systemctl enable --now indocode-vnc.service
 "#, password = super::shell_quote(password))
 }
 
@@ -132,7 +132,7 @@ impl Aws {
             return Ok(());
         }
         let trust = json!({"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},"Action":"sts:AssumeRole"}]}).to_string();
-        if let Err(error) = self.call(&["iam", "create-role", "--role-name", ROLE, "--description", "Lets Systems Manager manage PandaCode sandboxes", "--assume-role-policy-document", &trust], QUICK) {
+        if let Err(error) = self.call(&["iam", "create-role", "--role-name", ROLE, "--description", "Lets Systems Manager manage Indocode sandboxes", "--assume-role-policy-document", &trust], QUICK) {
             if !error.contains("EntityAlreadyExists") && !error.contains("already exists") { return Err(error); }
         }
         self.call(&["iam", "attach-role-policy", "--role-name", ROLE, "--policy-arn", "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"], QUICK)?;
@@ -152,7 +152,7 @@ impl Aws {
             "terminated" => "deleted",
             other => other,
         };
-        let os = tag("pandacode-os").unwrap_or_else(|| if instance["Platform"] == "windows" { "windows".into() } else { "linux".into() });
+        let os = tag("indocode-os").unwrap_or_else(|| if instance["Platform"] == "windows" { "windows".into() } else { "linux".into() });
         Machine {
             id: format!("aws:{id}"),
             provider: "aws".into(),
@@ -164,7 +164,7 @@ impl Aws {
         }
     }
     pub fn list(&self) -> Result<Vec<Machine>, String> {
-        let found = self.call(&["ec2", "describe-instances", "--filters", "Name=tag:pandacode,Values=sandbox", "Name=instance-state-name,Values=pending,running,stopping,stopped"], QUICK)?;
+        let found = self.call(&["ec2", "describe-instances", "--filters", "Name=tag:indocode,Values=sandbox", "Name=instance-state-name,Values=pending,running,stopping,stopped"], QUICK)?;
         Ok(found["Reservations"].as_array().into_iter().flatten().flat_map(|r| r["Instances"].as_array().cloned().unwrap_or_default()).map(|i| Self::machine(&i)).collect())
     }
 
@@ -175,9 +175,9 @@ impl Aws {
         let image = self.call(&["ssm", "get-parameter", "--name", flavor.parameter], QUICK)?["Parameter"]["Value"].as_str().map(str::to_string).ok_or("AWS did not report a current image for this OS.")?;
         let password = format!("Bb{}!7", &uuid::Uuid::new_v4().simple().to_string()[..18]);
         let user_data = if os == "windows" { windows_user_data(&password) } else { linux_user_data(&password) };
-        let file = std::env::temp_dir().join(format!("pandacode-user-data-{}.txt", uuid::Uuid::new_v4()));
+        let file = std::env::temp_dir().join(format!("indocode-user-data-{}.txt", uuid::Uuid::new_v4()));
         std::fs::write(&file, &user_data).map_err(|e| e.to_string())?;
-        let tags = format!("ResourceType=instance,Tags=[{{Key=Name,Value={name}}},{{Key=pandacode,Value=sandbox}},{{Key=pandacode-os,Value={os}}}]");
+        let tags = format!("ResourceType=instance,Tags=[{{Key=Name,Value={name}}},{{Key=indocode,Value=sandbox}},{{Key=indocode-os,Value={os}}}]");
         // Ubuntu and Windows Server images both boot from /dev/sda1.
         let disk = format!("DeviceName=/dev/sda1,Ebs={{VolumeSize={},VolumeType=gp3,DeleteOnTermination=true}}", flavor.disk_gb);
         let launched = self.call(&[
@@ -239,7 +239,7 @@ mod tests {
     }
     #[test]
     fn reads_instances_into_machines() {
-        let instance = json!({"InstanceId":"i-0abc","InstanceType":"t3.large","Platform":"windows","State":{"Name":"pending"},"Tags":[{"Key":"Name","Value":"build-box"},{"Key":"pandacode-os","Value":"windows"}]});
+        let instance = json!({"InstanceId":"i-0abc","InstanceType":"t3.large","Platform":"windows","State":{"Name":"pending"},"Tags":[{"Key":"Name","Value":"build-box"},{"Key":"indocode-os","Value":"windows"}]});
         let machine = Aws::machine(&instance);
         assert_eq!((machine.id.as_str(), machine.name.as_str(), machine.state.as_str(), machine.os.as_str()), ("aws:i-0abc", "build-box", "starting", "windows"));
         assert!(machine.desktop && machine.detail.contains("Windows Server"));

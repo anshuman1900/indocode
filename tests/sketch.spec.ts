@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // The mockup editor: drawing, components, text, selection, history, export to an image
 // attachment, and re-editing an attached sketch.
-const previewBody = (source: string) => source + '\nwindow.__pandacodePreviewUrl = import.meta.url;\n';
+const previewBody = (source: string) => source + '\nwindow.__indocodePreviewUrl = import.meta.url;\n';
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent' });
 const dialog = (page: Page) => page.locator('#dialog.sketch-dialog');
 const canvas = (page: Page) => page.getByRole('img', { name: /Mockup canvas/ });

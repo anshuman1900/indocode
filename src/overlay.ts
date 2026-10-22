@@ -9,12 +9,12 @@ import type { OverlayThreadView } from './overlay-thread';
 import { mountFileMentions } from './file-mentions';
 
 function refreshTheme(): void {
-  try { document.documentElement.dataset.theme = localStorage.getItem('pandacode.theme') === 'light' ? 'light' : 'dark'; } catch { /* Default to dark. */ }
+  try { document.documentElement.dataset.theme = localStorage.getItem('indocode.theme') === 'light' ? 'light' : 'dark'; } catch { /* Default to dark. */ }
 }
 refreshTheme();
-window.addEventListener('storage', event => { if (event.key === 'pandacode.theme') refreshTheme(); });
+window.addEventListener('storage', event => { if (event.key === 'indocode.theme') refreshTheme(); });
 const host = document.querySelector<HTMLDivElement>('#app')!;
-host.innerHTML = `<main class="launcher" aria-label="PandaCode quick launcher"><header class="launcher-heading"><span>${icon('bamboo')}PandaCode</span><button type="button" class="launcher-close" aria-label="Close launcher"><kbd>esc</kbd></button></header><div class="launcher-home"><form class="launcher-compose"><label class="sr-only" for="launcher-prompt">New task</label><textarea id="launcher-prompt" rows="2" maxlength="32768" placeholder="What should we work on?" autofocus></textarea><div class="launcher-compose-footer"><label class="launcher-project">${icon('folder')}<select aria-label="Task project"></select></label><button type="button" class="launcher-agent" aria-label="Choose harness and model" aria-haspopup="dialog" aria-expanded="false"></button><button class="launcher-start" type="submit" aria-label="Start task">${icon('arrow')}</button></div></form><p class="launcher-feedback" role="status" hidden></p><section class="launcher-task-area"><div class="launcher-list-heading"><h2>Active agents <span class="launcher-count"></span></h2><label class="launcher-search">${icon('search')}<input type="search" aria-label="Search tasks" placeholder="Find a task" autocomplete="off"></label></div><div class="launcher-tasks" aria-label="Active agents"><p class="launcher-empty">Loading tasks…</p></div></section><footer class="launcher-footer"><span><kbd>↵</kbd> start task</span><span><kbd>⇧ ↵</kbd> new line</span><span class="launcher-live">Live status</span></footer></div><section class="launcher-thread" hidden></section></main>`;
+host.innerHTML = `<main class="launcher" aria-label="Indocode quick launcher"><header class="launcher-heading"><span>${icon('bamboo')}Indocode</span><button type="button" class="launcher-close" aria-label="Close launcher"><kbd>esc</kbd></button></header><div class="launcher-home"><form class="launcher-compose"><label class="sr-only" for="launcher-prompt">New task</label><textarea id="launcher-prompt" rows="2" maxlength="32768" placeholder="What should we work on?" autofocus></textarea><div class="launcher-compose-footer"><label class="launcher-project">${icon('folder')}<select aria-label="Task project"></select></label><button type="button" class="launcher-agent" aria-label="Choose harness and model" aria-haspopup="dialog" aria-expanded="false"></button><button class="launcher-start" type="submit" aria-label="Start task">${icon('arrow')}</button></div></form><p class="launcher-feedback" role="status" hidden></p><section class="launcher-task-area"><div class="launcher-list-heading"><h2>Active agents <span class="launcher-count"></span></h2><label class="launcher-search">${icon('search')}<input type="search" aria-label="Search tasks" placeholder="Find a task" autocomplete="off"></label></div><div class="launcher-tasks" aria-label="Active agents"><p class="launcher-empty">Loading tasks…</p></div></section><footer class="launcher-footer"><span><kbd>↵</kbd> start task</span><span><kbd>⇧ ↵</kbd> new line</span><span class="launcher-live">Live status</span></footer></div><section class="launcher-thread" hidden></section></main>`;
 const prompt = host.querySelector<HTMLTextAreaElement>('textarea')!;
 const project = host.querySelector<HTMLSelectElement>('select')!;
 const list = host.querySelector<HTMLDivElement>('.launcher-tasks')!;
@@ -29,7 +29,7 @@ const deletedSessions = new Set<string>();
 let pickerCleanup: (() => void) | undefined, pickerRequest = 0, pickerLoading = false, modelSaving = false, modelRevision = 0;
 const modelNames = new Map<string,string>();
 try {
-  const cached = JSON.parse(localStorage.getItem('pandacode.launcher-model-label') || 'null');
+  const cached = JSON.parse(localStorage.getItem('indocode.launcher-model-label') || 'null');
   if (cached && typeof cached.provider === 'string' && typeof cached.model === 'string' && typeof cached.name === 'string') modelNames.set(`${cached.provider}:${cached.model}`, cached.name.slice(0,160));
 } catch { /* A display-label cache is optional. */ }
 function rememberModelNames(provider: ProviderId, models: ProviderModel[]): void {
@@ -59,7 +59,7 @@ async function chooseModel(): Promise<void> {
           const context = await overlayCall<LaunchContext>('overlay_select_model', {provider,model,reasoningEffort:current.provider === provider && current.model === model ? current.reasoningEffort ?? null : null});
           modelRevision++; snapshot!.context = context;
           const name = modelNames.get(`${provider}:${model}`) || fallbackModel(provider,model).name;
-          try { localStorage.setItem('pandacode.launcher-model-label',JSON.stringify({provider,model,name})); } catch { /* Selection itself is saved natively. */ }
+          try { localStorage.setItem('indocode.launcher-model-label',JSON.stringify({provider,model,name})); } catch { /* Selection itself is saved natively. */ }
           showFeedback('');
         } catch (error) { showFeedback(String(error),true); throw error; }
         finally { modelSaving = false; render(); }
@@ -140,7 +140,7 @@ function render(): void {
     if (row.dataset.signature !== content) { row.innerHTML = content; row.dataset.signature = content; }
     if (list.children[index] !== row) list.insertBefore(row,list.children[index] || null);
   }
-  if (!tasks.length) list.innerHTML = `<p class="launcher-empty">${snapshot.projects.length ? search.value ? 'No matching active agents.' : 'No agents working right now.' : 'Open a project in PandaCode to get started.'}</p>`;
+  if (!tasks.length) list.innerHTML = `<p class="launcher-empty">${snapshot.projects.length ? search.value ? 'No matching active agents.' : 'No agents working right now.' : 'Open a project in Indocode to get started.'}</p>`;
 }
 async function refresh(): Promise<void> {
   if (!visible || refreshing) return;
@@ -200,7 +200,7 @@ if (nativeOverlay) {
   void import('@tauri-apps/api/event').then(({listen}) => listen<boolean>('overlay-visibility',event => setVisible(event.payload)));
   void import('@tauri-apps/api/event').then(({listen}) => listen<{sessionIds: string[]}>('sessions-deleted', event => removeDeletedSessions(event.payload.sessionIds)));
 } else {
-  window.addEventListener('pandacode-overlay-sessions-deleted', event => removeDeletedSessions((event as CustomEvent<{sessionIds: string[]}>).detail.sessionIds));
+  window.addEventListener('indocode-overlay-sessions-deleted', event => removeDeletedSessions((event as CustomEvent<{sessionIds: string[]}>).detail.sessionIds));
   window.addEventListener('focus',() => setVisible(true));
   window.addEventListener('blur',() => setVisible(false));
 }

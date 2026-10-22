@@ -58,8 +58,8 @@ export function parseFields(input: string): Fields {
 }
 
 export function toolKind(name: string): TraceKind {
-  const n = name.toLowerCase().replace(/^pandacode_architect_/, '');
-  if (/^(bash|shell|command|exec_command|local_shell|run_terminal_cmd|pandacode_vm_exec)$/.test(n)) return 'shell';
+  const n = name.toLowerCase().replace(/^indocode_architect_/, '');
+  if (/^(bash|shell|command|exec_command|local_shell|run_terminal_cmd|indocode_vm_exec)$/.test(n)) return 'shell';
   if (/^(read|read_file|view|readfile)$/.test(n)) return 'read';
   if (/^(edit|multiedit|multi_edit|str_replace\w*|apply_patch|patch)$/.test(n)) return 'edit';
   if (/^(write|write_file|create|create_file)$/.test(n)) return 'write';
@@ -69,7 +69,7 @@ export function toolKind(name: string): TraceKind {
   if (/^(todowrite|todo_write|update_plan)$/.test(n)) return 'todo';
   if (/^(task|agent)$/.test(n)) return 'agent';
   if (n === 'skill') return 'skill';
-  if (n.startsWith('mcp__') || n.startsWith('pandacode_')) return 'mcp';
+  if (n.startsWith('mcp__') || n.startsWith('indocode_')) return 'mcp';
   return 'tool';
 }
 
@@ -104,12 +104,12 @@ function fileChip(path: string): TraceChip | undefined {
 function mcpParts(name: string): { server: string; tool: string } {
   const mcp = /^mcp__(.+?)__(.+)$/.exec(name);
   if (mcp) return { server: mcp[1], tool: mcp[2] };
-  const local = name.replace(/^pandacode_architect_/, '').replace(/^pandacode_/, '');
-  return { server: 'PandaCode', tool: local };
+  const local = name.replace(/^indocode_architect_/, '').replace(/^indocode_/, '');
+  return { server: 'Indocode', tool: local };
 }
 
-/** `Dispatched 2 workers`-style verbs for PandaCode's own tools; undefined keeps the generic `Used [server] tool`. */
-function pandacodeTrace(tool: string, fields: Fields, running: boolean): Partial<Trace> | undefined {
+/** `Dispatched 2 workers`-style verbs for Indocode's own tools; undefined keeps the generic `Used [server] tool`. */
+function indocodeTrace(tool: string, fields: Fields, running: boolean): Partial<Trace> | undefined {
   const workers = Array.isArray(fields.workers) ? fields.workers.length : Array.isArray(fields.tasks) ? fields.tasks.length : 0;
   if (tool === 'dispatch_workers') return { verb: running ? 'Dispatching' : 'Dispatched', object: workers ? `${workers} ${workers === 1 ? 'worker' : 'workers'}` : 'workers' };
   if (tool === 'title') return { verb: running ? 'Naming' : 'Named', object: field(fields, 'title') ? `the task “${clip(field(fields, 'title'), 60)}”` : 'the task' };
@@ -157,8 +157,8 @@ function describeFields(kind: TraceKind, name: string, input: string, fields: Fi
     }
     case 'mcp': {
       const { server, tool } = mcpParts(name);
-      const own = server === 'PandaCode' ? pandacodeTrace(tool, fields, running) : undefined;
-      if (own) return { chip: { icon: 'server', label: 'PandaCode', title: name }, object: '', ...own };
+      const own = server === 'Indocode' ? indocodeTrace(tool, fields, running) : undefined;
+      if (own) return { chip: { icon: 'server', label: 'Indocode', title: name }, object: '', ...own };
       return { chip: { icon: 'server', label: server, title: name }, object: tool.replace(/_/g, ' ') };
     }
     default: return { chip: { icon: 'command', label: name || 'Tool', title: name || 'Tool' }, object: inputHint(input) };

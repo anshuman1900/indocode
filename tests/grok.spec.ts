@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 
 // Grok Build (xAI) is an ACP harness: it lists its models with context and
-// reasoning efforts, maps PandaCode's approval modes to its permission modes, and
+// reasoning efforts, maps Indocode's approval modes to its permission modes, and
 // takes documents and folders but no images.
-const previewBody = (source: string) => source + '\nwindow.__pandacodePreviewUrl = import.meta.url;\n';
+const previewBody = (source: string) => source + '\nwindow.__indocodePreviewUrl = import.meta.url;\n';
 const prompt = (page: Page) => page.getByRole('textbox', { name: 'Message your coding agent' });
 const modelTrigger = (page: Page) => page.getByRole('button', { name: 'Choose harness and model', exact: true });
 const modelPicker = (page: Page) => page.getByRole('dialog', { name: 'Harness and model', exact: true });
@@ -65,7 +65,7 @@ test('Grok approval modes describe its permission modes, including read-only pla
   await items.nth(2).click();
   await expect(page.locator('#mode-picker-trigger')).toContainText('Plan mode');
   const saved = await page.evaluate(async () => {
-    const { invoke } = await import((window as any).__pandacodePreviewUrl);
+    const { invoke } = await import((window as any).__indocodePreviewUrl);
     const id = document.querySelector<HTMLElement>('#prompt')?.dataset.sessionId;
     return id ? (await invoke('get_task', { sessionId: id }))?.mode : undefined;
   });

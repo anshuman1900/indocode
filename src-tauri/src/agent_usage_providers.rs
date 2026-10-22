@@ -618,7 +618,7 @@ async fn fetch_antigravity() -> Usage {
     };
     tokio::task::spawn_blocking(move || {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-usage-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-usage-{}", uuid::Uuid::new_v4()));
         if std::fs::create_dir(&directory).is_err() {
             return Usage::empty(
                 "antigravity",
@@ -923,7 +923,7 @@ mod tests {
     #[tokio::test]
     async fn opencode_saved_auth_overrides_environment_and_auth_content_overrides_file() {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-usage-auth-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-usage-auth-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&directory).unwrap();
         let file = directory.join("auth.json");
         std::fs::write(
@@ -997,7 +997,7 @@ mod tests {
     #[tokio::test]
     async fn kimi_dual_config_roots_require_an_explicit_home_before_reading_credentials() {
         let directory = std::env::temp_dir().join(format!(
-            "pandacode-usage-kimi-roots-{}",
+            "indocode-usage-kimi-roots-{}",
             uuid::Uuid::new_v4()
         ));
         let modern = directory.join(".kimi-code");
@@ -1214,7 +1214,7 @@ key = "oauth/kimi-code"
     #[tokio::test]
     async fn kimi_config_uses_toml_before_legacy_json_without_account_fallback_on_error() {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-usage-kimi-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-usage-kimi-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&directory).unwrap();
         assert!(read_kimi_config(&directory).await.unwrap().is_none());
         let json_config = json!({"default_model":"model","models":{"model":{"provider":"kimi"}},"providers":{"kimi":{"type":"kimi","base_url":KIMI_BASE,"api_key":"fixture-key"}}});
@@ -1235,7 +1235,7 @@ key = "oauth/kimi-code"
     #[tokio::test]
     async fn credential_reader_is_bounded_and_read_only() {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-usage-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-usage-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&directory).unwrap();
         let path = directory.join("auth.json");
         assert!(credential_bytes(&path).await.unwrap().is_none());
@@ -1333,7 +1333,7 @@ key = "oauth/kimi-code"
     #[test]
     fn antigravity_old_cli_never_gets_a_prompt_and_new_cli_uses_exact_report_command() {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-usage-agy-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-usage-agy-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&directory).unwrap();
         let path = agy_script(&directory, "1.0.6", "touch prompt-was-invoked; exit 7");
         assert_eq!(
@@ -1354,7 +1354,7 @@ key = "oauth/kimi-code"
     #[test]
     fn antigravity_report_timeout_output_limit_and_stderr_are_bounded() {
         let directory =
-            std::env::temp_dir().join(format!("pandacode-usage-agy-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-usage-agy-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&directory).unwrap();
         for body in [
             "printf PRIVATE_DIAGNOSTIC >&2; exit 7",

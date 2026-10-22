@@ -6,7 +6,7 @@ pub(super) struct Fixture {
 }
 impl Fixture {
     pub(super) fn new(git: bool) -> Self {
-        let base = std::env::temp_dir().join(format!("pandacode-changes-{}", storage::id()));
+        let base = std::env::temp_dir().join(format!("indocode-changes-{}", storage::id()));
         let root = base.join("project");
         fs::create_dir_all(&root).unwrap();
         let cache = base.join("cache");
@@ -527,7 +527,7 @@ fn canonical_capture_fixtures_cover_all_change_shapes() {
         );
         assert!(!fixture.truncated);
     }
-    if let Ok(path) = std::env::var("PANDACODE_DIFF_FIXTURES") {
+    if let Ok(path) = std::env::var("INDOCODE_DIFF_FIXTURES") {
         fs::write(path, serde_json::to_vec_pretty(&fixtures).unwrap()).unwrap();
     }
 }

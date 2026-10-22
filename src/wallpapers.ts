@@ -26,8 +26,8 @@ export interface WallpaperController {
   dispose(): void;
 }
 const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
-const preferenceKey = 'pandacode.wallpaperPreferences';
-const legacyKey = 'pandacode.wallpapers';
+const preferenceKey = 'indocode.wallpaperPreferences';
+const legacyKey = 'indocode.wallpapers';
 
 export function normalizeWallpaperPreferences(value: unknown): WallpaperPreferences {
   const input = value && typeof value === 'object' ? value as Record<string, unknown> : {};

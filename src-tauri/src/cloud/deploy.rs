@@ -23,7 +23,7 @@ const RAILWAY: &str = "@railway/cli@5.71.0";
 const OUTPUT: usize = 128 * 1024;
 
 /// Approval tools that ask on every call, even in full-access mode.
-pub const ALWAYS_ASK: &[&str] = &["pandacode_cloud_cli"];
+pub const ALWAYS_ASK: &[&str] = &["indocode_cloud_cli"];
 
 /// AWS global options that take a value, so the value is not mistaken for the service.
 const AWS_VALUE_FLAGS: &[&str] = &["--region", "--profile", "--output", "--endpoint-url", "--query", "--color", "--ca-bundle", "--cli-read-timeout", "--cli-connect-timeout", "--cli-binary-format"];
@@ -100,7 +100,7 @@ fn aws_refusal(words: &[String]) -> Result<(), String> {
         }
     }
     match positional.as_slice() {
-        ["configure", ..] => Err("aws configure is not available: PandaCode manages the AWS login.".into()),
+        ["configure", ..] => Err("aws configure is not available: Indocode manages the AWS login.".into()),
         ["sts", op, ..] if STS_CREDENTIALS.contains(op) => Err(format!("aws sts {op} returns credentials, which never reach the agent.")),
         _ => Ok(()),
     }
@@ -109,7 +109,7 @@ fn aws_refusal(words: &[String]) -> Result<(), String> {
 /// Refuse Railway commands outside deploys: the login, local shells, the raw API.
 fn railway_refusal(words: &[String]) -> Result<(), String> {
     match words.iter().find(|w| !w.starts_with('-')) {
-        Some(command) if !RAILWAY_ALLOWED.contains(&command.as_str()) => Err(format!("railway {command} is not available here: PandaCode manages the Railway login, and this tool runs deploy commands (init, link, up, domain, variable, logs, status…).")),
+        Some(command) if !RAILWAY_ALLOWED.contains(&command.as_str()) => Err(format!("railway {command} is not available here: Indocode manages the Railway login, and this tool runs deploy commands (init, link, up, domain, variable, logs, status…).")),
         _ => Ok(()),
     }
 }
@@ -143,7 +143,7 @@ fn gcloud_refusal(words: &[String]) -> Result<(), String> {
     let command = match positional.first() { Some(&("alpha" | "beta" | "preview")) => &positional[1..], _ => &positional[..] };
     let starts = |prefix: &&[&str]| command.starts_with(prefix);
     if GCLOUD_REFUSED.iter().any(starts) && !GCLOUD_ALLOWED.iter().any(starts) {
-        return Err(format!("gcloud {} is not available here: PandaCode uses your gcloud login, and credentials never reach the agent.", command.iter().take(4).copied().collect::<Vec<_>>().join(" ")));
+        return Err(format!("gcloud {} is not available here: Indocode uses your gcloud login, and credentials never reach the agent.", command.iter().take(4).copied().collect::<Vec<_>>().join(" ")));
     }
     Ok(())
 }
@@ -294,7 +294,7 @@ fn run(checkout: &Path, args: &Value) -> Result<Value, String> {
         return Err("args runs one CLI command; pipes, redirects and chaining are not supported.".into());
     }
     if words.iter().any(|w| w == "--token" || w.starts_with("--token=")) {
-        return Err("PandaCode adds the credentials itself; leave out --token.".into());
+        return Err("Indocode adds the credentials itself; leave out --token.".into());
     }
     match tool {
         "aws" => aws_refusal(&words)?,
@@ -334,7 +334,7 @@ pub fn with_deploy(base: Option<ToolHost>, app: tauri::AppHandle, session_id: St
     let own = catalog();
     let mut tools = base.as_ref().map_or_else(Vec::new, |host| host.tools.clone());
     let mut approval_tools = base.as_ref().map_or_else(Default::default, |host| host.approval_tools.clone());
-    approval_tools.insert("pandacode_cloud_cli".to_owned());
+    approval_tools.insert("indocode_cloud_cli".to_owned());
     tools.extend(own);
     Some(ToolHost {
         tools,
@@ -345,10 +345,10 @@ pub fn with_deploy(base: Option<ToolHost>, app: tauri::AppHandle, session_id: St
                 if stopped.load(Ordering::SeqCst) {
                     return Err("Task has stopped.".into());
                 }
-                if name != "pandacode_cloud_cli" {
+                if name != "indocode_cloud_cli" {
                     return match base {
                         Some(base) => (base.handler)(name, args).await,
-                        None => Err("Unknown PandaCode tool.".into()),
+                        None => Err("Unknown Indocode tool.".into()),
                     };
                 }
                 validate_spec(&catalog(), &name, &args)?;
@@ -364,7 +364,7 @@ mod tests {
 
     #[test]
     fn stays_inside_the_checkout() {
-        let root = std::env::temp_dir().join(format!("pandacode-deploy-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("indocode-deploy-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(root.join("web/dist")).unwrap();
         assert_eq!(inside(&root, "web/dist").unwrap(), root.join("web/dist").canonicalize().unwrap());
         assert_eq!(inside(&root, ".").unwrap(), root.canonicalize().unwrap());
@@ -386,7 +386,7 @@ mod tests {
         assert!(run(&root, &json!({"tool":"vercel","args":"deploy | tee x"})).unwrap_err().contains("pipes"));
         assert!(run(&root, &json!({"tool":"vercel","args":"deploy --token=abc"})).unwrap_err().contains("leave out --token"));
         assert!(run(&root, &json!({"tool":"aws","args":"s3 ls 'unclosed"})).unwrap_err().contains("unclosed quote"));
-        assert!(validate_spec(&catalog(), "pandacode_cloud_cli", &json!({"tool":"heroku","args":"deploy"})).is_err());
+        assert!(validate_spec(&catalog(), "indocode_cloud_cli", &json!({"tool":"heroku","args":"deploy"})).is_err());
     }
 
     #[test]
@@ -443,7 +443,7 @@ mod tests {
             assert!(run(&root, &json!({"tool":"gcloud","args":args})).is_err_and(|e| e.contains("not available")), "{args}");
         }
         let words = |s: &str| shell_words::split(s).unwrap();
-        assert!(gcloud_refusal(&words("run deploy app --source . --region us-central1 --labels pandacode=deploy")).is_ok());
+        assert!(gcloud_refusal(&words("run deploy app --source . --region us-central1 --labels indocode=deploy")).is_ok());
         assert!(gcloud_refusal(&words("auth list")).is_ok());
         assert!(gcloud_refusal(&words("--project p config get-value account")).is_ok());
         assert!(gcloud_refusal(&words("storage cp auth s3://x")).is_ok());

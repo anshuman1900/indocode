@@ -232,5 +232,5 @@ test('command center remains readable at enlarged UI size and reduced motion', a
   expect(await dialog(page).evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
   await expect(dialog(page).getByRole('button', { name: 'Save goal' })).toBeVisible();
   await dialog(page).getByRole('button', { name: 'Save goal' }).scrollIntoViewIfNeeded();
-  await page.screenshot({ path: '/private/tmp/pandacode-command-center-goal.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-command-center-goal.png' });
 });

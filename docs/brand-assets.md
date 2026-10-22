@@ -1,13 +1,13 @@
 # Provider brand assets
 
-Retrieved from provider-owned sources on September 12, 2026. These marks identify the corresponding integrations in PandaCode. They are not PandaCode branding and do not imply sponsorship or endorsement. The marks remain the property of their respective owners; the application's source license does not grant trademark rights.
+Retrieved from provider-owned sources on September 12, 2026. These marks identify the corresponding integrations in Indocode. They are not Indocode branding and do not imply sponsorship or endorsement. The marks remain the property of their respective owners; the application's source license does not grant trademark rights.
 
 | Local file | Original source | Preparation | Bytes |
 | --- | --- | --- | ---: |
 | `src/assets/providers/claude.svg` | [Claude's official website](https://claude.com/) — the orange spark path in its `ClaudeWordmark` SVG | Extracted the separate spark path, unchanged, into a 125 × 125 SVG canvas. Preserved the official `#D97757` fill. No tracing or redrawing. | 1,992 |
 | `src/assets/providers/openai.svg` | [OpenAI's official logo archive](https://cdn.openai.com/brand/OpenAI-Logos-2025.zip), `OpenAI-logos(new)/SVGs/OpenAI-black-monoblossom.svg`, provided through its [design guidelines](https://openai.com/brand/) | Copied byte for byte. Preserved the black Blossom and its original canvas/clear space. Used to identify the OpenAI Codex integration. | 2,969 |
 | `src/assets/providers/kimi.png` | [MoonshotAI/kimi-cli, web/public/logo.png](https://github.com/MoonshotAI/kimi-cli/blob/main/web/public/logo.png) ([raw asset](https://raw.githubusercontent.com/MoonshotAI/kimi-cli/main/web/public/logo.png)) | Copied byte for byte. The official repository provides this 128 × 128 PNG icon; it was not traced into an invented vector. Upstream Git blob: `033c0f4fb2e28a9daeca0205812d15bf3e547893`. | 11,486 |
-| `src/assets/providers/github-copilot.svg` | [GitHub Primer Octicons, `copilot-16.svg`](https://github.com/primer/octicons/blob/main/icons/copilot-16.svg) | Preserves the official Copilot mark and canvas; the SVG uses `currentColor` so PandaCode can tint it with the active theme's text color. | 1,566 |
+| `src/assets/providers/github-copilot.svg` | [GitHub Primer Octicons, `copilot-16.svg`](https://github.com/primer/octicons/blob/main/icons/copilot-16.svg) | Preserves the official Copilot mark and canvas; the SVG uses `currentColor` so Indocode can tint it with the active theme's text color. | 1,566 |
 
 The helper in `src/provider-logos.ts` resolves a fixed provider-to-local-asset mapping. Vite bundles the assets; rendering performs no remote brand-asset requests. Decorative images have empty alt text and `aria-hidden="true"`; adjacent provider text supplies the accessible name. Keep the logos proportional and preserve their colors when changing the interface.
 
@@ -20,9 +20,9 @@ dbd00e2ad61ea8832ef0b024662a4a8a5d1b66f0599d5d42e1c9688b9d4cfdf6  kimi.png
 ff361d2db319ff823a8d5c2385e338e57d530477455e9407ad8dc8e824b93020  github-copilot.svg
 ```
 
-## PandaCode artwork
+## Indocode artwork
 
-The app icon (`public/icon.svg`), decorative bamboo grove (`public/bamboo-grove.svg`), and interface bamboo mark in `src/dom.ts` are original vector artwork created for PandaCode. Native icons are generated from the app SVG with the Tauri icon command. Decorative grove silhouettes use theme-aware CSS masks; they do not animate, receive pointer events, or appear in the accessibility tree. Other provider logos remain unchanged.
+The app icon (`public/icon.svg`), decorative bamboo grove (`public/bamboo-grove.svg`), and interface bamboo mark in `src/dom.ts` are original vector artwork created for Indocode. Native icons are generated from the app SVG with the Tauri icon command. Decorative grove silhouettes use theme-aware CSS masks; they do not animate, receive pointer events, or appear in the accessibility tree. Other provider logos remain unchanged.
 
 - OpenCode: `https://opencode.ai/favicon-96x96-v3.png` (official website favicon, retrieved 2026-09-16).
 - Z.AI / GLM: `https://z-cdn.chatglm.cn/z-ai/static/logo.svg` (official chat.z.ai logo, retrieved 2026-09-16).

@@ -79,7 +79,7 @@ test('comments on a clicked element, saves it and sends the prompt', async ({ pa
   expect(saved[1].bbox.width).toBeGreaterThan(100);
   await panel(page).getByRole('button', { name: 'Send 2 comments to agent' }).click();
   const prompt = await page.evaluate(() => (window as any).__design.composed);
-  expect(prompt).toContain('pandacode_design_resolve');
+  expect(prompt).toContain('indocode_design_resolve');
   expect(prompt).toContain('`#hero-title`');
   expect(prompt).toContain('Make the title shorter');
   // Resolving drops it from the prompt and the canvas marks.

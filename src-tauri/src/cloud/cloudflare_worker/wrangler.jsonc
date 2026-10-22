@@ -1,6 +1,6 @@
 {
-  // Deployed by PandaCode to your Cloudflare account: one sandbox container per name.
-  "name": "pandacode-sandbox",
+  // Deployed by Indocode to your Cloudflare account: one sandbox container per name.
+  "name": "indocode-sandbox",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-02",
   "compatibility_flags": ["nodejs_compat"],

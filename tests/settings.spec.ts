@@ -11,8 +11,8 @@ const providerCalls = (page: Page) => page.evaluate(() => (window as any).__sett
 
 test('settings organization keeps long default model names clear of labels', async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('pandacode.defaultProvider', 'claude');
-    localStorage.setItem('pandacode.defaultModel.claude', 'custom-provider/model-' + 'x'.repeat(160));
+    localStorage.setItem('indocode.defaultProvider', 'claude');
+    localStorage.setItem('indocode.defaultModel.claude', 'custom-provider/model-' + 'x'.repeat(160));
   });
   await open(page);
   await settings(page);
@@ -132,7 +132,7 @@ test('support details are loaded on demand and copied only by the customer', asy
   const details = page.locator('.support-details');
   await expect(details.getByRole('textbox')).toBeHidden();
   await details.locator('summary').click();
-  const expected = 'PandaCode: Preview\nPlatform: Browser preview\nArchitecture: Not reported';
+  const expected = 'Indocode: Preview\nPlatform: Browser preview\nArchitecture: Not reported';
   await expect(details.getByRole('textbox')).toHaveValue(expected);
   expect(await page.evaluate(() => (window as any).__supportCopies)).toEqual([]);
   await details.getByRole('button', { name: 'Copy app details' }).click();
@@ -171,8 +171,8 @@ async function settings(page: Page): Promise<void> {
 for (const pending of [false, true]) {
   test(`settings organization refreshes models for an unchanged executable with ${pending ? 'an older request still pending' : 'a cached catalog'}`, async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('pandacode.provider', 'antigravity');
-      localStorage.setItem('pandacode.model.antigravity', 'model-a');
+      localStorage.setItem('indocode.provider', 'antigravity');
+      localStorage.setItem('indocode.model.antigravity', 'model-a');
     });
     await page.route('**/src/preview.ts*', async route => {
       const response = await route.fetch();
@@ -293,7 +293,7 @@ test('settings organization keeps agent diagnostics collapsed and retains the de
   await defaultAgent.click();
   await page.getByRole('dialog', { name: 'Default agent', exact: true }).getByRole('menuitemradio', { name: 'Kimi Code', exact: true }).click();
   await expect(defaultAgent).toHaveText('Kimi Code');
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('pandacode.provider'))).toBe('kimi');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('indocode.provider'))).toBe('kimi');
   await back(page).click();
   await expect(dialog(page)).toBeHidden();
   await page.reload();
@@ -380,7 +380,7 @@ test('settings organization lists groups in order, moves between them by keyboar
 for (const layout of [{ width: 860, scale: 1.4 }, { width: 540, scale: 1.6 }]) {
   test(`settings organization fits a ${layout.width}px window at ${layout.scale * 100}% text size without crowded controls`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width: layout.width, height: 740 });
-    await page.addInitScript(scale => { localStorage.setItem('pandacode.uiScale', String(scale)); }, layout.scale);
+    await page.addInitScript(scale => { localStorage.setItem('indocode.uiScale', String(scale)); }, layout.scale);
     await open(page);
     await settings(page);
     const size = (await dialog(page).boundingBox())!;

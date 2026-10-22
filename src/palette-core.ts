@@ -5,7 +5,7 @@ import { contrast, mix, oklch, onColor, parseHex, toHex, toOklch, triplet, type 
 export type VsixTheme = { id: string; name: string; extension: string; kind: 'light' | 'dark'; colors: Record<string, string> };
 export type Tokens = Record<string, string>;
 
-/** Accent shades for PandaCode's own surfaces, tuned per light and dark. */
+/** Accent shades for Indocode's own surfaces, tuned per light and dark. */
 export function accentTokens(source: Rgb, mode: 'light' | 'dark'): Tokens {
   const { l, c: rawC, h } = toOklch(source);
   const c = Math.min(Math.max(rawC, 0.09), 0.19), dark = mode === 'dark';
@@ -33,7 +33,7 @@ function themeAccent(get: (key: string) => Rgb | undefined): { color: Rgb; key: 
   return found.find(entry => toOklch(entry.color).c >= most - 0.03 && toOklch(entry.color).c >= 0.06) ?? found[0];
 }
 
-/** Map a VS Code theme's workbench colors onto PandaCode's tokens, and the terminal's. */
+/** Map a VS Code theme's workbench colors onto Indocode's tokens, and the terminal's. */
 export function vsixTokens(themeData: VsixTheme): { tokens: Tokens; terminal: Record<string, string> } {
   const dark = themeData.kind === 'dark';
   const raw = (key: string) => parseHex(themeData.colors[key] ?? '');

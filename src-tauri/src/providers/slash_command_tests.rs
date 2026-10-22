@@ -153,7 +153,7 @@ fn oversized_early_metadata_is_not_retained_until_session_confirmation() {
 #[test]
 fn claude_catalog_frames_publish_only_invalidation_to_the_renderer() {
     for frame in [
-        json!({"type":"control_response","response":{"subtype":"success","request_id":"pandacode-init","response":{"commands":[{"name":"fixture","description":"Description","opaque":"SECRET"}]}}}),
+        json!({"type":"control_response","response":{"subtype":"success","request_id":"indocode-init","response":{"commands":[{"name":"fixture","description":"Description","opaque":"SECRET"}]}}}),
         json!({"type":"system","subtype":"init","session_id":"session","slash_commands":["fixture"],"terminal_slash_commands":[]}),
         json!({"type":"system","subtype":"commands_changed","commands":[{"name":"fixture","description":"Updated","opaque":"SECRET"}]}),
     ] {
@@ -232,14 +232,14 @@ fn compaction_completion_has_persistable_activity_without_inventing_assistant_te
 
 /// Explicit opt-in only: reads installed command metadata, never submits a prompt.
 #[tokio::test]
-#[ignore = "Set PANDACODE_SMOKE_COMMANDS=1 to inspect installed CLI command metadata"]
+#[ignore = "Set INDOCODE_SMOKE_COMMANDS=1 to inspect installed CLI command metadata"]
 async fn installed_command_catalog_smoke() {
     assert_eq!(
-        std::env::var("PANDACODE_SMOKE_COMMANDS").as_deref(),
+        std::env::var("INDOCODE_SMOKE_COMMANDS").as_deref(),
         Ok("1"),
         "Explicit metadata smoke opt-in is required"
     );
-    let cwd = std::env::var_os("PANDACODE_SMOKE_CWD")
+    let cwd = std::env::var_os("INDOCODE_SMOKE_CWD")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -318,7 +318,7 @@ fn claude_rechecks_commands_against_fresh_initialization_before_submission() {
         let mut config = tests::config("claude");
         config.prompt = "/project-guide keep my arguments".into();
         let mut protocol = Protocol::new(config);
-        let result = protocol.receive(json!({"type":"control_response","response":{"request_id":"pandacode-init","subtype":"success","response":{"commands":commands}}}));
+        let result = protocol.receive(json!({"type":"control_response","response":{"request_id":"indocode-init","subtype":"success","response":{"commands":commands}}}));
         assert_eq!(result.is_ok(), expected);
         if let Ok(step) = result {
             assert_eq!(
@@ -330,5 +330,5 @@ fn claude_rechecks_commands_against_fresh_initialization_before_submission() {
     let mut config = tests::config("claude");
     config.prompt = "/terminal-only".into();
     let mut protocol = Protocol::new(config);
-    assert!(protocol.receive(json!({"type":"control_response","response":{"request_id":"pandacode-init","subtype":"success","response":{"commands":[{"name":"terminal-only"}],"terminal_slash_commands":["terminal-only"]}}})).is_err());
+    assert!(protocol.receive(json!({"type":"control_response","response":{"request_id":"indocode-init","subtype":"success","response":{"commands":[{"name":"terminal-only"}],"terminal_slash_commands":["terminal-only"]}}})).is_err());
 }

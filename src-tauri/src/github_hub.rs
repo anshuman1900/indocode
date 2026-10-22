@@ -550,7 +550,7 @@ mod tests {
 
     #[test]
     fn clones_never_overwrite() {
-        let parent = std::env::temp_dir().join(format!("pandacode-clone-{}", uuid::Uuid::new_v4()));
+        let parent = std::env::temp_dir().join(format!("indocode-clone-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(parent.join("orbit")).unwrap();
         assert!(clone_destination(&parent, "orbit-labs/orbit").unwrap_err().contains("already exists"));
         assert_eq!(clone_destination(&parent, "orbit-labs/meadow").unwrap(), parent.join("meadow"));

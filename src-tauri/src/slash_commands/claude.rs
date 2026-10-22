@@ -79,7 +79,7 @@ async fn discover_process(
 ) -> Result<Catalog, String> {
     let mut pipe = Pipe::spawn(command, cwd, timeout).map_err(|_| DISCOVERY_FAILED.to_owned())?;
     let result = async {
-        pipe.send(&json!({"type":"control_request","request_id":"pandacode-commands","request":{"subtype":"initialize","hooks":null}})).await?;
+        pipe.send(&json!({"type":"control_request","request_id":"indocode-commands","request":{"subtype":"initialize","hooks":null}})).await?;
         loop {
             let value = pipe.read().await?;
             if value["type"] == "control_request" {
@@ -88,7 +88,7 @@ async fn discover_process(
                 }
                 continue;
             }
-            if value["type"] != "control_response" || value["response"]["request_id"] != "pandacode-commands" {
+            if value["type"] != "control_response" || value["response"]["request_id"] != "indocode-commands" {
                 continue;
             }
             return parse_runtime(&value).ok_or(());
@@ -189,7 +189,7 @@ pub(super) fn parse_entries(
                 argument_hint: hint.clone(),
                 kind: kind.into(),
                 source: if kind == "action" {
-                    "PandaCode"
+                    "Indocode"
                 } else {
                     provider
                 }
@@ -554,7 +554,7 @@ mod tests {
             read -r denied
             case "$denied" in *'"subtype":"error"'*) ;; *) exit 2 ;; esac
             printf '%s\n' '{"type":"control_response","response":{"subtype":"success","request_id":"another","response":{"commands":[{"name":"wrong"}]}}}'
-            printf '%s\n' '{"type":"control_response","response":{"subtype":"success","request_id":"pandacode-commands","response":{"commands":[{"name":"compact","description":"Compact history"}]}}}'
+            printf '%s\n' '{"type":"control_response","response":{"subtype":"success","request_id":"indocode-commands","response":{"commands":[{"name":"compact","description":"Compact history"}]}}}'
             read -r unexpected
         "#]);
         let catalog = discover_process(command, &std::env::temp_dir(), Duration::from_secs(2))

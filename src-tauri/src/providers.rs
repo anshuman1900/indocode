@@ -521,7 +521,7 @@ fn executable_name(name: &str) -> &str {
 }
 
 /// Any command-line tool (`gh`, `git`…) where an interactive shell would find it, even
-/// when PandaCode was opened from Finder or the Dock with a minimal PATH.
+/// when Indocode was opened from Finder or the Dock with a minimal PATH.
 pub(crate) fn tool_path(name: &str) -> Option<std::path::PathBuf> {
     launch::find(name)
 }
@@ -920,7 +920,7 @@ async fn claude_models(path: &Path) -> Result<Vec<ModelInfo>, String> {
     let mut stdin = child.stdin.take().ok_or("Claude stdin unavailable")?;
     let mut stdout = child.stdout.take().ok_or("Claude stdout unavailable")?;
     let result = tokio::time::timeout(Duration::from_secs(15), async {
-        write_json(&mut stdin, &json!({"type":"control_request","request_id":"pandacode-models","request":{"subtype":"initialize","hooks":null}})).await?;
+        write_json(&mut stdin, &json!({"type":"control_request","request_id":"indocode-models","request":{"subtype":"initialize","hooks":null}})).await?;
         let mut bytes = Vec::new();
         let mut buffer = [0u8; 4096];
         let mut total = 0;
@@ -936,7 +936,7 @@ async fn claude_models(path: &Path) -> Result<Vec<ModelInfo>, String> {
                 if line.len() > 256 * 1024 { return Err("Claude model catalog frame is too large".into()); }
                 if line.iter().all(u8::is_ascii_whitespace) { continue; }
                 let message: Value = serde_json::from_slice(line).map_err(|_| "Claude returned invalid model discovery JSON")?;
-                if message["type"] != "control_response" || message["response"]["request_id"] != "pandacode-models" { continue; }
+                if message["type"] != "control_response" || message["response"]["request_id"] != "indocode-models" { continue; }
                 let response = &message["response"];
                 if response["subtype"] != "success" { return Err("Claude could not load its model catalog; check the CLI or enter a custom model ID".into()); }
                 return parse_claude_models(&response["response"]);
@@ -970,7 +970,7 @@ async fn codex_models(path: &Path) -> Result<Vec<ModelInfo>, String> {
     let mut stdin = child.stdin.take().ok_or("Codex stdin unavailable")?;
     let mut stdout = child.stdout.take().ok_or("Codex stdout unavailable")?;
     let result = tokio::time::timeout(Duration::from_secs(8), async {
-        write_json(&mut stdin, &json!({"id":1,"method":"initialize","params":{"clientInfo":{"name":"pandacode","title":"PandaCode","version":"0.1.0"}}})).await?;
+        write_json(&mut stdin, &json!({"id":1,"method":"initialize","params":{"clientInfo":{"name":"indocode","title":"Indocode","version":"0.1.0"}}})).await?;
         let mut bytes = Vec::new();
         let mut buffer = [0u8; 4096];
         let mut total = 0;
@@ -1490,7 +1490,7 @@ impl Protocol {
             }
             "mcpToolCall" | "dynamicToolCall" => {
                 if item["type"] == "mcpToolCall"
-                    && field(item, "server") == "pandacode_architect"
+                    && field(item, "server") == "indocode_architect"
                     && self.mcp_tool_names.contains(field(item, "tool"))
                 {
                     // The authenticated local bridge owns these events. Title
@@ -1619,18 +1619,18 @@ impl Protocol {
     }
     fn initial(&self) -> Value {
         match self.config.provider.as_str() {
-            "pi" | "omp" => json!({"type":"get_state","id":"pandacode-init"}),
+            "pi" | "omp" => json!({"type":"get_state","id":"indocode-init"}),
             "codex" => {
-                let mut request = json!({"id":1,"method":"initialize","params":{"clientInfo":{"name":"pandacode","title":"PandaCode","version":"0.1.0"}}});
+                let mut request = json!({"id":1,"method":"initialize","params":{"clientInfo":{"name":"indocode","title":"Indocode","version":"0.1.0"}}});
                 request["params"]["capabilities"] =
                     json!({"experimentalApi":true,"requestAttestation":false});
                 request
             }
             "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot" => {
-                json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"pandacode","version":"0.1.0"}}})
+                json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"indocode","version":"0.1.0"}}})
             }
             _ => {
-                json!({"type":"control_request","request_id":"pandacode-init","request":{"subtype":"initialize","hooks":null}})
+                json!({"type":"control_request","request_id":"indocode-init","request":{"subtype":"initialize","hooks":null}})
             }
         }
     }
@@ -1688,7 +1688,7 @@ impl Protocol {
                 json!({"jsonrpc":"2.0","method":"session/cancel","params":{"sessionId":self.remote_id}})
             }
             _ => {
-                json!({"type":"control_request","request_id":"pandacode-stop","request":{"subtype":"interrupt"}})
+                json!({"type":"control_request","request_id":"indocode-stop","request":{"subtype":"interrupt"}})
             }
         }
     }
@@ -2160,7 +2160,7 @@ impl Protocol {
         match string(&value, "type").as_str() {
             "control_response" => {
                 let response = &value["response"];
-                if response["request_id"] == "pandacode-init" {
+                if response["request_id"] == "indocode-init" {
                     if response["subtype"] == "error" {
                         return Err(string(response, "error"));
                     }
@@ -2388,7 +2388,7 @@ impl Protocol {
                     // Questions need structured answers; a boolean allow must not silently submit one.
                     if name == "AskUserQuestion" {
                         step.write.push(json!({"type":"control_response","response":{"subtype":"success","request_id":value["request_id"],"response":{"behavior":"deny","message":"Ask the user in your response; this UI supports free-text replies."}}}));
-                    } else if name.strip_prefix("mcp__pandacode_architect__").is_some_and(|tool| optional_metadata_tool(tool) || crate::bots::tools::self_scoped(tool) || crate::architect::team_tool(tool))
+                    } else if name.strip_prefix("mcp__indocode_architect__").is_some_and(|tool| optional_metadata_tool(tool) || crate::bots::tools::self_scoped(tool) || crate::architect::team_tool(tool))
                         && self.mcp_tool_names.contains(&name)
                     {
                         // Registered metadata callbacks only stage this run's
@@ -2669,7 +2669,7 @@ fn configure_command(command: &mut Command, config: &RunConfig) {
             if config.mode == "full" {
                 command.arg("--allow-dangerously-skip-permissions");
             }
-            // These wait on a live session; PandaCode's process ends with the turn.
+            // These wait on a live session; Indocode's process ends with the turn.
             command.arg(format!("--disallowedTools={}", CLAUDE_SESSION_BOUND_TOOLS));
             if use_model {
                 command.args(["--model", &config.model]);
@@ -2782,10 +2782,10 @@ fn optional_metadata_tool(name: &str) -> bool {
 // Preview tools are an optional transport capability, but retain their normal
 // approval requirements and transcript activity. They are not metadata tools.
 fn optional_transport_tool(name: &str) -> bool {
-    optional_metadata_tool(name) || matches!(name, "pandacode_run_project" | "pandacode_preview_file")
+    optional_metadata_tool(name) || matches!(name, "indocode_run_project" | "indocode_preview_file")
 }
 fn per_run_mcp_tool(name: &str) -> bool {
-    name.starts_with("pandacode_jev_") || optional_transport_tool(name)
+    name.starts_with("indocode_jev_") || optional_transport_tool(name)
 }
 
 fn split_jev_host(host: Option<ToolHost>) -> (Option<ToolHost>, Option<ToolHost>) {
@@ -2831,7 +2831,7 @@ async fn run_process_with_tools(
             .flat_map(|host| host.tools.iter())
             .filter_map(|spec| spec["name"].as_str())
             .filter(|name| config.provider != "codex" || per_run_mcp_tool(name))
-            .flat_map(|name| [name.into(), format!("mcp__pandacode_architect__{name}")])
+            .flat_map(|name| [name.into(), format!("mcp__indocode_architect__{name}")])
             .collect()
     };
     // A warm agent started after the task's last turn: same launch, tools already listed.
@@ -3109,7 +3109,7 @@ mod tests {
                 for base_enabled in [false, true] {
                     let base = base_enabled.then(|| ToolHost {
                         tools: crate::agent_tools::catalog(),
-                        approval_tools: ["pandacode_open_browser".into()].into(),
+                        approval_tools: ["indocode_open_browser".into()].into(),
                         handler: Arc::new(|_, _| Box::pin(async { Ok(json!({})) })),
                     });
                     let mut optional = Vec::new();
@@ -3128,17 +3128,17 @@ mod tests {
                     };
                     let mut expected = HashSet::new();
                     if base_enabled {
-                        expected.insert("pandacode_open_browser".into());
+                        expected.insert("indocode_open_browser".into());
                     }
                     if browser {
-                        expected.extend(["pandacode_jev_test".into(), "pandacode_jev_cancel".into()]);
+                        expected.extend(["indocode_jev_test".into(), "indocode_jev_cancel".into()]);
                     }
                     if decisions {
                         expected.extend([
-                            "pandacode_jev_review".into(),
-                            "pandacode_jev_check_rules".into(),
-                            "pandacode_jev_find_context".into(),
-                            "pandacode_jev_choose_worker".into(),
+                            "indocode_jev_review".into(),
+                            "indocode_jev_check_rules".into(),
+                            "indocode_jev_find_context".into(),
+                            "indocode_jev_choose_worker".into(),
                         ]);
                     }
                     // All non-Codex harnesses validate this complete host before MCP starts.
@@ -3162,7 +3162,7 @@ mod tests {
         tools.extend(crate::agent_tools::jev_catalog());
         let host = ToolHost {
             tools,
-            approval_tools: ["pandacode_jev_test".into(), "pandacode_open_browser".into()].into(),
+            approval_tools: ["indocode_jev_test".into(), "indocode_open_browser".into()].into(),
             handler: Arc::new(|_, _| Box::pin(async { Ok(json!({})) })),
         };
         let (dynamic, mcp) = split_jev_host(Some(host));
@@ -3171,17 +3171,17 @@ mod tests {
         assert!(dynamic
             .tools
             .iter()
-            .all(|tool| !tool["name"].as_str().unwrap().starts_with("pandacode_jev_")));
+            .all(|tool| !tool["name"].as_str().unwrap().starts_with("indocode_jev_")));
         assert_eq!(mcp.tools.len(), 6);
-        assert!(dynamic.approval_tools.contains("pandacode_open_browser"));
-        assert!(!dynamic.approval_tools.contains("pandacode_jev_test"));
-        assert_eq!(mcp.approval_tools, ["pandacode_jev_test".into()].into());
+        assert!(dynamic.approval_tools.contains("indocode_open_browser"));
+        assert!(!dynamic.approval_tools.contains("indocode_jev_test"));
+        assert_eq!(mcp.approval_tools, ["indocode_jev_test".into()].into());
         host_tools::HostTools::new(dynamic).unwrap();
         host_tools::HostTools::new(mcp).unwrap();
     }
     #[test]
     fn preview_tools_use_resumable_optional_mcp_without_losing_approval_boundaries() {
-        let names = ["pandacode_run_project", "pandacode_preview_file"];
+        let names = ["indocode_run_project", "indocode_preview_file"];
         let host = ToolHost {
             tools: names.iter().map(|name| json!({"type":"function","name":name,"description":"Preview","inputSchema":{"type":"object"}})).collect(),
             approval_tools: names.iter().map(|name| (*name).into()).collect(),
@@ -3203,8 +3203,8 @@ mod tests {
     fn preview_tools_do_not_block_normal_acp_turns_when_http_mcp_is_unavailable() {
         for provider in ["kimi", "opencode", "antigravity", "grok"] {
             let mut p = Protocol::new(config(provider));
-            p.mcp_server = Some(json!({"type":"http","name":"pandacode_architect"}));
-            p.mcp_required = ["pandacode_run_project", "pandacode_preview_file"].iter().any(|name| !optional_transport_tool(name));
+            p.mcp_server = Some(json!({"type":"http","name":"indocode_architect"}));
+            p.mcp_required = ["indocode_run_project", "indocode_preview_file"].iter().any(|name| !optional_transport_tool(name));
             let mut step = p.receive(json!({"id":1,"result":{"protocolVersion":1,"agentCapabilities":{"mcpCapabilities":{"http":false}},"authMethods":[{"id":"cached_token","name":"cached_token"}],"_meta":{"defaultAuthMethodId":"cached_token"}}})).unwrap();
             if provider == "grok" {
                 assert_eq!(step.write[0]["method"], "authenticate");
@@ -3219,8 +3219,8 @@ mod tests {
     fn claude_preview_tools_never_inherit_the_metadata_permission_exemption() {
         for provider in ["claude", "glm", "mimo"] {
             for mode in ["ask", "auto", "plan"] {
-                for name in ["pandacode_run_project", "pandacode_preview_file"] {
-                    let name = format!("mcp__pandacode_architect__{name}");
+                for name in ["indocode_run_project", "indocode_preview_file"] {
+                    let name = format!("mcp__indocode_architect__{name}");
                     let mut cfg = config(provider);
                     cfg.mode = mode.into();
                     let mut p = Protocol::new(cfg);
@@ -3243,7 +3243,7 @@ mod tests {
         let (dynamic, mcp) = split_jev_host(Some(host));
         assert!(dynamic.is_none());
         assert_eq!(mcp.unwrap().tools[0]["name"], crate::session_titles::TOOL);
-        for name in [crate::session_titles::TOOL.into(), format!("mcp__pandacode_architect__{}", crate::session_titles::TOOL)] {
+        for name in [crate::session_titles::TOOL.into(), format!("mcp__indocode_architect__{}", crate::session_titles::TOOL)] {
             let mut protocol = Protocol::new(config("codex"));
             protocol.mcp_tool_names.insert(name.clone());
             let mut step = Step::default();
@@ -3255,14 +3255,14 @@ mod tests {
     #[test]
     fn codex_title_wire_frames_are_hidden_only_for_the_registered_local_server() {
         for registered in [false, true] {
-            for server in ["pandacode_architect", "other_server"] {
+            for server in ["indocode_architect", "other_server"] {
                 let mut p = Protocol::new(config("codex"));
                 if registered { p.mcp_tool_names.insert(crate::session_titles::TOOL.into()); }
                 for method in ["item/started", "item/completed"] {
                     let frame = json!({"method":method,"params":{"item":{"type":"mcpToolCall","id":"title-1","server":server,"tool":crate::session_titles::TOOL,"arguments":{"title":"Current conversation topic"},"status":if method=="item/started" {"inProgress"} else {"completed"},"result":{"content":[{"type":"text","text":"staged"}]}}}});
                     let step = p.receive(frame).unwrap();
                     let visible = step.events.iter().any(|e| e.kind == "tool");
-                    assert_eq!(visible, !(registered && server == "pandacode_architect"));
+                    assert_eq!(visible, !(registered && server == "indocode_architect"));
                 }
             }
         }
@@ -3271,7 +3271,7 @@ mod tests {
     fn kimi_without_http_mcp_starts_for_optional_titles_but_rejects_required_tools() {
         for required in [false, true] {
             let mut p = Protocol::new(config("kimi"));
-            p.mcp_server = Some(json!({"type":"http","name":"pandacode_architect"}));
+            p.mcp_server = Some(json!({"type":"http","name":"indocode_architect"}));
             p.mcp_required = required;
             let result = p.receive(json!({"id":1,"result":{"protocolVersion":1,"agentCapabilities":{"mcpCapabilities":{"http":false}}}}));
             if required { assert!(result.err().unwrap().contains("HTTP MCP")); }
@@ -3288,7 +3288,7 @@ mod tests {
         let (dynamic, mcp) = split_jev_host(Some(host));
         assert!(dynamic.is_none());
         assert_eq!(mcp.unwrap().tools[0]["name"], crate::turn_changes::TRACK_TOOL);
-        let name = format!("mcp__pandacode_architect__{}", crate::turn_changes::TRACK_TOOL);
+        let name = format!("mcp__indocode_architect__{}", crate::turn_changes::TRACK_TOOL);
         for registered in [false,true] {
             let mut p = Protocol::new(config("claude"));
             if registered { p.mcp_tool_names.insert(name.clone()); }
@@ -3300,10 +3300,10 @@ mod tests {
 
     #[test]
     fn claude_title_permission_is_silent_only_for_the_registered_metadata_tool() {
-        let title_name = format!("mcp__pandacode_architect__{}", crate::session_titles::TOOL);
+        let title_name = format!("mcp__indocode_architect__{}", crate::session_titles::TOOL);
         for provider in ["claude", "glm", "mimo"] {
             for mode in ["ask", "auto", "plan"] {
-                for (registered, name) in [(true, title_name.as_str()), (false, title_name.as_str()), (true, "mcp__other__pandacode_title"), (true, "mcp__pandacode_architect__pandacode_open_browser")] {
+                for (registered, name) in [(true, title_name.as_str()), (false, title_name.as_str()), (true, "mcp__other__indocode_title"), (true, "mcp__indocode_architect__indocode_open_browser")] {
                     let mut cfg = config(provider);
                     cfg.mode = mode.into();
                     let mut p = Protocol::new(cfg);
@@ -3331,7 +3331,7 @@ mod tests {
             cfg.reasoning_effort = Some("high".into());
             let mut protocol = Protocol::new(cfg);
             protocol.codex_mcp_servers = Some(
-                json!({"pandacode_architect":{"url":"http://127.0.0.1:43210/mcp","http_headers":{"Authorization":"Bearer temporary-fixture"}}}),
+                json!({"indocode_architect":{"url":"http://127.0.0.1:43210/mcp","http_headers":{"Authorization":"Bearer temporary-fixture"}}}),
             );
             let mut step = protocol.receive(json!({"id":1,"result":{}})).unwrap();
             if resume {
@@ -3362,7 +3362,7 @@ mod tests {
             }
             assert_eq!(load["params"]["config"]["model_reasoning_effort"], "high");
             assert_eq!(
-                load["params"]["config"]["mcp_servers.pandacode_architect"]["url"],
+                load["params"]["config"]["mcp_servers.indocode_architect"]["url"],
                 "http://127.0.0.1:43210/mcp"
             );
             assert!(
@@ -3484,7 +3484,7 @@ mod tests {
         cfg.model = "haiku".into();
         cfg.reasoning_effort = Some("high".into());
         let mut p = Protocol::new(cfg);
-        assert!(p.receive(json!({"type":"control_response","response":{"request_id":"pandacode-init","subtype":"success","response":{"models":[{"value":"haiku","supportsEffort":false}]}}})).is_err());
+        assert!(p.receive(json!({"type":"control_response","response":{"request_id":"indocode-init","subtype":"success","response":{"models":[{"value":"haiku","supportsEffort":false}]}}})).is_err());
     }
 
     #[test]
@@ -3704,7 +3704,7 @@ mod tests {
         p.image_blocks = vec![
             json!({"type":"image","source":{"type":"base64","media_type":"image/png","data":"PRIVATE_IMAGE"}}),
         ];
-        let step = p.receive(json!({"type":"control_response","response":{"request_id":"pandacode-init","subtype":"success"}})).unwrap();
+        let step = p.receive(json!({"type":"control_response","response":{"request_id":"indocode-init","subtype":"success"}})).unwrap();
         assert_eq!(
             step.write[0]["message"]["content"][0]["source"]["data"],
             "PRIVATE_IMAGE"
@@ -3798,7 +3798,7 @@ mod tests {
             }];
             let response = match provider {
                 "claude" => {
-                    json!({"type":"control_response","response":{"request_id":"pandacode-init","subtype":"success"}})
+                    json!({"type":"control_response","response":{"request_id":"indocode-init","subtype":"success"}})
                 }
                 "codex" => json!({"id":2,"result":{"thread":{"id":"remote"}}}),
                 _ => json!({"id":4,"result":{}}),
@@ -4292,17 +4292,17 @@ mod tests {
     }
 
     /// Explicitly opt in: this runs two small billable/subscription requests.
-    /// PANDACODE_SMOKE_PROVIDER=codex cargo test smoke_provider_from_env -- --ignored --nocapture
+    /// INDOCODE_SMOKE_PROVIDER=codex cargo test smoke_provider_from_env -- --ignored --nocapture
     #[tokio::test]
     #[ignore]
     async fn smoke_provider_from_env() {
         use std::sync::Mutex;
-        let provider = std::env::var("PANDACODE_SMOKE_PROVIDER")
-            .expect("Set PANDACODE_SMOKE_PROVIDER to claude, codex, or kimi");
-        let model = std::env::var("PANDACODE_SMOKE_MODEL").unwrap_or_else(|_| "default".into());
+        let provider = std::env::var("INDOCODE_SMOKE_PROVIDER")
+            .expect("Set INDOCODE_SMOKE_PROVIDER to claude, codex, or kimi");
+        let model = std::env::var("INDOCODE_SMOKE_MODEL").unwrap_or_else(|_| "default".into());
         assert!(["claude", "codex", "kimi"].contains(&provider.as_str()));
         let root =
-            std::env::temp_dir().join(format!("pandacode-provider-smoke-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-provider-smoke-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&root).unwrap();
         assert!(std::process::Command::new("git")
             .arg("init")
@@ -4340,7 +4340,7 @@ mod tests {
                 }
             });
             let prompt = if turn == 0 {
-                "Reply with exactly PANDACODE_OK. Do not use tools or modify files."
+                "Reply with exactly INDOCODE_OK. Do not use tools or modify files."
             } else {
                 "What exact token did you reply in your preceding answer? Reply only with that token. Do not use tools or modify files."
             };
@@ -4372,7 +4372,7 @@ mod tests {
             outcome.unwrap_or_else(|e| panic!("{provider} failed: {e}"));
             let data = observed.lock().unwrap();
             assert!(
-                data.0.contains("PANDACODE_OK"),
+                data.0.contains("INDOCODE_OK"),
                 "Expected smoke response, received {} characters",
                 data.0.chars().count()
             );
@@ -4385,7 +4385,7 @@ mod tests {
             }
             resume = Some(remote);
             println!(
-                "{provider} turn {}: PANDACODE_OK; {} events; resume ID present",
+                "{provider} turn {}: INDOCODE_OK; {} events; resume ID present",
                 turn + 1,
                 data.2.len()
             );

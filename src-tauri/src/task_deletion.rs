@@ -61,7 +61,7 @@ pub(crate) fn delete_state(state: &AppState, sid: &str) -> Result<DeletedSession
     // filesystem operations happen here; running work must be stopped first.
     let agents = state.agents.lock().map_err(|e| e.to_string())?;
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is closing. Try again when it finishes.".into());
+        return Err("Indocode is closing. Try again when it finishes.".into());
     }
     let ids = {
         let store = state.store.lock().map_err(|e| e.to_string())?;
@@ -353,7 +353,7 @@ mod tests {
     fn project_worktree_files_provider_log_and_independent_fork_are_preserved() {
         let (state, _) = test_state();
         let dir =
-            std::env::temp_dir().join(format!("pandacode-delete-test-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("indocode-delete-test-{}", uuid::Uuid::new_v4()));
         let worktree = dir.join("worktree");
         std::fs::create_dir_all(&worktree).unwrap();
         let source = worktree.join("source.rs");

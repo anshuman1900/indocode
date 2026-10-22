@@ -1,18 +1,18 @@
-// PandaCode app tools that only read state stay available in Plan mode; every other app tool is blocked.
+// Indocode app tools that only read state stay available in Plan mode; every other app tool is blocked.
 const PLAN_APP_TOOLS = new Set([
-  'pandacode_title', 'pandacode_team_directory', 'pandacode_read_team_mailbox',
-  'pandacode_list_tasks', 'pandacode_read_task', 'pandacode_search_tasks', 'pandacode_list_projects',
-  'pandacode_list_workers', 'pandacode_read_worker', 'pandacode_list_subagents', 'pandacode_list_queue',
-  'pandacode_list_local_servers', 'pandacode_list_moodboards', 'pandacode_read_moodboard', 'pandacode_read_moodboard_image',
-  'pandacode_vm_list', 'pandacode_vm_screenshot', 'pandacode_simulator_devices', 'pandacode_simulator_describe',
-  'pandacode_simulator_screenshot', 'pandacode_jev_read', 'pandacode_jev_list', 'pandacode_jev_screenshot',
-  'pandacode_jev_assessments', 'pandacode_bot_recall', 'pandacode_bot_list_schedules', 'pandacode_code_search',
+  'indocode_title', 'indocode_team_directory', 'indocode_read_team_mailbox',
+  'indocode_list_tasks', 'indocode_read_task', 'indocode_search_tasks', 'indocode_list_projects',
+  'indocode_list_workers', 'indocode_read_worker', 'indocode_list_subagents', 'indocode_list_queue',
+  'indocode_list_local_servers', 'indocode_list_moodboards', 'indocode_read_moodboard', 'indocode_read_moodboard_image',
+  'indocode_vm_list', 'indocode_vm_screenshot', 'indocode_simulator_devices', 'indocode_simulator_describe',
+  'indocode_simulator_screenshot', 'indocode_jev_read', 'indocode_jev_list', 'indocode_jev_screenshot',
+  'indocode_jev_assessments', 'indocode_bot_recall', 'indocode_bot_list_schedules', 'indocode_code_search',
 ]);
 
 export default async function (pi) {
-  const config = JSON.parse(process.env.PANDACODE_PI_BRIDGE);
+  const config = JSON.parse(process.env.INDOCODE_PI_BRIDGE);
   // The bearer token must not reach the commands Pi runs (they inherit this environment).
-  delete process.env.PANDACODE_PI_BRIDGE;
+  delete process.env.INDOCODE_PI_BRIDGE;
   const request = async (method, params, signal) => {
     const response = await fetch(config.url, {
       method: 'POST',
@@ -20,7 +20,7 @@ export default async function (pi) {
       headers: { 'Content-Type': 'application/json', Authorization: config.authorization },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
     });
-    if (!response.ok) throw new Error('PandaCode tools connection failed.');
+    if (!response.ok) throw new Error('Indocode tools connection failed.');
     const result = await response.json();
     if (result.error) throw new Error(result.error.message);
     return result.result;
@@ -42,7 +42,7 @@ export default async function (pi) {
       },
     });
   }
-  pi.on('session_start', (_event, ctx) => ctx.ui.setStatus('pandacode-bridge', 'ready'));
+  pi.on('session_start', (_event, ctx) => ctx.ui.setStatus('indocode-bridge', 'ready'));
   pi.on('tool_call', async (event, ctx) => {
     const app = names.has(event.toolName);
     if (['read', 'grep', 'find', 'ls'].includes(event.toolName) || (app && PLAN_APP_TOOLS.has(event.toolName))) return;

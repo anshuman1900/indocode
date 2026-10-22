@@ -63,12 +63,12 @@ export function createPreviewVm() {
     },
     async frame(name: unknown) {
       const vm = find(name);
-      if (!vm.attached) throw new Error(`${vm.name} is not running in PandaCode. Start it with vm_manage first.`);
+      if (!vm.attached) throw new Error(`${vm.name} is not running in Indocode. Start it with vm_manage first.`);
       return frame();
     },
     input(name: unknown, input: Record<string, unknown>) {
       const vm = find(name);
-      if (!vm.attached) throw new Error(`${vm.name} is not running in PandaCode.`);
+      if (!vm.attached) throw new Error(`${vm.name} is not running in Indocode.`);
       inputs.push({ name: vm.name, input: structuredClone(input) });
       if (typeof input.x === 'number' && typeof input.y === 'number') mark = { x: input.x, y: input.y };
       if (input.action === 'type') typed += String(input.text);

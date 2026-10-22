@@ -12,11 +12,11 @@ export const root = fileURLToPath(new URL('../../', import.meta.url));
 // always points at the newest build for that platform. `updater` is the signed file the
 // in-app updater installs (relative to the bundle directory), published as `updaterAsset`.
 export const targets = Object.freeze({
-  'darwin-aarch64': { platform: 'darwin', arch: 'arm64', triple: 'aarch64-apple-darwin', bundles: 'app,dmg', bundleDir: 'dmg', built: v => `PandaCode_${v}_aarch64.dmg`, asset: 'PandaCode-macOS-arm64.dmg', updater: () => 'macos/PandaCode.app.tar.gz', updaterAsset: 'PandaCode-macOS-arm64.app.tar.gz' },
-  'darwin-x86_64': { platform: 'darwin', arch: 'x64', triple: 'x86_64-apple-darwin', bundles: 'app,dmg', bundleDir: 'dmg', built: v => `PandaCode_${v}_x64.dmg`, asset: 'PandaCode-macOS-x64.dmg', updater: () => 'macos/PandaCode.app.tar.gz', updaterAsset: 'PandaCode-macOS-x64.app.tar.gz' },
-  'windows-x86_64': { platform: 'win32', arch: 'x64', triple: 'x86_64-pc-windows-msvc', bundles: 'nsis', bundleDir: 'nsis', built: v => `PandaCode_${v}_x64-setup.exe`, asset: 'PandaCode-Windows-x64-setup.exe', updater: v => `nsis/PandaCode_${v}_x64-setup.exe`, updaterAsset: 'PandaCode-Windows-x64-setup.exe' },
-  'linux-x86_64': { platform: 'linux', arch: 'x64', triple: 'x86_64-unknown-linux-gnu', bundles: 'appimage', bundleDir: 'appimage', built: v => `PandaCode_${v}_amd64.AppImage`, asset: 'PandaCode-Linux-x86_64.AppImage', updater: v => `appimage/PandaCode_${v}_amd64.AppImage`, updaterAsset: 'PandaCode-Linux-x86_64.AppImage' },
-  'linux-aarch64': { platform: 'linux', arch: 'arm64', triple: 'aarch64-unknown-linux-gnu', bundles: 'appimage', bundleDir: 'appimage', built: v => `PandaCode_${v}_aarch64.AppImage`, asset: 'PandaCode-Linux-aarch64.AppImage', updater: v => `appimage/PandaCode_${v}_aarch64.AppImage`, updaterAsset: 'PandaCode-Linux-aarch64.AppImage' },
+  'darwin-aarch64': { platform: 'darwin', arch: 'arm64', triple: 'aarch64-apple-darwin', bundles: 'app,dmg', bundleDir: 'dmg', built: v => `Indocode_${v}_aarch64.dmg`, asset: 'Indocode-macOS-arm64.dmg', updater: () => 'macos/Indocode.app.tar.gz', updaterAsset: 'Indocode-macOS-arm64.app.tar.gz' },
+  'darwin-x86_64': { platform: 'darwin', arch: 'x64', triple: 'x86_64-apple-darwin', bundles: 'app,dmg', bundleDir: 'dmg', built: v => `Indocode_${v}_x64.dmg`, asset: 'Indocode-macOS-x64.dmg', updater: () => 'macos/Indocode.app.tar.gz', updaterAsset: 'Indocode-macOS-x64.app.tar.gz' },
+  'windows-x86_64': { platform: 'win32', arch: 'x64', triple: 'x86_64-pc-windows-msvc', bundles: 'nsis', bundleDir: 'nsis', built: v => `Indocode_${v}_x64-setup.exe`, asset: 'Indocode-Windows-x64-setup.exe', updater: v => `nsis/Indocode_${v}_x64-setup.exe`, updaterAsset: 'Indocode-Windows-x64-setup.exe' },
+  'linux-x86_64': { platform: 'linux', arch: 'x64', triple: 'x86_64-unknown-linux-gnu', bundles: 'appimage', bundleDir: 'appimage', built: v => `Indocode_${v}_amd64.AppImage`, asset: 'Indocode-Linux-x86_64.AppImage', updater: v => `appimage/Indocode_${v}_amd64.AppImage`, updaterAsset: 'Indocode-Linux-x86_64.AppImage' },
+  'linux-aarch64': { platform: 'linux', arch: 'arm64', triple: 'aarch64-unknown-linux-gnu', bundles: 'appimage', bundleDir: 'appimage', built: v => `Indocode_${v}_aarch64.AppImage`, asset: 'Indocode-Linux-aarch64.AppImage', updater: v => `appimage/Indocode_${v}_aarch64.AppImage`, updaterAsset: 'Indocode-Linux-aarch64.AppImage' },
 });
 
 export function targetConfig(value) {
@@ -52,11 +52,11 @@ export function version(value) {
 
 export async function json(path) { return JSON.parse(await readFile(path, 'utf8')); }
 
-/** Cargo.lock text with the `pandacode` package at `next`. Keeps the file's line endings,
+/** Cargo.lock text with the `indocode` package at `next`. Keeps the file's line endings,
  * so a Windows checkout with CRLF is updated too, and fails instead of leaving it unchanged. */
 export function cargoLockVersion(lock, next) {
-  const entry = /(\[\[package\]\]\r?\nname = "pandacode"\r?\nversion = )"[^"]+"/;
-  if (!entry.test(lock)) throw new Error('No pandacode package in src-tauri/Cargo.lock.');
+  const entry = /(\[\[package\]\]\r?\nname = "indocode"\r?\nversion = )"[^"]+"/;
+  if (!entry.test(lock)) throw new Error('No indocode package in src-tauri/Cargo.lock.');
   return lock.replace(entry, `$1"${version(next)}"`);
 }
 

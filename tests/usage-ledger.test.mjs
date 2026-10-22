@@ -45,7 +45,7 @@ test('a year groups cost into weeks that end today', () => {
   assert.equal(year.series.find(line => line.provider === 'codex').values.reduce((a, b) => a + b, 0), 12);
 });
 
-test('calendars use log tokens, fall back to PandaCode prompts, and are absent without data', () => {
+test('calendars use log tokens, fall back to Indocode prompts, and are absent without data', () => {
   const prompts = [[hourOn(1), 'kimi', 3], [hourOn(1, 8), 'kimi', 2], [hourOn(1), 'claude', 9]];
   assert.equal(calendarFor('claude', ledger, prompts).unit, 'tokens');
   assert.deepEqual(calendarFor('kimi', ledger, prompts), { unit: 'prompts', daily: [{ date: '2026-09-25', tokens: 5 }] });

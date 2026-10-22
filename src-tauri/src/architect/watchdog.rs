@@ -11,7 +11,7 @@ pub(crate) fn architect_note() -> String {
     format!("The architect's turn was stopped after {SILENCE_MINUTES} minutes without any output.")
 }
 pub(crate) fn worker_note() -> String {
-    format!("No output for {SILENCE_MINUTES} minutes, so PandaCode stopped this worker. Inspect its conversation before retrying.")
+    format!("No output for {SILENCE_MINUTES} minutes, so Indocode stopped this worker. Inspect its conversation before retrying.")
 }
 
 pub(crate) fn watch(app: tauri::AppHandle) {

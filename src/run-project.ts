@@ -46,7 +46,7 @@ export class ProjectRunner {
     this.starting.add(id); this.paint();
     try {
       const script = await call<RunScript | null>('get_run_script', { ...context });
-      if (!script) throw new Error('Add pandacode-run.sh to this checkout to run the project.');
+      if (!script) throw new Error('Add indocode-run.sh to this checkout to run the project.');
       this.scripts.set(id, script);
       await active?.();
       if (key(this.options.context() ?? { projectId: '' }) !== id) throw new Error('Task changed before the script could start.');

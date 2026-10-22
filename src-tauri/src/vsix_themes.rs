@@ -289,7 +289,7 @@ pub async fn fetch_vsix(publisher: &str, name: &str) -> Result<Vec<u8>, String> 
         .redirect(reqwest::redirect::Policy::limited(4))
         .connect_timeout(Duration::from_secs(6))
         .timeout(Duration::from_secs(60))
-        .user_agent(concat!("PandaCode/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("Indocode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|_| "Could not start the download.".to_string())?;
     let unreachable = |_| "Could not reach Open VSX. Try again later.".to_string();
@@ -395,11 +395,11 @@ mod tests {
         assert_eq!(join("extension", "../../x.json"), None);
     }
 
-    /// Parses real packages from a folder: `PANDACODE_VSIX_DIR=... cargo test -- --ignored vsix_themes::tests::live`.
+    /// Parses real packages from a folder: `INDOCODE_VSIX_DIR=... cargo test -- --ignored vsix_themes::tests::live`.
     #[test]
     #[ignore]
     fn live_packages_parse() {
-        let dir = std::env::var("PANDACODE_VSIX_DIR").expect("set PANDACODE_VSIX_DIR");
+        let dir = std::env::var("INDOCODE_VSIX_DIR").expect("set INDOCODE_VSIX_DIR");
         for entry in std::fs::read_dir(dir).unwrap().flatten() {
             let themes = read_vsix(&std::fs::read(entry.path()).unwrap()).unwrap_or_else(|e| panic!("{:?}: {e}", entry.path()));
             for theme in themes {
@@ -416,7 +416,7 @@ mod tests {
         let bytes = tauri::async_runtime::block_on(fetch_vsix("dracula-theme", "theme-dracula")).unwrap();
         let themes = read_vsix(&bytes).unwrap();
         assert!(themes.iter().any(|t| t.colors.get("editor.background").map(String::as_str) == Some("#282a36")), "{:?}", themes.iter().map(|t| &t.name).collect::<Vec<_>>());
-        let missing = tauri::async_runtime::block_on(fetch_vsix("pandacode-nobody", "no-such-theme")).unwrap_err();
+        let missing = tauri::async_runtime::block_on(fetch_vsix("indocode-nobody", "no-such-theme")).unwrap_err();
         assert!(missing.contains("no extension"), "{missing}");
     }
 

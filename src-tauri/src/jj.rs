@@ -168,7 +168,7 @@ fn run(root: &Path, args: &[&str]) -> Result<String, String> {
     })?;
     let capture = checked(output)?;
     if capture.truncated {
-        return Err("jj returned more output than PandaCode reads.".into());
+        return Err("jj returned more output than Indocode reads.".into());
     }
     Ok(String::from_utf8_lossy(&capture.bytes).into_owned())
 }
@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     fn detects_repo_root_and_colocation() {
-        let base = std::env::temp_dir().join(format!("pandacode-jj-{}", uuid::Uuid::new_v4()));
+        let base = std::env::temp_dir().join(format!("indocode-jj-{}", uuid::Uuid::new_v4()));
         let nested = base.join("src/deep");
         std::fs::create_dir_all(&nested).unwrap();
         assert_ne!(repo_root(&nested).as_deref(), Some(base.as_path()));
@@ -268,7 +268,7 @@ mod tests {
     #[test]
     #[ignore]
     fn live_round_trip() {
-        let base = std::env::temp_dir().join(format!("pandacode-jj-live-{}", uuid::Uuid::new_v4()));
+        let base = std::env::temp_dir().join(format!("indocode-jj-live-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&base).unwrap();
         run(&base, &["git", "init"]).unwrap();
         std::fs::write(base.join("a b.txt"), "hello\n").unwrap();

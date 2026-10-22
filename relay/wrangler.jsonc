@@ -1,6 +1,6 @@
 {
-  // PandaCode Connect relay: sign-in, device list and encrypted frame forwarding. See README.md.
-  "name": "pandacode-relay",
+  // Indocode Connect relay: sign-in, device list and encrypted frame forwarding. See README.md.
+  "name": "indocode-relay",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-02",
   // The bambooed.ai zone must be on the same Cloudflare account. Forks: use your own domain or remove this.

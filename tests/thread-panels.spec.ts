@@ -216,15 +216,15 @@ test.describe('thread panels', () => {
     await page.locator('.file-row').getByRole('button', { name:'main.ts',exact:true }).click();
     await page.evaluate(() => { (window as any).__holdPanelProject = true; });
     await page.getByRole('button', { name:'Change task project',exact:true }).first().click();
-    await page.getByRole('dialog', { name:'Choose project',exact:true }).getByRole('option', {name:/^pandacode — /}).click();
+    await page.getByRole('dialog', { name:'Choose project',exact:true }).getByRole('option', {name:/^indocode — /}).click();
     await expect.poll(() => page.evaluate(() => typeof (window as any).__releasePanelProject)).toBe('function');
     await select(page, 'session-1');
     const reads = (await calls(page, 'read_file')).length;
     await page.evaluate(() => (window as any).__releasePanelProject());
-    await expect(row(page, 'session-2').locator('.task-project')).toHaveText('pandacode');
+    await expect(row(page, 'session-2').locator('.task-project')).toHaveText('indocode');
     await select(page, 'session-2');
     await expect(page.locator('.file-preview-title')).toHaveCount(0);
-    await expect(page.locator('.file-folder-path')).toHaveText('pandacode');
+    await expect(page.locator('.file-folder-path')).toHaveText('indocode');
     expect((await calls(page, 'read_file')).length).toBe(reads);
   });
 });

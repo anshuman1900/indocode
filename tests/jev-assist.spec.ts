@@ -76,7 +76,7 @@ test('decisions opt in independently and missing Jev keys do not block normal ap
   await page.locator('#jev-decisions-enabled').check(); await page.locator('[data-jev-save]').click();
   await expect.poll(async()=> (await calls(page,'jev_save_configuration')).length).toBe(1);
   expect((await calls(page,'jev_save_configuration'))[0].args.settings).toMatchObject({enabled:false,decisionsEnabled:true});
-  await expect(page.locator('#dialog')).toContainText('PandaCode works without Jev or a TypeSafe key');
+  await expect(page.locator('#dialog')).toContainText('Indocode works without Jev or a TypeSafe key');
 });
 
 test('saved diff evidence is previewed locally, escaped, and opens its original diff', async ({page}) => {
@@ -102,7 +102,7 @@ test('task menu and saved-diff entry use the current task and disappear when dis
   await page.getByRole('button',{name:'Review with Jev',exact:true}).click(); await prepared(page);
   expect((await calls(page,'jev_assist_prepare')).at(-1).args).toEqual({sessionId:'session-2',request:{kind:'review',changeId:'change-1'}});
   await page.locator('[data-assist-close]').click();
-  await page.evaluate(()=>{(window as any).__assistConfig.decisionsEnabled=false;window.dispatchEvent(new CustomEvent('pandacode:jev-settings',{detail:(window as any).__assistConfig}));});
+  await page.evaluate(()=>{(window as any).__assistConfig.decisionsEnabled=false;window.dispatchEvent(new CustomEvent('indocode:jev-settings',{detail:(window as any).__assistConfig}));});
   await page.getByRole('button',{name:'Task actions',exact:true}).click();
   await expect(page.getByRole('menuitem',{name:'Jev assistance',exact:true})).toHaveCount(0);
   await page.keyboard.press('Escape');
@@ -214,11 +214,11 @@ test('saved history stays scoped and closing invalidates late async results', as
 for (const theme of ['dark','light']) test(`Jev assistance is readable in ${theme} and keyboard tabs fit narrow screens`, async ({page}) => {
   await setup(page); await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
   await open(page); await prepared(page); await finish(page);
-  await page.screenshot({path:`/private/tmp/pandacode-jev-assist-${theme}.png`});
+  await page.screenshot({path:`/private/tmp/indocode-jev-assist-${theme}.png`});
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('tab',{name:'Work review',exact:true}).focus(); await page.keyboard.press('End');
   await expect(page.getByRole('tab',{name:'Choose worker',exact:true})).toBeFocused();
   await expect(page.getByRole('tab',{name:'Choose worker',exact:true})).toHaveAttribute('aria-selected','true');
   expect(await page.locator('#dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
-  await page.screenshot({path:`/private/tmp/pandacode-jev-assist-${theme}-narrow.png`});
+  await page.screenshot({path:`/private/tmp/indocode-jev-assist-${theme}-narrow.png`});
 });

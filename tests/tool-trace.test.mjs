@@ -8,7 +8,7 @@ test('describes each kind as a verb, chip and object', () => {
   const cases = [
     [tool('Bash', { command: 'npm test -- --runInBand' }), 'shell', 'Ran', 'npm', 'test -- --runInBand'],
     [tool('Command', '/bin/zsh -lc "git status --short"\nWorking directory: /repo'), 'shell', 'Ran', 'git', 'status --short'],
-    [tool('pandacode_vm_exec', { name: 'vm', command: 'uname -a' }), 'shell', 'Ran', 'uname', '-a'],
+    [tool('indocode_vm_exec', { name: 'vm', command: 'uname -a' }), 'shell', 'Ran', 'uname', '-a'],
     [tool('Read', { file_path: '/repo/src/main.ts' }), 'read', 'Read', 'main.ts', ''],
     [tool('read', { path: 'src/dom.ts' }), 'read', 'Read', 'dom.ts', ''],
     [tool('Write', { file_path: 'a/b.md', content: 'one\ntwo' }), 'write', 'Wrote', 'b.md', '2 lines'],
@@ -20,8 +20,8 @@ test('describes each kind as a verb, chip and object', () => {
     [tool('Task', { description: 'Find callers', subagent_type: 'Explore' }), 'agent', 'Started', 'Explore', 'Find callers'],
     [tool('Skill', { skill: 'hyperframes' }), 'skill', 'Loaded skill', 'hyperframes', ''],
     [tool('mcp__github__list_issues', {}), 'mcp', 'Used', 'github', 'list issues'],
-    [tool('pandacode_dispatch_workers', { workers: [{}, {}] }), 'mcp', 'Dispatched', 'PandaCode', '2 workers'],
-    [tool('pandacode_architect_pandacode_title', { title: 'Traces' }), 'mcp', 'Named', 'PandaCode', 'the task “Traces”'],
+    [tool('indocode_dispatch_workers', { workers: [{}, {}] }), 'mcp', 'Dispatched', 'Indocode', '2 workers'],
+    [tool('indocode_architect_indocode_title', { title: 'Traces' }), 'mcp', 'Named', 'Indocode', 'the task “Traces”'],
     [tool('Frobnicate', { path: 'x/y' }), 'tool', 'Used', 'Frobnicate', 'x/y'],
   ];
   for (const [input, kind, verb, chip, object] of cases) {
@@ -61,7 +61,7 @@ test('cards show structured results', () => {
   assert.match(shell, /tool-trace-badge is-failed">exit 2</);
   assert.match(shell, /line 19/);
   assert.ok(!shell.includes('line 11\n'));
-  const vm = toolPreview(tool('pandacode_vm_exec', { command: 'echo hi' }, { output: '{"exitCode":0,"stdout":"hi","stderr":""}' }));
+  const vm = toolPreview(tool('indocode_vm_exec', { command: 'echo hi' }, { output: '{"exitCode":0,"stdout":"hi","stderr":""}' }));
   assert.match(vm, /tool-trace-badge">exit 0</);
   const read = toolPreview(tool('Read', 'src/a.ts', { output: 'one\ntwo\nthree' }));
   assert.match(read, /<b>a.ts<\/b>/);

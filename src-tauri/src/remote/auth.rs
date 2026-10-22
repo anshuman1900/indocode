@@ -5,7 +5,7 @@ use serde_json::{json, Value};
 use std::time::{Duration, Instant};
 
 /// Returned when the relay refuses the token: the device was revoked or the token expired.
-pub(crate) const SIGNED_OUT: &str = "This computer was signed out of PandaCode Connect.";
+pub(crate) const SIGNED_OUT: &str = "This computer was signed out of Indocode Connect.";
 /// Sign-in refused because this device id is registered with another key (HTTP 409).
 pub(crate) const KEY_CHANGED: &str = "The relay has another key for this device.";
 const GITHUB: &str = "https://github.com";

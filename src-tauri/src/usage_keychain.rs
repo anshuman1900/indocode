@@ -7,10 +7,10 @@ mod mac {
     use serde::{Deserialize, Serialize};
     use std::{process::Command, time::Duration};
 
-    const FLAG: &str = "--pandacode-usage-keychain";
-    const CHILD: &str = "PANDACODE_USAGE_KEYCHAIN_CHILD";
-    const TARGET: &str = "PANDACODE_USAGE_KEYCHAIN_TARGET";
-    const MARKER: &[u8] = b"PANDACODE_USAGE_KEYCHAIN:";
+    const FLAG: &str = "--indocode-usage-keychain";
+    const CHILD: &str = "INDOCODE_USAGE_KEYCHAIN_CHILD";
+    const TARGET: &str = "INDOCODE_USAGE_KEYCHAIN_TARGET";
+    const MARKER: &[u8] = b"INDOCODE_USAGE_KEYCHAIN:";
     const LIMIT: usize = 32 * 1024;
 
     #[derive(Serialize, Deserialize)]
@@ -186,7 +186,7 @@ mod mac {
             return Reply::Probe(SecKeychain::user_interaction_allowed().unwrap_or(true));
         }
         let (service, account) = if target == "glm" {
-            ("app.pandacode.providers", "zai-coding-plan".into())
+            ("app.indocode.providers", "zai-coding-plan".into())
         } else {
             let Some(account) = account_name() else {
                 return Reply::Blocked;
@@ -246,9 +246,9 @@ mod mac {
         #[test]
         fn helper_protocol_rejects_missing_or_multiple_responses() {
             assert!(decode(b"unrelated stdout").is_err());
-            assert!(decode(b"PANDACODE_USAGE_KEYCHAIN:{\"status\":\"blocked\"}").is_err());
-            assert_eq!(decode(b"\nrunning 1 test\nPANDACODE_USAGE_KEYCHAIN:{\"status\":\"found\",\"data\":\"dGVzdA==\"}\n").ok().flatten(), Some(b"test".to_vec()));
-            assert!(decode(b"PANDACODE_USAGE_KEYCHAIN:{\"status\":\"missing\"}\nPANDACODE_USAGE_KEYCHAIN:{\"status\":\"missing\"}").is_err());
+            assert!(decode(b"INDOCODE_USAGE_KEYCHAIN:{\"status\":\"blocked\"}").is_err());
+            assert_eq!(decode(b"\nrunning 1 test\nINDOCODE_USAGE_KEYCHAIN:{\"status\":\"found\",\"data\":\"dGVzdA==\"}\n").ok().flatten(), Some(b"test".to_vec()));
+            assert!(decode(b"INDOCODE_USAGE_KEYCHAIN:{\"status\":\"missing\"}\nINDOCODE_USAGE_KEYCHAIN:{\"status\":\"missing\"}").is_err());
         }
 
         #[test]

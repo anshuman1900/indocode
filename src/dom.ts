@@ -118,9 +118,9 @@ let fallback: Promise<(value: string) => string | Promise<string>> | undefined;
 /** Markdown to safe HTML through the Enriched Markdown engine (md4c), with `marked` as a
  * fallback if its WebAssembly cannot start. Math is typeset after sanitizing, from KaTeX. */
 export async function markdownHtml(value: string): Promise<string> {
-  sanitizer ??= import('dompurify').then(d => (html: string) => d.default.sanitize(html, { ADD_TAGS: ['pandacode-ui', 'pandacode-code'], ALLOW_DATA_ATTR: false, FORBID_TAGS: ['style', 'img', 'iframe', 'form', 'input', 'button', 'textarea', 'select', 'option', 'video', 'audio'], FORBID_ATTR: ['style', 'id', 'name'] }));
+  sanitizer ??= import('dompurify').then(d => (html: string) => d.default.sanitize(html, { ADD_TAGS: ['indocode-ui', 'indocode-code'], ALLOW_DATA_ATTR: false, FORBID_TAGS: ['style', 'img', 'iframe', 'form', 'input', 'button', 'textarea', 'select', 'option', 'video', 'audio'], FORBID_ATTR: ['style', 'id', 'name'] }));
   const engine = import('./enriched-markdown');
-  // Defines <pandacode-ui> (generative UI views) before any HTML that holds one is used.
+  // Defines <indocode-ui> (generative UI views) before any HTML that holds one is used.
   const [sanitize, enriched] = await Promise.all([sanitizer, engine, import('./generative-ui')]);
   let html: string;
   try {
@@ -152,8 +152,8 @@ export function openViewFence(value: string): boolean {
 /** An unfinished view shows a placeholder until its fence closes, instead of half-parsed JSON. */
 function pendingView(value: string, html: string): string {
   if (!openViewFence(value)) return html;
-  const at = html.lastIndexOf('<pandacode-ui>');
-  return at < 0 ? html : `${html.slice(0, at)}<pandacode-ui class="pending">${html.slice(at + 14)}`;
+  const at = html.lastIndexOf('<indocode-ui>');
+  return at < 0 ? html : `${html.slice(0, at)}<indocode-ui class="pending">${html.slice(at + 14)}`;
 }
 export async function markdown(target: HTMLElement, value: string, scroll?: HTMLElement): Promise<void> {
   captureFileLinkContext(target);

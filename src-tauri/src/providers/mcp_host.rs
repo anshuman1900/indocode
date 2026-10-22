@@ -12,7 +12,7 @@ const HEADER_LIMIT: usize = 8192;
 // Room for a full batch of team assignments (12 × 8 KiB prompts) plus JSON-RPC framing.
 const BODY_LIMIT: usize = 160 * 1024;
 const RESULT_LIMIT: usize = 128 * 1024;
-const SERVER_NAME: &str = "pandacode_architect";
+const SERVER_NAME: &str = "indocode_architect";
 
 pub(super) struct Server {
     authority: String,
@@ -397,7 +397,7 @@ impl Context {
                     .as_str()
                     .filter(|version| matches!(*version, "2025-03-26" | "2025-06-18"))
                     .unwrap_or("2025-03-26");
-                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"PandaCode architect","version":"0.1.0"}})
+                json!({"protocolVersion":version,"capabilities":{"tools":{"listChanged":false}},"serverInfo":{"name":"Indocode architect","version":"0.1.0"}})
             }
             "ping" => json!({}),
             "tools/list" => {
@@ -442,7 +442,7 @@ impl Context {
                     result = async {
                         self.authorize(name, &args).await?;
                         tokio::time::timeout(Duration::from_secs(60),(self.host.handler)(name.into(),args)).await
-                            .unwrap_or_else(|_|Err("PandaCode tool timed out".into()))
+                            .unwrap_or_else(|_|Err("Indocode tool timed out".into()))
                     } => result,
                     _ = cancel.notified() => Err("Architect tool canceled".into()),
                 };
@@ -552,7 +552,7 @@ mod tests {
     fn host() -> ToolHost {
         ToolHost {
             tools: vec![
-                json!({"type":"function","name":"pandacode_delegate","description":"Assign a scoped worker","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"}}}}),
+                json!({"type":"function","name":"indocode_delegate","description":"Assign a scoped worker","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"}}}}),
             ],
             approval_tools: HashSet::new(),
             handler: Arc::new(|_, args| Box::pin(async move { Ok(args) })),
@@ -584,7 +584,7 @@ mod tests {
         )
     }
     fn call(id: Value, args: Value) -> Value {
-        json!({"jsonrpc":"2.0","id":id,"method":"tools/call","params":{"name":"pandacode_delegate","arguments":args}})
+        json!({"jsonrpc":"2.0","id":id,"method":"tools/call","params":{"name":"indocode_delegate","arguments":args}})
     }
     #[tokio::test]
     async fn a_warm_server_keeps_its_address_and_serves_the_turn_it_is_rebound_to() {
@@ -631,7 +631,7 @@ mod tests {
         let project = db.add_project(&std::env::temp_dir()).unwrap();
         let sid = db.create_session(&project.id, "claude", "sonnet", "ask").unwrap().id;
         db.resume(&sid, "saved-claude-session").unwrap();
-        let saved_reference = json!({"type":"tool_reference","tool_name":"mcp__pandacode_architect__pandacode_title"});
+        let saved_reference = json!({"type":"tool_reference","tool_name":"mcp__indocode_architect__indocode_title"});
         let mut original_spec = None;
 
         for turn_kind in ["user", "review", "retry", "manual"] {
@@ -690,7 +690,7 @@ mod tests {
     }
     #[tokio::test]
     async fn optional_preview_mcp_keeps_approval_plan_restrictions_and_visible_activity() {
-        for name in ["pandacode_run_project", "pandacode_preview_file"] {
+        for name in ["indocode_run_project", "indocode_preview_file"] {
             for mode in ["ask", "auto", "plan", "full"] {
                 let count = Arc::new(AtomicUsize::new(0));
                 let called = count.clone();
@@ -739,7 +739,7 @@ mod tests {
                 let count = Arc::new(AtomicUsize::new(0));
                 let called = count.clone();
                 let mut protected = host();
-                protected.approval_tools.insert("pandacode_delegate".into());
+                protected.approval_tools.insert("indocode_delegate".into());
                 protected.handler = Arc::new(move |_, _| {
                     called.fetch_add(1, Ordering::SeqCst);
                     Box::pin(async { Ok(json!({"started":true})) })
@@ -789,7 +789,7 @@ mod tests {
             let count = Arc::new(AtomicUsize::new(0));
             let called = count.clone();
             let mut protected = host();
-            protected.approval_tools.insert("pandacode_delegate".into());
+            protected.approval_tools.insert("indocode_delegate".into());
             protected.handler = Arc::new(move |_, _| {
                 called.fetch_add(1, Ordering::SeqCst);
                 Box::pin(async { Ok(json!({})) })
@@ -809,7 +809,7 @@ mod tests {
     }
     #[tokio::test]
     async fn cloud_cli_asks_even_in_full_mode() {
-        let name = "pandacode_cloud_cli";
+        let name = "indocode_cloud_cli";
         let count = Arc::new(AtomicUsize::new(0));
         let called = count.clone();
         let protected = ToolHost {
@@ -838,7 +838,7 @@ mod tests {
     #[tokio::test]
     async fn cancelling_pending_mcp_approval_revokes_it_without_calling_handler() {
         let mut protected = host();
-        protected.approval_tools.insert("pandacode_delegate".into());
+        protected.approval_tools.insert("indocode_delegate".into());
         let (sender, mut events) = tokio::sync::mpsc::unbounded_channel();
         let server = Server::start_with_approvals(
             protected,
@@ -852,7 +852,7 @@ mod tests {
         .unwrap();
         let args = json!({});
         let context = server.current();
-        let mut authorization = Box::pin(context.authorize("pandacode_delegate", &args));
+        let mut authorization = Box::pin(context.authorize("indocode_delegate", &args));
         let event = tokio::select! {
             _ = &mut authorization => panic!("Approval resolved before user input"),
             event = events.recv() => event.unwrap(),
@@ -882,7 +882,7 @@ mod tests {
             "",
         )
         .await;
-        assert_eq!(list["result"]["tools"][0]["name"], "pandacode_delegate");
+        assert_eq!(list["result"]["tools"][0]["name"], "indocode_delegate");
         assert!(list["result"]["tools"][0].get("type").is_none());
         let (_, result) = request(
             &server,
@@ -933,7 +933,7 @@ mod tests {
     #[tokio::test]
     async fn rejects_protected_catalog_and_unknown_calls_and_reports_tool_errors() {
         let mut protected = host();
-        protected.approval_tools.insert("pandacode_delegate".into());
+        protected.approval_tools.insert("indocode_delegate".into());
         assert!(Server::start(protected, "p".into(), Arc::new(|_| {}))
             .await
             .is_err());
@@ -946,7 +946,7 @@ mod tests {
         assert_eq!(failed["result"]["isError"], true);
         assert_eq!(failed["result"]["content"][0]["text"], "Worker unavailable");
         let mut unknown = call(json!(2), json!({}));
-        unknown["params"]["name"] = json!("pandacode_open_browser");
+        unknown["params"]["name"] = json!("indocode_open_browser");
         assert_eq!(
             request(&server, unknown, "").await.1["error"]["code"],
             -32602
@@ -972,7 +972,7 @@ mod tests {
         visual.handler = Arc::new(|_, _| {
             Box::pin(async {
                 Ok(
-                    json!({"_pandacodeImage":{"mimeType":"image/jpeg","data":"/9j/2Q==","text":"Reference screenshot"}}),
+                    json!({"_indocodeImage":{"mimeType":"image/jpeg","data":"/9j/2Q==","text":"Reference screenshot"}}),
                 )
             })
         });
@@ -1107,9 +1107,9 @@ def emit(value):
 receive()
 if provider == 'claude':
     assert '--strict-mcp-config' not in sys.argv
-    server=json.loads(sys.argv[sys.argv.index('--mcp-config')+1])['mcpServers']['pandacode_architect']
+    server=json.loads(sys.argv[sys.argv.index('--mcp-config')+1])['mcpServers']['indocode_architect']
     headers=server['headers']
-    emit({'type':'control_response','response':{'request_id':'pandacode-init','subtype':'success','response':{}}})
+    emit({'type':'control_response','response':{'request_id':'indocode-init','subtype':'success','response':{}}})
     receive()
 else:
     emit({'id':1,'result':{'protocolVersion':1,'agentCapabilities':{'mcpCapabilities':{'http':True}}}})
@@ -1126,18 +1126,18 @@ headers['Accept']='application/json, text/event-stream'
 for request in [
     {'jsonrpc':'2.0','id':1,'method':'initialize','params':{'protocolVersion':'2025-06-18'}},
     {'jsonrpc':'2.0','id':2,'method':'tools/list'},
-    {'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'pandacode_delegate','arguments':{'prompt':provider}}}
+    {'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'indocode_delegate','arguments':{'prompt':provider}}}
 ]:
     req=urllib.request.Request(server['url'],data=json.dumps(request).encode(),headers=headers)
     with urllib.request.urlopen(req,timeout=5) as response:
         result=json.load(response)
 assert json.loads(result['result']['content'][0]['text'])['prompt']==provider
 if provider=='claude':
-    emit({'type':'assistant','message':{'id':'message','content':[{'type':'tool_use','id':'native','name':'mcp__pandacode_architect__pandacode_delegate','input':{}},{'type':'text','text':'Worker dispatched'}]}})
+    emit({'type':'assistant','message':{'id':'message','content':[{'type':'tool_use','id':'native','name':'mcp__indocode_architect__indocode_delegate','input':{}},{'type':'text','text':'Worker dispatched'}]}})
     emit({'type':'user','message':{'content':[{'type':'tool_result','tool_use_id':'native','content':'dispatched'}]}})
     emit({'type':'result','subtype':'success','result':'Worker dispatched'})
 else:
-    emit({'method':'session/update','params':{'sessionId':'fixture','update':{'sessionUpdate':'tool_call','toolCallId':'native','title':'pandacode_delegate','status':'in_progress'}}})
+    emit({'method':'session/update','params':{'sessionId':'fixture','update':{'sessionUpdate':'tool_call','toolCallId':'native','title':'indocode_delegate','status':'in_progress'}}})
     emit({'method':'session/update','params':{'sessionId':'fixture','update':{'sessionUpdate':'tool_call_update','toolCallId':'native','status':'completed'}}})
     emit({'method':'session/update','params':{'sessionId':'fixture','update':{'sessionUpdate':'agent_message_chunk','content':{'type':'text','text':'Worker dispatched'}}}})
     emit({'id':3,'result':{'stopReason':'end_turn'}})
@@ -1146,7 +1146,7 @@ else:
             let config = super::super::tests::config(provider);
             let host = ToolHost {
                 tools: vec![
-                    json!({"type":"function","name":"pandacode_delegate","description":"delegate","inputSchema":{"type":"object"}}),
+                    json!({"type":"function","name":"indocode_delegate","description":"delegate","inputSchema":{"type":"object"}}),
                 ],
                 approval_tools: HashSet::new(),
                 handler: Arc::new(|_, args| Box::pin(async move { Ok(args) })),

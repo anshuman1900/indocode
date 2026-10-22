@@ -56,7 +56,7 @@ export function initializeNativeAppearance(
     transparency.removeEventListener('change', refresh);
     contrast.removeEventListener('change', refresh);
     window.removeEventListener('focus', refresh);
-    window.removeEventListener('pandacode-theme-change', refresh);
+    window.removeEventListener('indocode-theme-change', refresh);
     window.removeEventListener('pagehide', dispose);
     delete root.dataset.nativeMaterial;
     delete root.dataset.nativePlatform;
@@ -65,7 +65,7 @@ export function initializeNativeAppearance(
   transparency.addEventListener('change', refresh);
   contrast.addEventListener('change', refresh);
   window.addEventListener('focus', refresh);
-  window.addEventListener('pandacode-theme-change', refresh);
+  window.addEventListener('indocode-theme-change', refresh);
   window.addEventListener('pagehide', dispose, { once: true });
   refresh();
   return dispose;

@@ -16,7 +16,7 @@ export function mountSupportDetails(host: HTMLDetailsElement): () => void {
     try {
       const data = await call<SupportDetails>('support_details');
       if (disposed) return;
-      output.value = `PandaCode: ${data.version}\nPlatform: ${data.platform}\nArchitecture: ${data.architecture}`;
+      output.value = `Indocode: ${data.version}\nPlatform: ${data.platform}\nArchitecture: ${data.architecture}`;
       loaded = true; copy.disabled = false; status.textContent = '';
     } catch {
       if (!disposed) { status.textContent = 'Could not load app details.'; retry.hidden = false; }

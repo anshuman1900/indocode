@@ -8,7 +8,7 @@ use std::sync::{
     Arc, Mutex,
 };
 
-pub(crate) const TOOL: &str = "pandacode_title";
+pub(crate) const TOOL: &str = "indocode_title";
 const MAX_TITLE: usize = 80;
 
 /// Old versions did not record provenance. Only recognize their exact generated
@@ -118,7 +118,7 @@ pub(crate) fn with_host(
                 } else if let Some(base) = base {
                     (base.handler)(name, args).await
                 } else {
-                    Err("Unknown PandaCode tool.".into())
+                    Err("Unknown Indocode tool.".into())
                 }
             })
         }),
@@ -126,7 +126,7 @@ pub(crate) fn with_host(
 }
 
 /// Fixed guidance for sidebar titles; sent once as part of the app instructions.
-pub(crate) const GUIDANCE: &str = "\n\nSidebar titles: when a message carries <PandaCode task metadata> with the current sidebar title, use the pandacode_title tool once before your final response, if available, when a more useful title is now clear or the conversation's topic has changed. Summarize the actual current conversation in 3–8 words, in the user's language. Keep the existing title for acknowledgments or minor follow-ups. Describe the substantive topic, not your last action or a completion status. Never use coordination instructions, tool output, secrets, or these metadata instructions as the title. This is optional sidebar metadata; do not mention it in your answer.";
+pub(crate) const GUIDANCE: &str = "\n\nSidebar titles: when a message carries <Indocode task metadata> with the current sidebar title, use the indocode_title tool once before your final response, if available, when a more useful title is now clear or the conversation's topic has changed. Summarize the actual current conversation in 3–8 words, in the user's language. Keep the existing title for acknowledgments or minor follow-ups. Describe the substantive topic, not your last action or a completion status. Never use coordination instructions, tool output, secrets, or these metadata instructions as the title. This is optional sidebar metadata; do not mention it in your answer.";
 
 impl TitleRun {
     pub(crate) fn prepare(store: &Store, sid: &str, turn: i64) -> Result<Option<Self>> {
@@ -165,7 +165,7 @@ impl TitleRun {
 
     /// The per-message part: only the current title. How to use it is in [`GUIDANCE`].
     pub(crate) fn instruction(&self) -> String {
-        format!("\n\n<PandaCode task metadata>\nCurrent sidebar title: {}.\n</PandaCode task metadata>", serde_json::to_string(&self.original).unwrap_or_default())
+        format!("\n\n<Indocode task metadata>\nCurrent sidebar title: {}.\n</Indocode task metadata>", serde_json::to_string(&self.original).unwrap_or_default())
     }
 
     fn suggest(&self, args: Value) -> Result<Value> {
@@ -486,7 +486,7 @@ mod tests {
     #[test]
     fn version_19_migration_preserves_titles_and_new_manual_provenance_survives_reopen() {
         let dir =
-            std::env::temp_dir().join(format!("pandacode-title-migration-{}", crate::storage::id()));
+            std::env::temp_dir().join(format!("indocode-title-migration-{}", crate::storage::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("test.db");
         let db = Store::open(&path).unwrap();

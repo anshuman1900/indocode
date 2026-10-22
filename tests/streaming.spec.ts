@@ -275,7 +275,7 @@ test.describe('streamed responses', () => {
           expect(Math.abs((await text.boundingBox())!.x - groupLeft)).toBeLessThanOrEqual(1);
         }
       }
-      await page.screenshot({ path: `/private/tmp/pandacode-chronological-tools-${view}-${browserName}.png` });
+      await page.screenshot({ path: `/private/tmp/indocode-chronological-tools-${view}-${browserName}.png` });
       await finish(page, id);
       await expect(transcript(page).locator('.tool-group-label')).toHaveText(['Read 5 files', 'Read 1 file', 'Read 1 file']);
       await expect.poll(() => transcript(page).locator('.turn-activity-body .message-content, .turn-activity-body .tool-group').evaluateAll(nodes => nodes.map(node => node.matches('.tool-group')

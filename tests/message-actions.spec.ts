@@ -125,7 +125,7 @@ test('older history and forks preserve authors when the later harness switch is 
   const earlierReply = transcript(page).locator('[data-message-id="202"]');
   await expect(earlierReply.locator('pre code')).toContainText('Hello, world!');
   await earlierReply.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: '/private/tmp/pandacode-history-scroll.png', animations: 'disabled' });
+  await page.screenshot({ path: '/private/tmp/indocode-history-scroll.png', animations: 'disabled' });
   await action(page,202,'fork').click();
   await selectedFork(page);
   const saved = transcript(page).locator('.agent-message').filter({hasText:'Saved Claude answer'});
@@ -145,7 +145,7 @@ test.describe('conversation message actions', () => {
     }
     await expect(prompt(page)).toHaveAttribute('data-session-id', sessionId);
     expect(await calls(page, 'fork_session_at_message')).toEqual([]);
-    await page.screenshot({ path: 'test-results/pandacode-message-actions.png', animations: 'disabled' });
+    await page.screenshot({ path: 'test-results/indocode-message-actions.png', animations: 'disabled' });
   });
 
   test('forks at a selected response with an independent saved prefix and leaves the source unchanged', async ({ page }) => {
@@ -228,7 +228,7 @@ test.describe('conversation message actions', () => {
     const board = page.getByRole('region', { name: 'Project board', exact: true });
     await board.getByRole('button', { name: 'Open task: Message action fixture', exact: true }).click();
     await expect(action(page, 201, 'fork')).toBeVisible();
-    await page.screenshot({ path: 'test-results/pandacode-message-actions-board.png', animations: 'disabled' });
+    await page.screenshot({ path: 'test-results/indocode-message-actions-board.png', animations: 'disabled' });
     await action(page, 201, 'fork').click();
     const forkId = await selectedFork(page), fork = await snapshot(page, forkId);
     await expect(board).toBeVisible();

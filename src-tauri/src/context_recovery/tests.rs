@@ -5,7 +5,7 @@ struct Disk(PathBuf);
 impl Disk {
     fn new() -> Self {
         let path = std::env::temp_dir().join(format!(
-            "pandacode-context-recovery-{}",
+            "indocode-context-recovery-{}",
             crate::storage::id()
         ));
         std::fs::create_dir_all(&path).unwrap();

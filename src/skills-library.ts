@@ -91,9 +91,9 @@ export function mountSkillsLibrary(host: HTMLElement, options: SkillsLibraryHost
       return `<td class="skills-status" data-status="${status}" title="${escape(cell?.surface ?? '')}">${STATUS_LABELS[status]}</td>`;
     }).join('')}</tr>`).join('');
     const unmanaged = rows.flatMap(row => row.unmanaged.map(u => `<li><strong>${escape(harnessName(row.harness))}</strong> <code>${escape(u.path)}</code> <span>${escape(u.detail)}</span></li>`)).join('');
-    const prompt = rows.some(row => row.prompt) ? '<p class="skills-note">Harnesses marked “prompt” have no skill files; PandaCode adds these items to their messages.</p>' : '';
+    const prompt = rows.some(row => row.prompt) ? '<p class="skills-note">Harnesses marked “prompt” have no skill files; Indocode adds these items to their messages.</p>' : '';
     return `<div class="skills-matrix-wrap"><table class="skills-matrix" aria-label="Skills by harness"><thead><tr><th scope="col">Item</th>${head}</tr></thead><tbody>${body}</tbody></table></div>${prompt}
-      ${unmanaged ? `<h4 class="skills-subheading">Found on disk, not managed by PandaCode</h4><ul class="skills-unmanaged">${unmanaged}</ul>` : ''}`;
+      ${unmanaged ? `<h4 class="skills-subheading">Found on disk, not managed by Indocode</h4><ul class="skills-unmanaged">${unmanaged}</ul>` : ''}`;
   }
 
   function draw(): void {
@@ -144,7 +144,7 @@ export function mountSkillsLibrary(host: HTMLElement, options: SkillsLibraryHost
     return run(async () => {
       await options.call('skills_activate', { id, harness, scope, ...scopeArgs(scope), acknowledge });
       const row = matrix.harnesses.find(r => r.harness === harness);
-      return row?.prompt ? `${harnessName(harness)} has no skill files; PandaCode adds this to its messages.` : `Active for ${harnessName(harness)}.`;
+      return row?.prompt ? `${harnessName(harness)} has no skill files; Indocode adds this to its messages.` : `Active for ${harnessName(harness)}.`;
     });
   }
   function importItem(form: HTMLFormElement): void {

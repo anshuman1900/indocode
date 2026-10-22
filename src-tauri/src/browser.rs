@@ -442,7 +442,7 @@ pub async fn browser_inspect(
         return Err("Browser input is too large.".into());
     }
     let args = serde_json::json!({"action":action,"selector":selector,"text":text});
-    let script = include_str!("browser_agent.js").replace("__PANDACODE_ARGS__", &args.to_string());
+    let script = include_str!("browser_agent.js").replace("__INDOCODE_ARGS__", &args.to_string());
     let raw = evaluate(&view, script).await?;
     if raw.len() > 128 * 1024 {
         return Err("Browser result is too large.".into());
@@ -487,10 +487,10 @@ pub async fn browser_pick(caller: Webview, app: tauri::AppHandle, enabled: bool)
     let view = guest(&app)?;
     let state = app.state::<BrowserState>();
     let generation = state.generation.load(Ordering::SeqCst);
-    let key = format!("__pandacode_pick_{}", uuid::Uuid::new_v4().simple());
+    let key = format!("__indocode_pick_{}", uuid::Uuid::new_v4().simple());
     *state.pick_key.lock().map_err(|e| e.to_string())? = Some(key.clone());
     let encoded = serde_json::to_string(&key).map_err(|e| e.to_string())?;
-    view.eval(include_str!("browser/picker.js").replace("__PANDACODE_PICK_KEY__", &encoded))
+    view.eval(include_str!("browser/picker.js").replace("__INDOCODE_PICK_KEY__", &encoded))
         .map_err(|e| e.to_string())?;
     update(&app, |s| s.picking = true);
     view.set_focus().map_err(|e| e.to_string())?;
@@ -771,7 +771,7 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn capture_cleanup_keeps_recent_and_unmanaged_files() {
-        let dir = std::env::temp_dir().join(format!("pandacode-captures-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("indocode-captures-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
         let old = dir.join(format!("{}.png", uuid::Uuid::new_v4()));
         let recent = dir.join(format!("{}.png", uuid::Uuid::new_v4()));

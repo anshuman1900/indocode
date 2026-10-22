@@ -1,5 +1,5 @@
 //! Daytona sandboxes: create, list, start, stop and delete through the Daytona API, and
-//! run commands and computer use through each sandbox's toolbox. Sandboxes PandaCode
+//! run commands and computer use through each sandbox's toolbox. Sandboxes Indocode
 //! creates are labelled and stop on their own after `AUTO_STOP` idle minutes.
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::{json, Value};
@@ -108,7 +108,7 @@ impl Daytona {
         Ok(items.iter().map(machine).collect())
     }
     pub async fn create(&self, name: &str) -> Result<Machine, String> {
-        let body = json!({"name": name, "labels": {"pandacode": "true"}, "autoStopInterval": AUTO_STOP});
+        let body = json!({"name": name, "labels": {"indocode": "true"}, "autoStopInterval": AUTO_STOP});
         Ok(machine(&self.api(reqwest::Method::POST, "/sandbox", Some(body)).await?))
     }
     pub async fn power(&self, id: &str, action: &str) -> Result<(), String> {
@@ -190,7 +190,7 @@ mod tests {
     /// A Daytona API and toolbox in one loopback server.
     fn daytona() -> (Daytona, mock::Seen) {
         let (base, seen) = mock::serve(|request, base| match (request.method.as_str(), request.path.as_str()) {
-            ("GET", "/api/sandbox?limit=100") => (200, r#"{"items":[{"id":"sb1","name":"pandacode-sandbox","state":"started","cpu":1,"memory":1},{"id":"sb2","name":"","state":"archived","cpu":2,"memory":4}]}"#.into()),
+            ("GET", "/api/sandbox?limit=100") => (200, r#"{"items":[{"id":"sb1","name":"indocode-sandbox","state":"started","cpu":1,"memory":1},{"id":"sb2","name":"","state":"archived","cpu":2,"memory":4}]}"#.into()),
             ("POST", "/api/sandbox") => (200, r#"{"id":"sb3","name":"new","state":"creating","cpu":1,"memory":1}"#.into()),
             ("POST", "/api/sandbox/sb1/stop") => (200, String::new()),
             ("GET", "/api/sandbox/sb1") => (200, format!(r#"{{"id":"sb1","state":"started","toolboxProxyUrl":"{base}/toolbox/"}}"#)),
@@ -207,7 +207,7 @@ mod tests {
     async fn lists_creates_and_stops_with_the_key_and_organization() {
         let (api, seen) = daytona();
         let machines = api.list().await.unwrap();
-        assert_eq!(machines.iter().map(|m| (m.id.as_str(), m.name.as_str(), m.state.as_str())).collect::<Vec<_>>(), vec![("daytona:sb1", "pandacode-sandbox", "running"), ("daytona:sb2", "sb2", "stopped")]);
+        assert_eq!(machines.iter().map(|m| (m.id.as_str(), m.name.as_str(), m.state.as_str())).collect::<Vec<_>>(), vec![("daytona:sb1", "indocode-sandbox", "running"), ("daytona:sb2", "sb2", "stopped")]);
         assert!(machines[0].desktop && machines[0].detail.contains("1 CPU"));
         let created = api.create("new").await.unwrap();
         assert_eq!((created.id.as_str(), created.state.as_str()), ("daytona:sb3", "starting"));
@@ -217,7 +217,7 @@ mod tests {
         assert!(log.iter().all(|r| r.authorization.as_deref() == Some("Bearer key-123")));
         assert!(log.iter().all(|r| r.headers.iter().any(|(n, v)| n == "x-daytona-organization-id" && v == "org-9")));
         let body: Value = serde_json::from_str(&log[1].body).unwrap();
-        assert_eq!(body, json!({"name":"new","labels":{"pandacode":"true"},"autoStopInterval":15}));
+        assert_eq!(body, json!({"name":"new","labels":{"indocode":"true"},"autoStopInterval":15}));
     }
 
     #[tokio::test]

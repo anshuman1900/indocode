@@ -6,7 +6,7 @@ type ImageData = { id: string; dataUrl: string; thumbnail: string };
 let database: Promise<IDBDatabase> | undefined;
 function db(): Promise<IDBDatabase> {
   return database ??= new Promise((resolve, reject) => {
-    const request = indexedDB.open('pandacode-preview-moodboards', 1);
+    const request = indexedDB.open('indocode-preview-moodboards', 1);
     request.onupgradeneeded = () => {
       const database = request.result;
       database.createObjectStore('boards', { keyPath: 'id' }).createIndex('project', 'projectId');

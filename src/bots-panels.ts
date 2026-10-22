@@ -100,7 +100,7 @@ function pairingsList(detail: BotDetail): string {
 }
 
 function channelsPanel(detail: BotDetail): string {
-  return `${sectionHead('globe', 'Channels', 'Talk to the bot from a browser, Telegram, Slack, Discord or WhatsApp. Messages are handled on this computer while PandaCode runs.')}${detail.channels.length ? `<ul class="bots-items">${detail.channels.map(channel => channelCard(detail, channel)).join('')}</ul>` : ''}
+  return `${sectionHead('globe', 'Channels', 'Talk to the bot from a browser, Telegram, Slack, Discord or WhatsApp. Messages are handled on this computer while Indocode runs.')}${detail.channels.length ? `<ul class="bots-items">${detail.channels.map(channel => channelCard(detail, channel)).join('')}</ul>` : ''}
     ${pairingsList(detail)}<h4>${detail.channels.length ? 'Add another channel' : 'Add a channel'}</h4>${connectSection(detail)}`;
 }
 

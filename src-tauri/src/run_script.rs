@@ -8,12 +8,12 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-pub const FILE_NAME: &str = "pandacode-run.sh";
-const PREVIEW_HEADER: &str = "# pandacode-preview:";
+pub const FILE_NAME: &str = "indocode-run.sh";
+const PREVIEW_HEADER: &str = "# indocode-preview:";
 const MAX_SCRIPT: u64 = 64 * 1024;
 
 pub const INSTRUCTIONS: &str = r#"
-Run and preview workflow: When your edits affect a runnable app and commands are needed to preview it, maintain a POSIX shell script named pandacode-run.sh at the current workspace/worktree root. Use the project's actual, verified commands and installed tools; do not invent dependency commands, install dependencies unnecessarily, or include destructive setup. Keep long-running servers in the foreground so the managed terminal can stop them. If the script opens a browser preview, include one comment `# pandacode-preview: http://127.0.0.1:PORT` with the actual server URL, or a workspace-relative HTML/SVG path the script produces. Do not create a Run Script for static HTML/SVG alone: use pandacode_preview_file({"path":"relative/file.html"}) instead. After applicable edits, if PandaCode preview tools are available, use pandacode_run_project (no arguments) to run the maintained script and open its declared preview, or pandacode_preview_file for static output. If the harness cannot use app tools, maintain the script and provide the preview path or URL for the user instead. Respect the user's restrictions on running commands or opening previews. Parallel workers should maintain the script as needed and leave final execution/preview to the architect to avoid duplicate servers and competing UI actions. Opening a preview alone does not establish that testing or review passed; inspect and verify the result separately.
+Run and preview workflow: When your edits affect a runnable app and commands are needed to preview it, maintain a POSIX shell script named indocode-run.sh at the current workspace/worktree root. Use the project's actual, verified commands and installed tools; do not invent dependency commands, install dependencies unnecessarily, or include destructive setup. Keep long-running servers in the foreground so the managed terminal can stop them. If the script opens a browser preview, include one comment `# indocode-preview: http://127.0.0.1:PORT` with the actual server URL, or a workspace-relative HTML/SVG path the script produces. Do not create a Run Script for static HTML/SVG alone: use indocode_preview_file({"path":"relative/file.html"}) instead. After applicable edits, if Indocode preview tools are available, use indocode_run_project (no arguments) to run the maintained script and open its declared preview, or indocode_preview_file for static output. If the harness cannot use app tools, maintain the script and provide the preview path or URL for the user instead. Respect the user's restrictions on running commands or opening previews. Parallel workers should maintain the script as needed and leave final execution/preview to the architect to avoid duplicate servers and competing UI actions. Opening a preview alone does not establish that testing or review passed; inspect and verify the result separately.
 "#;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -34,7 +34,7 @@ pub fn inspect(root: &Path) -> Result<Option<RunScript>, String> {
     let candidate = root.join(FILE_NAME);
     match fs::symlink_metadata(&candidate) {
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
-        Err(_) => return Err("Could not inspect pandacode-run.sh.".into()),
+        Err(_) => return Err("Could not inspect indocode-run.sh.".into()),
         Ok(_) => {}
     }
     let script = candidate
@@ -43,7 +43,7 @@ pub fn inspect(root: &Path) -> Result<Option<RunScript>, String> {
     if !script.starts_with(&root) || !script.is_file() {
         return Err("Run Script must be a regular file inside this workspace.".into());
     }
-    let file = fs::File::open(&script).map_err(|_| "Could not read pandacode-run.sh.")?;
+    let file = fs::File::open(&script).map_err(|_| "Could not read indocode-run.sh.")?;
     if file
         .metadata()
         .map_err(|_| "Could not inspect Run Script.")?
@@ -55,7 +55,7 @@ pub fn inspect(root: &Path) -> Result<Option<RunScript>, String> {
     let mut bytes = Vec::new();
     file.take(MAX_SCRIPT + 1)
         .read_to_end(&mut bytes)
-        .map_err(|_| "Could not read pandacode-run.sh.")?;
+        .map_err(|_| "Could not read indocode-run.sh.")?;
     if bytes.len() as u64 > MAX_SCRIPT {
         return Err("Run Script must be no larger than 64 KiB.".into());
     }
@@ -73,7 +73,7 @@ pub fn inspect(root: &Path) -> Result<Option<RunScript>, String> {
         .filter_map(|line| line.trim_start().strip_prefix(PREVIEW_HEADER));
     if let Some(value) = headers.next() {
         if headers.next().is_some() {
-            return Err("Run Script must have only one pandacode-preview header.".into());
+            return Err("Run Script must have only one indocode-preview header.".into());
         }
         let value = value.trim();
         if value.is_empty() || value.len() > 4096 || value.chars().any(char::is_control) {
@@ -154,7 +154,7 @@ fn preview_path(root: &Path, value: &str) -> Result<String, String> {
 }
 
 pub fn script_path(root: &Path) -> Result<PathBuf, String> {
-    inspect(root)?.ok_or("Add pandacode-run.sh to this workspace before running it.")?;
+    inspect(root)?.ok_or("Add indocode-run.sh to this workspace before running it.")?;
     root.join(FILE_NAME)
         .canonicalize()
         .map_err(|_| "Run Script is unavailable.".into())
@@ -275,7 +275,7 @@ mod tests {
     struct Fixture(PathBuf);
     impl Fixture {
         fn new() -> Self {
-            let root = std::env::temp_dir().join(format!("pandacode-run-{}", uuid::Uuid::new_v4()));
+            let root = std::env::temp_dir().join(format!("indocode-run-{}", uuid::Uuid::new_v4()));
             fs::create_dir_all(&root).unwrap();
             Self(root.canonicalize().unwrap())
         }
@@ -294,8 +294,8 @@ mod tests {
         let project = Fixture::new();
         let worktree = Fixture::new();
         assert_eq!(inspect(&project.0).unwrap(), None);
-        project.script("#!/bin/sh\n# pandacode-preview: http://127.0.0.1:3000\nexec npm run dev\n");
-        worktree.script("#!/bin/sh\n# pandacode-preview: http://127.0.0.1:3001\nexec npm run dev\n");
+        project.script("#!/bin/sh\n# indocode-preview: http://127.0.0.1:3000\nexec npm run dev\n");
+        worktree.script("#!/bin/sh\n# indocode-preview: http://127.0.0.1:3001\nexec npm run dev\n");
         let result = inspect(&project.0).unwrap().unwrap();
         assert_eq!(result.path, FILE_NAME);
         assert_eq!(
@@ -326,14 +326,14 @@ mod tests {
             "my drawing.svg",
             "index.HTM",
         ] {
-            f.script(&format!("#!/bin/sh\n# pandacode-preview: {value}\n:"));
+            f.script(&format!("#!/bin/sh\n# indocode-preview: {value}\n:"));
             assert_eq!(
                 inspect(&f.0).unwrap().unwrap().preview_path.unwrap(),
                 value.trim_start_matches("./")
             );
         }
         fs::create_dir_all(f.0.join("index.html")).unwrap();
-        f.script("# pandacode-preview: index.html\n:");
+        f.script("# indocode-preview: index.html\n:");
         assert!(inspect(&f.0).is_err());
     }
 
@@ -353,9 +353,9 @@ mod tests {
             "http://user:secret@192.0.2.1",
             "http://192.0.2.1/\tsecret",
             "https://",
-            "index.html\n# pandacode-preview: other.html",
+            "index.html\n# indocode-preview: other.html",
         ] {
-            f.script(&format!("#!/bin/sh\n# pandacode-preview: {value}\n:"));
+            f.script(&format!("#!/bin/sh\n# indocode-preview: {value}\n:"));
             assert!(inspect(&f.0).is_err(), "{value:?}");
         }
     }
@@ -365,7 +365,7 @@ mod tests {
         let f = Fixture::new();
         assert!(script_path(&f.0)
             .unwrap_err()
-            .contains("Add pandacode-run.sh"));
+            .contains("Add indocode-run.sh"));
         fs::create_dir(f.0.join(FILE_NAME)).unwrap();
         assert!(inspect(&f.0).is_err());
         fs::remove_dir(f.0.join(FILE_NAME)).unwrap();
@@ -393,7 +393,7 @@ mod tests {
         assert!(inspect(&f.0).is_err());
         fs::remove_file(f.0.join(FILE_NAME)).unwrap();
         symlink(&outside.0, f.0.join("dist")).unwrap();
-        f.script("# pandacode-preview: dist/index.html\n:");
+        f.script("# indocode-preview: dist/index.html\n:");
         assert!(inspect(&f.0).is_err());
         fs::remove_file(f.0.join("dist")).unwrap();
         symlink(outside.0.join("missing"), f.0.join("dist")).unwrap();
@@ -423,7 +423,7 @@ mod tests {
                 "--norc",
                 "--posix",
                 "--",
-                "./pandacode-run.sh"
+                "./indocode-run.sh"
             ]
         );
         for value in [
@@ -468,7 +468,7 @@ mod tests {
             command.get_argv(),
             &[
                 OsString::from("/bin/sh"),
-                OsString::from("./pandacode-run.sh")
+                OsString::from("./indocode-run.sh")
             ]
         );
         let mut process = std::process::Command::new(&command.get_argv()[0]);

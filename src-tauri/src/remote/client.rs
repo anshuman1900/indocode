@@ -24,7 +24,7 @@ pub(crate) async fn call_within(app: &tauri::AppHandle, device_id: &str, method:
         let state = remote(app);
         let mut inner = state.lock();
         if inner.token.is_none() {
-            return Err("Sign in to PandaCode Connect first.".into());
+            return Err("Sign in to Indocode Connect first.".into());
         }
         if device_id == inner.settings.device_id {
             return Err("That is this computer.".into());

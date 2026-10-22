@@ -1,5 +1,5 @@
 /* Workflow recipes: pick a saved recipe, see a dry run against this task's harness, then
- * queue its steps as ordinary messages. Recipes are plain JSON (`.pandacode/recipes/<name>.json`
+ * queue its steps as ordinary messages. Recipes are plain JSON (`.indocode/recipes/<name>.json`
  * in the project, or the global folder); the native side (`recipes.rs`) validates, saves and
  * resolves them. The host supplies the task and the queue, so this module imports no app state. */
 import './recipes.css';

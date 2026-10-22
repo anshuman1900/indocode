@@ -1,6 +1,6 @@
 # Reference research
 
-PandaCode is an original implementation. T3 Code source and documentation were inspected for product requirements, system boundaries and tradeoffs; no implementation, assets or layouts were copied.
+Indocode is an original implementation. T3 Code source and documentation were inspected for product requirements, system boundaries and tradeoffs; no implementation, assets or layouts were copied.
 
 ## T3 Code
 
@@ -15,7 +15,7 @@ PandaCode is an original implementation. T3 Code source and documentation were i
 
 [Tauri's process model](https://v2.tauri.app/concept/process-model/) provides a Rust core and platform WebView. This avoids shipping an application-specific Chromium runtime and removes the requirement for a resident Node server. The OS still launches WebView helper processes, and provider CLI processes can dominate total memory. A smaller native core or installer alone is not a whole-app memory benchmark.
 
-PandaCode deliberately uses one webview, a small vanilla TypeScript renderer, direct native IPC, on-demand agents, SQLite, one-directory-at-a-time file browsing, selected-file diff reads and lazy terminal code. It does not embed a general code editor. Core, renderer and child-agent measurements must be reported separately.
+Indocode deliberately uses one webview, a small vanilla TypeScript renderer, direct native IPC, on-demand agents, SQLite, one-directory-at-a-time file browsing, selected-file diff reads and lazy terminal code. It does not embed a general code editor. Core, renderer and child-agent measurements must be reported separately.
 
 ## Initial parity boundary
 

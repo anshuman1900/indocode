@@ -1,4 +1,4 @@
-//! GitHub through the user's own `gh` CLI. PandaCode stores no tokens: every call
+//! GitHub through the user's own `gh` CLI. Indocode stores no tokens: every call
 //! runs the signed-in CLI with a null stdin, bounded output, and a deadline, and
 //! only ever from a project's checkout so the repository is the remote's.
 use serde::{Deserialize, Serialize};

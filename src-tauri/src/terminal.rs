@@ -286,13 +286,13 @@ fn harness_arguments(context: &HarnessContext<'_>) -> Result<Vec<String>, String
     }
     if provider == "github-copilot" {
         if resume_id.is_some() {
-            return Err("Copilot CLI's interactive console cannot resume an ACP task. Continue the task in PandaCode instead.".into());
+            return Err("Copilot CLI's interactive console cannot resume an ACP task. Continue the task in Indocode instead.".into());
         }
         if context.mode != "ask" {
             return Err("Copilot CLI's interactive console cannot enforce this task's approval mode. Use task chat instead.".into());
         }
         if context.reasoning_effort.is_some() {
-            return Err("Copilot CLI's interactive console does not accept PandaCode reasoning overrides.".into());
+            return Err("Copilot CLI's interactive console does not accept Indocode reasoning overrides.".into());
         }
         let mut args = vec!["--no-auto-update".into()];
         if let Some(model) = context

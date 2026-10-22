@@ -1,4 +1,4 @@
-/* PandaCode Connect: Settings → Remote access. */
+/* Indocode Connect: Settings → Remote access. */
 .remote-dot{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--muted);vertical-align:middle;flex:none}
 .remote-dot[data-online="true"]{background:var(--accent)}
 .remote-badge{margin-left:6px;padding:1px 6px;border-radius:4px;background:rgb(var(--accent-rgb) / .22);font-size:.7rem;font-weight:500}

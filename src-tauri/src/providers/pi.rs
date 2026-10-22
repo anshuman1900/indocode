@@ -9,7 +9,7 @@ impl Bridge {
         mode: &str,
         server: Option<&mcp_host::Server>,
     ) -> Result<Self, String> {
-        let directory = std::env::temp_dir().join(format!("pandacode-pi-{}", uuid::Uuid::new_v4()));
+        let directory = std::env::temp_dir().join(format!("indocode-pi-{}", uuid::Uuid::new_v4()));
         let mut builder = std::fs::DirBuilder::new();
         #[cfg(unix)]
         std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
@@ -24,7 +24,7 @@ impl Bridge {
         command
             .arg("--extension")
             .arg(path)
-            .env("PANDACODE_PI_BRIDGE", config.to_string());
+            .env("INDOCODE_PI_BRIDGE", config.to_string());
         Ok(bridge)
     }
 }
@@ -128,7 +128,7 @@ pub(super) async fn models(path: &Path, provider: &str) -> Result<Vec<ModelInfo>
         let mut stdin = child.stdin.take().ok_or("Pi stdin unavailable")?;
         write_json(
             &mut stdin,
-            &json!({"type":"get_available_models","id":"pandacode-models"}),
+            &json!({"type":"get_available_models","id":"indocode-models"}),
         )
         .await?;
         let mut stdout =
@@ -150,7 +150,7 @@ pub(super) async fn models(path: &Path, provider: &str) -> Result<Vec<ModelInfo>
             }
             let value: Value =
                 serde_json::from_slice(&line).map_err(|_| "Invalid Pi discovery JSON")?;
-            if value["type"] == "response" && value["id"] == "pandacode-models" {
+            if value["type"] == "response" && value["id"] == "indocode-models" {
                 if value["success"] != true {
                     return Err(
                         "Pi could not load models. Check its login and configuration.".into(),
@@ -315,7 +315,7 @@ impl Protocol {
             "agent_settled" => self.pi_settled(value["aborted"] == true, &mut step)?,
             // omp reports each prompt's outcome once its work settles; background
             // work it started may keep the session busy until `session_settled`.
-            "prompt_result" if value["id"] == "pandacode-prompt" => {
+            "prompt_result" if value["id"] == "indocode-prompt" => {
                 let settled = value["sessionSettled"] == true;
                 self.pi.prompt_result = Some(value);
                 if settled {
@@ -327,7 +327,7 @@ impl Protocol {
             }
             "extension_ui_request" => self.pi_ui(value, &mut step)?,
             // Only the permission bridge is required; other extensions fail on their own.
-            "extension_error" if !field(&value, "extensionPath").contains("pandacode-pi") => {
+            "extension_error" if !field(&value, "extensionPath").contains("indocode-pi") => {
                 step.events.push(self.event(
                     "status",
                     format!("Pi extension error: {}", field(&value, "error")),
@@ -354,7 +354,7 @@ impl Protocol {
             return Err(error);
         }
         step.write
-            .push(json!({"type":"get_session_stats","id":"pandacode-usage"}));
+            .push(json!({"type":"get_session_stats","id":"indocode-usage"}));
         Ok(())
     }
 
@@ -377,7 +377,7 @@ impl Protocol {
             });
             return Ok(());
         }
-        if id == "pandacode-usage" {
+        if id == "indocode-usage" {
             // Stats are optional: a failed or unsupported request still ends the run.
             let usage = &value["data"]["contextUsage"];
             if let Some(used) = usage["tokens"].as_u64().filter(|_| value["success"] == true) {
@@ -390,10 +390,10 @@ impl Protocol {
             return Err(short(field(&value, "error")));
         }
         match id {
-            "pandacode-init" if !self.pi.ready => self.pi.held_state = Some(value),
-            "pandacode-init" => self.pi_started(&value, step)?,
+            "indocode-init" if !self.pi.ready => self.pi.held_state = Some(value),
+            "indocode-init" => self.pi_started(&value, step)?,
             // An extension command consumed the prompt; no run started.
-            "pandacode-prompt" if value["data"]["disposition"] == "handled" => step.done = true,
+            "indocode-prompt" if value["data"]["disposition"] == "handled" => step.done = true,
             _ => {}
         }
         Ok(())
@@ -432,13 +432,13 @@ impl Protocol {
             return Err("Pi did not apply the selected model".into());
         }
         self.phase = 1;
-        step.write.push(json!({"type":"prompt","id":"pandacode-prompt","message":self.config.prompt,"images":self.image_blocks}));
+        step.write.push(json!({"type":"prompt","id":"indocode-prompt","message":self.config.prompt,"images":self.image_blocks}));
         Ok(())
     }
 
     fn pi_ui(&mut self, value: Value, step: &mut Step) -> Result<(), String> {
         match field(&value, "method") {
-            "setStatus" if value["statusKey"] == "pandacode-bridge" => {
+            "setStatus" if value["statusKey"] == "indocode-bridge" => {
                 if value["statusText"] == "ready" {
                     self.pi.ready = true;
                     if let Some(state) = self.pi.held_state.take() {
@@ -451,7 +451,7 @@ impl Protocol {
                 format!("{}\n{}", field(&value, "title"), field(&value, "message")),
                 step,
             )?,
-            // PandaCode's question form speaks Codex/MCP shapes; Pi dialogs decline for now.
+            // Indocode's question form speaks Codex/MCP shapes; Pi dialogs decline for now.
             "select" | "input" | "editor" => step.write.push(
                 json!({"type":"extension_ui_response","id":value["id"],"cancelled":true}),
             ),
@@ -478,7 +478,7 @@ impl Protocol {
             return step;
         }
         self.pi.steer_sequence += 1;
-        let id = format!("pandacode-steer-{}", self.pi.steer_sequence);
+        let id = format!("indocode-steer-{}", self.pi.steer_sequence);
         step.write
             .push(json!({"type":"steer","id":id,"message":text}));
         self.pi.steers.insert(id, reply);
@@ -492,12 +492,12 @@ mod tests {
 
     fn ready() -> Protocol {
         let mut p = Protocol::new(super::super::tests::config("pi"));
-        p.receive(json!({"type":"extension_ui_request","method":"setStatus","statusKey":"pandacode-bridge","statusText":"ready"})).unwrap();
+        p.receive(json!({"type":"extension_ui_request","method":"setStatus","statusKey":"indocode-bridge","statusText":"ready"})).unwrap();
         p
     }
 
     fn state() -> Value {
-        json!({"type":"response","command":"get_state","id":"pandacode-init","success":true,"data":{"sessionId":"01a15ba3-9096-76db-bd69-35168c0ecfa9","thinkingLevel":"medium"}})
+        json!({"type":"response","command":"get_state","id":"indocode-init","success":true,"data":{"sessionId":"01a15ba3-9096-76db-bd69-35168c0ecfa9","thinkingLevel":"medium"}})
     }
 
     #[test]
@@ -507,7 +507,7 @@ mod tests {
         let held = early.receive(state()).unwrap();
         assert!(held.write.is_empty() && held.events.is_empty());
         assert_eq!(early.phase, 0);
-        let step = early.receive(json!({"type":"extension_ui_request","method":"setStatus","statusKey":"pandacode-bridge","statusText":"ready"})).unwrap();
+        let step = early.receive(json!({"type":"extension_ui_request","method":"setStatus","statusKey":"indocode-bridge","statusText":"ready"})).unwrap();
         assert_eq!(step.events[0].kind, "session");
         assert_eq!(step.write[0]["type"], "prompt");
         let mut p = ready();
@@ -580,14 +580,14 @@ mod tests {
         let mut p = ready();
         p.receive(state()).unwrap();
         p.receive(json!({"type":"agent_settled","aborted":false})).unwrap();
-        let end = p.receive(json!({"type":"response","command":"get_session_stats","id":"pandacode-usage","success":false,"error":"Unknown command"})).unwrap();
+        let end = p.receive(json!({"type":"response","command":"get_session_stats","id":"indocode-usage","success":false,"error":"Unknown command"})).unwrap();
         assert!(end.done);
         assert!(end.events.is_empty());
         let mut p = ready();
         p.receive(state()).unwrap();
-        let started = p.receive(json!({"type":"response","command":"prompt","id":"pandacode-prompt","success":true,"data":{"disposition":"started"}})).unwrap();
+        let started = p.receive(json!({"type":"response","command":"prompt","id":"indocode-prompt","success":true,"data":{"disposition":"started"}})).unwrap();
         assert!(!started.done);
-        let handled = p.receive(json!({"type":"response","command":"prompt","id":"pandacode-prompt","success":true,"data":{"disposition":"handled"}})).unwrap();
+        let handled = p.receive(json!({"type":"response","command":"prompt","id":"indocode-prompt","success":true,"data":{"disposition":"handled"}})).unwrap();
         assert!(handled.done);
     }
 
@@ -635,7 +635,7 @@ mod tests {
                 .write[0]["type"],
             "get_session_stats"
         );
-        let end = p.receive(json!({"type":"response","id":"pandacode-usage","success":true,"data":{"contextUsage":{"tokens":123,"contextWindow":200000}}})).unwrap();
+        let end = p.receive(json!({"type":"response","id":"indocode-usage","success":true,"data":{"contextUsage":{"tokens":123,"contextWindow":200000}}})).unwrap();
         assert!(end.done);
         assert_eq!(end.events[0].data.as_ref().unwrap()["usedTokens"], 123);
     }
@@ -676,7 +676,7 @@ mod tests {
     fn omp_ready() -> Protocol {
         let mut p = Protocol::new(super::super::tests::config("omp"));
         p.receive(json!({"type":"ready","protocolVersion":1,"supportedProtocolVersions":[1,2]})).unwrap();
-        p.receive(json!({"type":"extension_ui_request","id":"s","method":"setStatus","statusKey":"pandacode-bridge","statusText":"ready"})).unwrap();
+        p.receive(json!({"type":"extension_ui_request","id":"s","method":"setStatus","statusKey":"indocode-bridge","statusText":"ready"})).unwrap();
         let step = p.receive(state()).unwrap();
         assert_eq!(step.write[0]["type"], "prompt");
         p
@@ -698,30 +698,30 @@ mod tests {
     fn omp_finishes_on_prompt_result_once_the_session_settles() {
         // Frame shapes from omp 18.12 `modes/rpc/rpc-types.ts`.
         let mut p = omp_ready();
-        p.receive(json!({"type":"response","command":"prompt","id":"pandacode-prompt","success":true,"data":{"agentInvoked":true}})).unwrap();
+        p.receive(json!({"type":"response","command":"prompt","id":"indocode-prompt","success":true,"data":{"agentInvoked":true}})).unwrap();
         p.receive(json!({"type":"message_start","message":{"role":"assistant"}})).unwrap();
         p.receive(json!({"type":"message_update","assistantMessageEvent":{"type":"text_delta","delta":"Hi"}})).unwrap();
         p.receive(json!({"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"Hi"}],"stopReason":"stop"}})).unwrap();
         assert!(p.receive(json!({"type":"agent_end","messages":[]})).unwrap().write.is_empty());
         assert!(p.receive(json!({"type":"session_settled"})).unwrap().write.is_empty(), "no prompt_result yet");
-        let pending = p.receive(json!({"type":"prompt_result","id":"pandacode-prompt","agentInvoked":true,"status":"completed","sessionSettled":false})).unwrap();
+        let pending = p.receive(json!({"type":"prompt_result","id":"indocode-prompt","agentInvoked":true,"status":"completed","sessionSettled":false})).unwrap();
         assert!(pending.write.is_empty(), "background work still runs");
         let settled = p.receive(json!({"type":"session_settled"})).unwrap();
         assert_eq!(settled.write[0]["type"], "get_session_stats");
         assert!(p.receive(json!({"type":"session_settled"})).unwrap().write.is_empty());
 
         let mut p = omp_ready();
-        let settled = p.receive(json!({"type":"prompt_result","id":"pandacode-prompt","agentInvoked":false,"status":"completed","sessionSettled":true})).unwrap();
+        let settled = p.receive(json!({"type":"prompt_result","id":"indocode-prompt","agentInvoked":false,"status":"completed","sessionSettled":true})).unwrap();
         assert_eq!(settled.write[0]["type"], "get_session_stats");
     }
 
     #[test]
     fn omp_failures_and_aborts_fail_the_run() {
         let mut p = omp_ready();
-        let error = p.receive(json!({"type":"prompt_result","id":"pandacode-prompt","agentInvoked":true,"status":"error","error":{"message":"429 rate limited","retryable":true},"sessionSettled":true}));
+        let error = p.receive(json!({"type":"prompt_result","id":"indocode-prompt","agentInvoked":true,"status":"error","error":{"message":"429 rate limited","retryable":true},"sessionSettled":true}));
         assert!(error.err().unwrap().contains("429"));
         let mut p = omp_ready();
-        assert!(p.receive(json!({"type":"prompt_result","id":"pandacode-prompt","agentInvoked":true,"status":"aborted","sessionSettled":true})).is_err());
+        assert!(p.receive(json!({"type":"prompt_result","id":"indocode-prompt","agentInvoked":true,"status":"aborted","sessionSettled":true})).is_err());
         assert!(stop_settled("omp", &json!({"type":"prompt_result"})));
         assert!(stop_settled("pi", &json!({"type":"agent_settled"})));
         assert!(!stop_settled("pi", &json!({"type":"session_settled"})));

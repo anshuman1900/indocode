@@ -18,7 +18,7 @@ impl Drop for Fixture {
 }
 
 fn fixture() -> Fixture {
-    let root = std::env::temp_dir().join(format!("pandacode-bots-{}", crate::storage::id()));
+    let root = std::env::temp_dir().join(format!("indocode-bots-{}", crate::storage::id()));
     std::fs::create_dir_all(&root).unwrap();
     Fixture { store: Store::open(std::path::Path::new(":memory:")).unwrap(), root }
 }
@@ -338,10 +338,10 @@ fn local_server_parses_requests_and_guards_hosts() {
 
 #[test]
 fn only_registered_bot_tools_skip_approval() {
-    assert!(super::tools::self_scoped("pandacode_bot_remember"));
-    assert!(super::tools::self_scoped("pandacode_bot_notify"));
-    assert!(!super::tools::self_scoped("pandacode_bot_anything_else"));
-    assert!(!super::tools::self_scoped("pandacode_open_browser"));
+    assert!(super::tools::self_scoped("indocode_bot_remember"));
+    assert!(super::tools::self_scoped("indocode_bot_notify"));
+    assert!(!super::tools::self_scoped("indocode_bot_anything_else"));
+    assert!(!super::tools::self_scoped("indocode_open_browser"));
     assert!(super::tools::catalog().iter().all(|tool| tool["name"].as_str().is_some_and(super::tools::self_scoped)));
 }
 
@@ -365,7 +365,7 @@ fn whatsapp_gets_a_shown_verify_token_and_settings_are_validated() {
     let bot = bot(&f);
     let whatsapp = channels::ChannelInput { kind: "whatsapp".into(), config: json!({"phoneNumberId": "123456"}), secrets: [("access_token".to_owned(), "EAAG".to_owned()), ("signing_secret".to_owned(), "s3cret".to_owned())].into(), ..Default::default() };
     let channel = channels::add(&f.store, &bot.id, &whatsapp).unwrap();
-    assert!(channel.config["verifyToken"].as_str().unwrap().starts_with("pandacode-"));
+    assert!(channel.config["verifyToken"].as_str().unwrap().starts_with("indocode-"));
     assert_eq!(channel.secrets, vec!["access_token".to_owned(), "signing_secret".to_owned()]);
     let configured = channels::configure(&f.store, &channel.id, &json!({"publicUrl": "https://quiet-river.trycloudflare.com/"})).unwrap();
     assert_eq!(configured.config["publicUrl"], "https://quiet-river.trycloudflare.com");
@@ -425,7 +425,7 @@ fn schema_version_includes_bots() {
 #[ignore]
 async fn live_services_reject_fake_credentials_clearly() {
     let input = |kind: &str, secrets: &[(&str, &str)], config: serde_json::Value| channels::ChannelInput { kind: kind.into(), config, secrets: secrets.iter().map(|(k, v)| ((*k).to_owned(), (*v).to_owned())).collect(), ..Default::default() };
-    let telegram = channels::verify(&input("telegram", &[("token", "123456789:AAE_fake_token_for_pandacode_tests_00")], json!({}))).await.unwrap_err();
+    let telegram = channels::verify(&input("telegram", &[("token", "123456789:AAE_fake_token_for_indocode_tests_00")], json!({}))).await.unwrap_err();
     println!("telegram: {telegram}");
     assert!(telegram.contains("Telegram rejected the bot token"), "{telegram}");
     let slack = channels::verify(&input("slack", &[("token", "xoxb-1234567890123-1234567890123-abcdefghijklmnopqrstuvwx"), ("app_token", "xapp-1-A0000000000-1234567890123-abcdef")], json!({}))).await.unwrap_err();

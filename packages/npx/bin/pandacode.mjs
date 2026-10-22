@@ -4,9 +4,9 @@ import { install } from '../installer.mjs';
 
 const args = process.argv.slice(2);
 if (args.includes('--help') || args.includes('-h')) {
-  console.log(`Usage: npx pandacode [--dry-run] [--help] [--version]
+  console.log(`Usage: npx indocode [--dry-run] [--help] [--version]
 
-Downloads the latest PandaCode release from GitHub, verifies its signature and
+Downloads the latest Indocode release from GitHub, verifies its signature and
 installs it (macOS Apple silicon, Windows x64, Linux x64).
 
   --dry-run   download and verify only
@@ -15,7 +15,7 @@ installs it (macOS Apple silicon, Windows x64, Linux x64).
   console.log(JSON.parse(readFileSync(new URL('../package.json', import.meta.url))).version);
 } else {
   install({ dryRun: args.includes('--dry-run') }).catch(error => {
-    console.error(`pandacode: ${error.message}`);
+    console.error(`indocode: ${error.message}`);
     process.exit(1);
   });
 }

@@ -305,15 +305,15 @@ fn builtins_for_platform(platform: &str) -> Vec<SlashCommand> {
         ));
     }
     for (name, description, action, hint) in [
-        ("help", "Browse PandaCode commands", "help", None),
+        ("help", "Browse Indocode commands", "help", None),
         (
             "integrations",
             "Inspect available integrations",
             "integrations",
             None,
         ),
-        ("settings", "Open PandaCode settings", "settings", None),
-        ("theme", "Change PandaCode's appearance", "theme", None),
+        ("settings", "Open Indocode settings", "settings", None),
+        ("theme", "Change Indocode's appearance", "theme", None),
         (
             "resume",
             "Choose a Codex conversation to continue",
@@ -334,7 +334,7 @@ fn builtins_for_platform(platform: &str) -> Vec<SlashCommand> {
             name,
             description,
             hint,
-            "PandaCode",
+            "Indocode",
             Invocation::Action(action.into()),
             None,
         ));
@@ -482,7 +482,7 @@ fn builtins_for_platform(platform: &str) -> Vec<SlashCommand> {
             name,
             description,
             hint,
-            "PandaCode",
+            "Indocode",
             Invocation::Action(action.into()),
             None,
         ));
@@ -602,7 +602,7 @@ fn builtins_for_platform(platform: &str) -> Vec<SlashCommand> {
             None,
             "Codex built-in",
             Invocation::Unsupported,
-            Some("Internal Codex diagnostic command; unavailable in PandaCode."),
+            Some("Internal Codex diagnostic command; unavailable in Indocode."),
         ));
     }
     commands

@@ -200,7 +200,7 @@ fn copies_full_saved_response_and_keeps_a_bounded_context_handoff() {
 
 #[test]
 fn fork_history_and_pending_context_survive_restart_without_resuming_source() {
-    let root = std::env::temp_dir().join(format!("pandacode-fork-restart-{}", storage::id()));
+    let root = std::env::temp_dir().join(format!("indocode-fork-restart-{}", storage::id()));
     std::fs::create_dir_all(&root).unwrap();
     let path = root.join("state.sqlite");
     let (source_id, fork_id);
@@ -363,7 +363,7 @@ fn tool_snapshots_and_metadata_cannot_update_or_reference_the_source() {
 #[test]
 fn worktree_forks_share_the_existing_checkout_and_reject_missing_metadata() {
     let (store, source) = fixture("codex");
-    let root = std::env::temp_dir().join(format!("pandacode-fork-worktree-{}", storage::id()));
+    let root = std::env::temp_dir().join(format!("indocode-fork-worktree-{}", storage::id()));
     std::fs::create_dir_all(&root).unwrap();
     std::fs::write(root.join(".git"), "gitdir: /unmodified/source/worktree").unwrap();
     std::fs::write(root.join("uncommitted.txt"), "Keep current checkout bytes").unwrap();

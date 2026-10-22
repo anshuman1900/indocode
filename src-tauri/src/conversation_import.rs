@@ -1,4 +1,4 @@
-//! Brings conversations started in the Claude Code or Codex CLI into PandaCode.
+//! Brings conversations started in the Claude Code or Codex CLI into Indocode.
 //! Each import becomes a task in the project for the conversation's folder
 //! (added if needed) with its readable history, and resumes the same agent
 //! session on the next prompt. Nothing is sent to a model while importing.
@@ -27,7 +27,7 @@ pub struct Importable {
     updated_at: i64,
     messages: Option<u32>,
     model: Option<String>,
-    /// The PandaCode task already continuing this conversation.
+    /// The Indocode task already continuing this conversation.
     imported_task_id: Option<String>,
     /// Why it cannot be imported, such as a folder that no longer exists.
     unavailable: Option<String>,

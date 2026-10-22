@@ -105,10 +105,10 @@ test('auto-watches a running agent task, streams frames and actions, and preserv
   await expect(live(page)).toContainText('New game');
   await emitFrame(page, await image(page, '#c6d9b5'), { sequence: 2, elapsedMs: 2_500 });
   expect(await frame(page).evaluate(element => element === (window as any).__jevLiveOriginalFrame)).toBe(true);
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-live-dark.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-live-dark.png' });
   await page.locator('#theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-live-light.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-live-light.png' });
   await page.setViewportSize({ width: 390, height: 844 });
   // Crossing the compact-layout breakpoint closes the inspector by design.
   await expect(page.getByRole('region', { name: 'Browser', exact: true })).toBeHidden();
@@ -120,7 +120,7 @@ test('auto-watches a running agent task, streams frames and actions, and preserv
   expect(bounds!.x).toBeGreaterThanOrEqual(0);
   expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(391);
   expect(await live(page).evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
-  await page.screenshot({ path: '/private/tmp/pandacode-jev-live-narrow.png' });
+  await page.screenshot({ path: '/private/tmp/indocode-jev-live-narrow.png' });
   expect(await calls(page, 'jev_start')).toHaveLength(0);
 });
 

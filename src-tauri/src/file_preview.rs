@@ -308,8 +308,8 @@ impl FilePreviews {
         };
         server.touched = Instant::now();
         let mut navigation = url.clone();
-        if !url.path().starts_with("/__pandacode_preview/") {
-            navigation.set_path(&format!("/__pandacode_preview/{}{}", server.token, url.path()));
+        if !url.path().starts_with("/__indocode_preview/") {
+            navigation.set_path(&format!("/__indocode_preview/{}{}", server.token, url.path()));
         }
         Ok(navigation)
     }
@@ -357,7 +357,7 @@ impl FilePreviews {
                 let listener = TcpListener::from_std(listener)
                     .map_err(|_| "Could not start local file preview.")?;
                 let token = uuid::Uuid::new_v4().simple().to_string();
-                let cookie = format!("pandacode_preview_{port}={token}");
+                let cookie = format!("indocode_preview_{port}={token}");
                 let origin = format!("http://127.0.0.1:{port}");
                 let (stop, receiver) = watch::channel(false);
                 let access = Arc::new(Access {
@@ -379,7 +379,7 @@ impl FilePreviews {
         let mut url = tauri::Url::parse(&server.origin).map_err(|_| "Invalid preview URL.")?;
         url.path_segments_mut()
             .map_err(|_| "Invalid preview URL.")?
-            .extend(["__pandacode_preview", &server.token])
+            .extend(["__indocode_preview", &server.token])
             .extend(file.path.split('/'));
         let result = FilePreview {
             url: url.to_string(),
@@ -522,7 +522,7 @@ async fn route(request: &Request, access: &Access) -> std::result::Result<Reply,
     if !authorized(request, access) {
         return Err(403);
     }
-    let prefix = format!("/__pandacode_preview/{}/", access.token);
+    let prefix = format!("/__indocode_preview/{}/", access.token);
     if let Some(path) = request.path.strip_prefix(&prefix) {
         if request
             .headers
@@ -667,7 +667,7 @@ mod tests {
     impl Fixture {
         fn new() -> Self {
             let path = std::env::temp_dir()
-                .join(format!("pandacode-file-preview-{}", uuid::Uuid::new_v4()));
+                .join(format!("indocode-file-preview-{}", uuid::Uuid::new_v4()));
             fs::create_dir_all(&path).unwrap();
             Self(path.canonicalize().unwrap())
         }

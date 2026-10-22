@@ -1,6 +1,6 @@
 # Conversation titles and activity
 
-Automatically named conversations can receive a short title suggested by the agent already doing the work. The optional `pandacode_title` metadata tool uses that agent's current conversation context; it does not launch a second model or send the conversation to PandaCode servers. Suggestions are applied after a successful, saved response. A manual rename, an explicitly named board task, a stopped or superseded run, and internal worker coordination cannot overwrite the user's title.
+Automatically named conversations can receive a short title suggested by the agent already doing the work. The optional `indocode_title` metadata tool uses that agent's current conversation context; it does not launch a second model or send the conversation to Indocode servers. Suggestions are applied after a successful, saved response. A manual rename, an explicitly named board task, a stopped or superseded run, and internal worker coordination cannot overwrite the user's title.
 
 Providers that cannot use the metadata tool continue normally. A conservative local fallback can clean up the initial provisional title; later topic changes rely on the agent's suggestion so a small follow-up cannot replace an established title. Fallback naming is not an additional AI summarization service. Title provenance is persisted by schema version 20 and carried through conversation forks.
 

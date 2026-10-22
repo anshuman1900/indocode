@@ -1,6 +1,6 @@
 //! Amazon Bedrock AgentCore Code Interpreter sessions: quick, managed Linux sandboxes for
 //! commands (no desktop). Sessions start, list and stop through the AWS CLI; commands
-//! use InvokeCodeInterpreter, a streaming API the CLI lacks, so PandaCode signs that one
+//! use InvokeCodeInterpreter, a streaming API the CLI lacks, so Indocode signs that one
 //! request itself (SigV4) with temporary credentials the CLI exports.
 use hmac::{Hmac, Mac};
 use serde_json::{json, Value};

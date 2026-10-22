@@ -429,7 +429,7 @@ impl Store {
         settle_unfinished_tools(
             &recovery,
             None,
-            "\n\n[PandaCode was interrupted before this tool reported a result.]",
+            "\n\n[Indocode was interrupted before this tool reported a result.]",
         )?;
         settle_unfinished_subagents(&recovery, None, "stopped")?;
         recovery
@@ -445,7 +445,7 @@ impl Store {
                 [],
             )
             .map_err(|e| e.to_string())?;
-        recovery.execute_batch("UPDATE architect_teams SET content=json_set(content,'$.status','interrupted','$.pendingTurn',NULL,'$.error','PandaCode restarted. Resume explicitly to continue.','$.generation',COALESCE(json_extract(content,'$.generation'),0)+1,'$.revision',COALESCE(json_extract(content,'$.revision'),0)+1,
+        recovery.execute_batch("UPDATE architect_teams SET content=json_set(content,'$.status','interrupted','$.pendingTurn',NULL,'$.error','Indocode restarted. Resume explicitly to continue.','$.generation',COALESCE(json_extract(content,'$.generation'),0)+1,'$.revision',COALESCE(json_extract(content,'$.revision'),0)+1,
             '$.workers',json((SELECT json_group_array(json(CASE WHEN json_extract(value,'$.status') IN ('running','waiting') THEN json_set(value,'$.status','stopped') ELSE value END)) FROM json_each(content,'$.workers'))))
             WHERE json_extract(content,'$.status') IN ('running','waiting');").map_err(|e|e.to_string())?;
         recovery.commit().map_err(|e| e.to_string())?;
@@ -667,7 +667,7 @@ impl Store {
         Ok(session)
     }
 
-    /// Prompts sent from PandaCode per hour and agent since `since_ms`, for the usage calendar.
+    /// Prompts sent from Indocode per hour and agent since `since_ms`, for the usage calendar.
     pub fn prompt_activity(&self, since_ms: i64) -> Result<Vec<(i64, String, u64)>> {
         let mut statement = self
             .db
@@ -729,7 +729,7 @@ impl Store {
         Ok(())
     }
 
-    /// The PandaCode task already continuing an agent conversation, if any.
+    /// The Indocode task already continuing an agent conversation, if any.
     pub fn imported_task(&self, provider: &str, resume_id: &str) -> Result<Option<String>> {
         self.db
             .query_row("SELECT id FROM sessions WHERE provider=?1 AND resume_id=?2 ORDER BY updated_at DESC LIMIT 1", params![provider, resume_id], |row| row.get(0))
@@ -737,7 +737,7 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
-    /// Adds a conversation started outside PandaCode as a task that continues it:
+    /// Adds a conversation started outside Indocode as a task that continues it:
     /// its history keeps original times, and the agent resumes `resume_id` on the next prompt.
     #[allow(clippy::too_many_arguments)]
     pub fn import_task(&self, project_id: &str, provider: &str, model: &str, title: &str, resume_id: &str, reasoning_effort: Option<&str>, created_at: i64, entries: &[(&str, String, i64)]) -> Result<Session> {
@@ -1772,7 +1772,7 @@ mod tests {
         let other = store.create_session(&task.project_id, "codex", "gpt-5", "full").unwrap();
         store.message(&other.id, "user", "Please make the billing page load 100% faster").unwrap();
         store.message(&other.id, "assistant", "I will profile the billing page first.").unwrap();
-        let folder = std::env::temp_dir().join(format!("pandacode-search-{}", uuid::Uuid::new_v4()));
+        let folder = std::env::temp_dir().join(format!("indocode-search-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&folder).unwrap();
         let elsewhere = store.add_project(&folder).unwrap();
         assert_ne!(elsewhere.id, task.project_id);
@@ -2052,7 +2052,7 @@ mod tests {
 
     #[test]
     fn board_migration_backfills_history_recovers_runs_and_archives_after_reopen() {
-        let directory = std::env::temp_dir().join(format!("pandacode-board-{}", id()));
+        let directory = std::env::temp_dir().join(format!("indocode-board-{}", id()));
         std::fs::create_dir_all(&directory).unwrap();
         let path = directory.join("store.sqlite");
         let (empty, answered, running, failed);
@@ -2171,7 +2171,7 @@ mod tests {
 
     #[test]
     fn reasoning_and_context_migrate_from_v6_and_persist_without_activity_side_effects() {
-        let directory = std::env::temp_dir().join(format!("pandacode-context-{}", id()));
+        let directory = std::env::temp_dir().join(format!("indocode-context-{}", id()));
         std::fs::create_dir_all(&directory).unwrap();
         let path = directory.join("store.sqlite");
         let sid;
@@ -2452,7 +2452,7 @@ mod tests {
 
     #[test]
     fn duration_migration_and_restart_preserve_known_time_without_inventing_interrupted_time() {
-        let directory = std::env::temp_dir().join(format!("pandacode-turn-time-{}", id()));
+        let directory = std::env::temp_dir().join(format!("indocode-turn-time-{}", id()));
         std::fs::create_dir_all(&directory).unwrap();
         let path = directory.join("store.sqlite");
         let task;
@@ -2681,7 +2681,7 @@ mod tests {
 
     #[test]
     fn tool_details_survive_restart_without_changing_legacy_rows() {
-        let dir = std::env::temp_dir().join(format!("pandacode-tools-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-tools-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("store.db");
         let sid;
@@ -2712,7 +2712,7 @@ mod tests {
 
     #[test]
     fn unfinished_tools_settle_on_turn_end_and_restart() {
-        let dir = std::env::temp_dir().join(format!("pandacode-interrupted-tools-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-interrupted-tools-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("store.db");
         let sid;
@@ -2758,7 +2758,7 @@ mod tests {
 
     #[test]
     fn prompt_activity_backfills_version_18_and_survives_reopen() {
-        let dir = std::env::temp_dir().join(format!("pandacode-prompt-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-prompt-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("prompt.db");
         let sid;
@@ -2873,7 +2873,7 @@ mod tests {
     /// version 17 must still receive the branch migration, with its threads intact.
     #[test]
     fn version_17_database_migrates_to_the_current_schema_and_keeps_threads() {
-        let dir = std::env::temp_dir().join(format!("pandacode-previous-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-previous-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("previous.db");
         let (project_id, task_id) = {
@@ -2912,11 +2912,11 @@ mod tests {
     }
 
     /// Diagnostic: open a copy of a real database and list its tasks with the current
-    /// code. `PANDACODE_DB_PATH=/copy/of/kingcode.sqlite3 cargo test -- --ignored --nocapture opens_the_database`
+    /// code. `INDOCODE_DB_PATH=/copy/of/indocode.sqlite3 cargo test -- --ignored --nocapture opens_the_database`
     #[test]
     #[ignore]
-    fn opens_the_database_at_pandacode_db_path() {
-        let path = PathBuf::from(std::env::var("PANDACODE_DB_PATH").expect("set PANDACODE_DB_PATH to a copy of the database"));
+    fn opens_the_database_at_indocode_db_path() {
+        let path = PathBuf::from(std::env::var("INDOCODE_DB_PATH").expect("set INDOCODE_DB_PATH to a copy of the database"));
         let store = Store::open(&path).unwrap();
         let version: i64 = store.db.pragma_query_value(None, "user_version", |row| row.get(0)).unwrap();
         let sessions = store.sessions().unwrap();
@@ -2927,7 +2927,7 @@ mod tests {
             store.session(&session.id).unwrap();
         }
         // Optionally write the exact IPC payloads so the browser preview can render them.
-        if let Ok(dir) = std::env::var("PANDACODE_DUMP_DIR") {
+        if let Ok(dir) = std::env::var("INDOCODE_DUMP_DIR") {
             let dir = PathBuf::from(dir);
             std::fs::write(dir.join("projects.json"), serde_json::to_vec(&store.projects().unwrap()).unwrap()).unwrap();
             std::fs::write(dir.join("sessions.json"), serde_json::to_vec(&sessions).unwrap()).unwrap();
@@ -2948,7 +2948,7 @@ mod tests {
 
     #[test]
     fn last_response_backfills_old_schema_and_survives_reopen() {
-        let dir = std::env::temp_dir().join(format!("pandacode-migration-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-migration-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("legacy.db");
         {
@@ -3054,7 +3054,7 @@ mod tests {
 
     #[test]
     fn configure_empty_task_project_switch_preserves_identity_and_survives_reopen() {
-        let dir = std::env::temp_dir().join(format!("pandacode-project-switch-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-project-switch-{}", id()));
         std::fs::create_dir_all(dir.join("destination")).unwrap();
         let path = dir.join("store.db");
         let expected;
@@ -3389,7 +3389,7 @@ mod tests {
     }
     #[test]
     fn persists_resume_and_pages_messages_across_restart() {
-        let dir = std::env::temp_dir().join(format!("pandacode-db-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-db-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("test.db");
         let sid;
@@ -3434,7 +3434,7 @@ mod tests {
 
     #[test]
     fn all_approval_behaviors_persist_across_restart_and_harness_changes() {
-        let dir = std::env::temp_dir().join(format!("pandacode-modes-{}", id()));
+        let dir = std::env::temp_dir().join(format!("indocode-modes-{}", id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("test.db");
         let mut sessions = Vec::new();

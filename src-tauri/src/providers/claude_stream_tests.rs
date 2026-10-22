@@ -146,11 +146,11 @@ fn app_instructions_ride_the_cached_system_prompt_not_every_message() {
         super::configure_command(&mut command, &config);
         command.as_std().get_args().map(|arg| arg.to_string_lossy().to_string()).collect()
     };
-    let args = args_for("claude", "Run and preview workflow: keep pandacode-run.sh current.");
-    assert!(args.windows(2).any(|pair| pair == ["--append-system-prompt", "Run and preview workflow: keep pandacode-run.sh current."]));
+    let args = args_for("claude", "Run and preview workflow: keep indocode-run.sh current.");
+    assert!(args.windows(2).any(|pair| pair == ["--append-system-prompt", "Run and preview workflow: keep indocode-run.sh current."]));
     // Nothing to add, no flag; relays that wrap Claude Code take it the same way.
     assert!(!args_for("claude", "").iter().any(|arg| arg == "--append-system-prompt"));
-    // Background waits need a session that outlives the turn; PandaCode's does not.
+    // Background waits need a session that outlives the turn; Indocode's does not.
     assert!(args.iter().any(|arg| arg == "--disallowedTools=ScheduleWakeup,Monitor,CronCreate"));
     assert!(args_for("glm", "x").iter().any(|arg| arg == "--append-system-prompt"));
     assert!(super::takes_system_instructions("mimo"));

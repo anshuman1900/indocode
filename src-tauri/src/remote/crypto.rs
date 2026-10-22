@@ -7,7 +7,7 @@ use chacha20poly1305::{
 use sha2::{Digest, Sha256};
 use x25519_dalek::{PublicKey, StaticSecret};
 
-const INFO: &[u8] = b"pandacode-remote v1";
+const INFO: &[u8] = b"indocode-remote v1";
 const NONCE: usize = 24;
 
 pub(crate) type Key = [u8; 32];

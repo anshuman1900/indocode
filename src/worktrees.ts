@@ -31,7 +31,7 @@ export type WorktreeHost = {
   archive(session: Session): Promise<void>;
   /** Extra menu rows from integrations, with their own handler. */
   extraItems(session: Session): ChoiceItem[];
-  /** The computer control (PandaCode Connect) for the context bar; empty when there is none. */
+  /** The computer control (Indocode Connect) for the context bar; empty when there is none. */
   computer(session: Session, fresh: boolean): string;
   onExtra(id: string, session: Session, anchor: HTMLElement): Promise<void> | void;
 };
@@ -53,7 +53,7 @@ export function suggestBranch(session: Session | undefined, draft: string): stri
 }
 export function finalBranchName(name: string): string {
   const trimmed = name.trim();
-  return /^(pandacode|kingcode|codex)\//.test(trimmed) ? trimmed : trimmed ? `pandacode/${trimmed}` : '';
+  return /^(indocode|kingcode|codex)\//.test(trimmed) ? trimmed : trimmed ? `indocode/${trimmed}` : '';
 }
 const BRANCH_PATTERN = /^(?!.*\.\.)[A-Za-z0-9_/-]+$/;
 

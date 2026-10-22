@@ -104,7 +104,7 @@ fn bundled_snapshot_prices_current_agent_models() {
 
 #[test]
 fn scanning_dedupes_claude_replies_resumes_appends_and_forgets_deleted_logs() {
-    let root = std::env::temp_dir().join(format!("pandacode-ledger-{}", uuid::Uuid::new_v4()));
+    let root = std::env::temp_dir().join(format!("indocode-ledger-{}", uuid::Uuid::new_v4()));
     let project = root.join("claude").join("projects").join("demo");
     std::fs::create_dir_all(project.join("session").join("subagents")).unwrap();
     let usage = json!({"input_tokens":10,"cache_read_input_tokens":100,"output_tokens":5});

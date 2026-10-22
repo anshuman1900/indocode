@@ -15,7 +15,7 @@ async function render(page: Page, markdown: string): Promise<void> {
     host.innerHTML = await markdownHtml(source);
   }, markdown);
 }
-const view = (page: Page, index = 0) => page.locator('#ui-probe pandacode-ui').nth(index);
+const view = (page: Page, index = 0) => page.locator('#ui-probe indocode-ui').nth(index);
 const fence = (spec: unknown) => `\`\`\`ui\n${JSON.stringify(spec)}\n\`\`\``;
 
 const errors = new WeakMap<Page, string[]>();
@@ -138,10 +138,10 @@ test('details collapse, follow-up directives become chips, code blocks copy and 
   await expect(probe.locator('p').filter({ hasText: 'Next steps' })).not.toContainText('codex-followup');
   await probe.getByRole('button', { name: 'Run tests' }).click();
   await expect(page.locator('#prompt')).toHaveValue('Run the full test suite.');
-  await expect(probe.locator('pandacode-code pre > code.language-ts')).toHaveText('const a = 1;\n');
+  await expect(probe.locator('indocode-code pre > code.language-ts')).toHaveText('const a = 1;\n');
   // The copy button adds no text: a message reads (and copies) as its code alone.
-  await expect(probe.locator('pandacode-code')).toHaveText('const a = 1;');
-  await probe.locator('pandacode-code').hover();
+  await expect(probe.locator('indocode-code')).toHaveText('const a = 1;');
+  await probe.locator('indocode-code').hover();
   await probe.getByRole('button', { name: 'Copy code' }).click();
   expect(await page.evaluate(() => (window as any).__copied)).toBe('const a = 1;\n');
   await expect(probe.locator('.gu-code-head')).toContainText('Diagram · Mermaid');

@@ -1,12 +1,12 @@
 # Optional Jev add-on
 
-Jev is optional and disabled by default. PandaCode installs its Python runtime
+Jev is optional and disabled by default. Indocode installs its Python runtime
 separately, launches a fresh Chrome profile for each test, and keeps reports on
 the device. Python, Chromium, and model SDKs are not bundled into the desktop app.
 
 ## Decision assistance
 
-PandaCode works without Jev or a TypeSafe key. Agents, teams, normal browser
+Indocode works without Jev or a TypeSafe key. Agents, teams, normal browser
 access, task completion, and saved diffs do not depend on this add-on. Browser
 testing and decision assistance have independent switches, both off by default.
 
@@ -38,11 +38,11 @@ assistance is enabled. Start another agent turn after changing integration setti
 
 | Tool | Purpose |
 | --- | --- |
-| `pandacode_jev_review` | Review bounded saved task evidence |
-| `pandacode_jev_check_rules` | Check saved diffs against saved or temporary rules |
-| `pandacode_jev_find_context` | Find relevant original task excerpts |
-| `pandacode_jev_choose_worker` | Suggest one configured worker for an assignment |
-| `pandacode_jev_assessments` | Read local report summaries without a model call |
+| `indocode_jev_review` | Review bounded saved task evidence |
+| `indocode_jev_check_rules` | Check saved diffs against saved or temporary rules |
+| `indocode_jev_find_context` | Find relevant original task excerpts |
+| `indocode_jev_choose_worker` | Suggest one configured worker for an assignment |
+| `indocode_jev_assessments` | Read local report summaries without a model call |
 
 Paid evaluation follows the harness's existing tool-approval rules. Plan mode
 cannot spend through these tools. Other task IDs are limited to the current
@@ -71,7 +71,7 @@ a guarantee that an answer is correct. Source text is treated as untrusted data.
    OpenAI-compatible base URL and model name.
 3. Save settings, then choose **Install Jev runtime**. Install `uv` or Python
    3.12+ first if neither is found. The installer uses `uv` when available and
-   otherwise creates a venv with Python. It installs only in PandaCode's private
+   otherwise creates a venv with Python. It installs only in Indocode's private
    app data, not the system Python environment.
 4. Install Chrome (Chromium/Edge are also detected where available), choose
    **Check setup**, and enable Jev. You can specify Python and Chrome executable
@@ -132,12 +132,12 @@ preserving its original history and other configured MCP servers.
 
 | Tool | Purpose |
 | --- | --- |
-| `pandacode_jev_test` | Start a test for the calling task; returns a run ID immediately |
-| `pandacode_jev_wait` | Wait up to 30 seconds for a report to settle |
-| `pandacode_jev_read` | Read a bounded report and the last 12 actions |
-| `pandacode_jev_list` | List up to 10 recent reports |
-| `pandacode_jev_screenshot` | View the saved final screenshot as a real image |
-| `pandacode_jev_cancel` | Cancel the calling task's test |
+| `indocode_jev_test` | Start a test for the calling task; returns a run ID immediately |
+| `indocode_jev_wait` | Wait up to 30 seconds for a report to settle |
+| `indocode_jev_read` | Read a bounded report and the last 12 actions |
+| `indocode_jev_list` | List up to 10 recent reports |
+| `indocode_jev_screenshot` | View the saved final screenshot as a real image |
+| `indocode_jev_cancel` | Cancel the calling task's test |
 
 Report tools accept an optional task ID within the current project. Architects
 can review a worker's browser report and screenshot without copying the entire
@@ -165,7 +165,7 @@ Enabling Jev authorizes an additional integration, not background monitoring.
 Only a requested test launches a browser and model work. The test goal and
 visible page representation go directly to TypeSafe; text entry can call the
 configured helper provider. Provider usage is billed separately. Their privacy
-policies apply. No report or page content goes to PandaCode's servers.
+policies apply. No report or page content goes to Indocode's servers.
 
 Every test owns a new Chrome profile and a private Browser Harness daemon;
 personal tabs, cookies, and browser profiles are not reused. Browser Harness

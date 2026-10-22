@@ -3,8 +3,8 @@
 import type { ModelSelection, TeamConfig, TeamLibrary, TeamProfile, TeamSetup, WorkerProfile } from './architect-types';
 import type { ProviderId, ProviderModel } from './types';
 
-const CLASSIC_KEY = 'pandacode.teamClassic';
-export const TEAM_MODE_EVENT = 'pandacode:team-mode';
+const CLASSIC_KEY = 'indocode.teamClassic';
+export const TEAM_MODE_EVENT = 'indocode:team-mode';
 /** Named teams list at most this many models, like the automatic roster. */
 export const TEAM_MODELS_MAX = 24;
 

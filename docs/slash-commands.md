@@ -12,7 +12,7 @@ Retry without clearing the available commands.
 ## Synchronization and execution
 
 The saved task's harness and checkout determine its catalog, including worktrees.
-PandaCode asks each installed harness for its metadata instead of copying its
+Indocode asks each installed harness for its metadata instead of copying its
 configuration, command files, plugin code, authentication, or tokens. Changes to
 provider-owned skills/custom commands become available through refresh or runtime
 catalog notifications. This is discovery from each harness, not conversion of a
@@ -25,14 +25,14 @@ Claude command into a Codex or Kimi command.
 | Kimi Code | ACP initialization and session-scoped `available_commands_update` | Advertised commands use the ACP slash dispatcher in `session/prompt`, including provider-discovered skills. |
 
 Codex does not expose a general slash-command enumeration/execution API. Its
-built-in command descriptions are a PandaCode compatibility catalog checked
+built-in command descriptions are a Indocode compatibility catalog checked
 against Codex 0.154.0; installed skill metadata is dynamic. Skill names colliding
 with built-ins use `/skills:name`. Duplicate names are qualified by plugin/scope,
 with a stable short identifier only when those still collide. Invocation retains
 the original name and path; paths are not displayed in the dropdown.
 
 Known app controls such as `/new`, `/model`, `/permissions`, `/settings`, `/theme`,
-`/diff`, `/resume`, `/rename <title>`, `/copy`, and `/pwd` are marked **PandaCode**.
+`/diff`, `/resume`, `/rename <title>`, `/copy`, and `/pwd` are marked **Indocode**.
 They open or operate existing controls without adding a model turn or consuming
 attachments. `/model` and `/permissions` open the respective pickers; they do not
 accept inline configuration arguments.
@@ -51,7 +51,7 @@ accept inline configuration arguments.
   A new Codex task must have a provider conversation before `/compact` can run.
 - Commands that cannot consume attachments reject them before submission. The
   installed Kimi 0.26.0 ACP discards image blocks in its slash dispatcher, so
-  PandaCode rejects attachments for Kimi slash commands. Normal Kimi messages
+  Indocode rejects attachments for Kimi slash commands. Normal Kimi messages
   still support the existing image flow.
 - Kimi 0.26.0 exposes the command catalog only after creating/loading a session
   and has no ephemeral-session option. A fresh discovery can leave an empty

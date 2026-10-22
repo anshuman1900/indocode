@@ -1,5 +1,5 @@
-//! Projectless chats: each chat runs in its own PandaCode-managed folder under
-//! `~/PandaCode Chats/`, registered as an ordinary project that the window hides
+//! Projectless chats: each chat runs in its own Indocode-managed folder under
+//! `~/Indocode Chats/`, registered as an ordinary project that the window hides
 //! from the project list. A project is a chat when its folder sits directly in
 //! that root, so no schema change is needed.
 
@@ -11,11 +11,11 @@ use tauri::{Emitter, State};
 
 type Result<T> = std::result::Result<T, String>;
 
-/// Files PandaCode itself may leave in a chat folder; anything else is the user's.
-const OWN_FILES: [&str; 2] = [".pandacode", ".DS_Store"];
+/// Files Indocode itself may leave in a chat folder; anything else is the user's.
+const OWN_FILES: [&str; 2] = [".indocode", ".DS_Store"];
 
 pub(crate) fn root() -> PathBuf {
-    crate::agent_usage_providers::home().unwrap_or_else(std::env::temp_dir).join("PandaCode Chats")
+    crate::agent_usage_providers::home().unwrap_or_else(std::env::temp_dir).join("Indocode Chats")
 }
 
 fn in_root(folder: &Path, root: &Path) -> bool {
@@ -39,7 +39,7 @@ pub(crate) fn create(store: &Store, root: &Path, provider: &str, model: &str, mo
 }
 
 /// Forgets a chat project once no task uses it, and removes its folder when
-/// only PandaCode's own files are left. Other projects are never touched.
+/// only Indocode's own files are left. Other projects are never touched.
 pub(crate) fn cleanup(store: &Store, root: &Path, project_id: &str) -> Result<bool> {
     let Ok(project) = store.project(project_id) else { return Ok(false) };
     let folder = PathBuf::from(&project.path);
@@ -81,7 +81,7 @@ mod tests {
         let dir = std::env::temp_dir().join(uuid::Uuid::new_v4().to_string());
         std::fs::create_dir_all(&dir).unwrap();
         let store = Store::open(&dir.join("test.sqlite")).unwrap();
-        (dir.clone(), dir.join("PandaCode Chats"), store)
+        (dir.clone(), dir.join("Indocode Chats"), store)
     }
 
     #[test]
@@ -94,7 +94,7 @@ mod tests {
         // A task still uses the chat: nothing is removed.
         assert!(!cleanup(&store, &root, &project.id).unwrap());
         store.db.execute("DELETE FROM sessions WHERE id=?1", [&task.id]).unwrap();
-        std::fs::create_dir(Path::new(&project.path).join(".pandacode")).unwrap();
+        std::fs::create_dir(Path::new(&project.path).join(".indocode")).unwrap();
         assert!(cleanup(&store, &root, &project.id).unwrap());
         assert!(store.project(&project.id).is_err());
         assert!(!Path::new(&project.path).exists());

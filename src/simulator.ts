@@ -5,7 +5,7 @@ import type { Device3D, DeviceButton, DuoPose, DeviceShape, ScreenGesture } from
 import { chosenFinish, modelSpec, rememberFinish } from './simulator-models';
 
 /* The inspector's iOS Simulator: one device shown as a 3D model with its live
- * screen. Agents reach the same device through the pandacode_simulator_* tools. */
+ * screen. Agents reach the same device through the indocode_simulator_* tools. */
 
 export type SimDevice = { udid: string; name: string; runtime: string; state: string; family: 'phone' | 'pad'; deviceType: string; platform?: 'ios' | 'android'; duo?: boolean };
 export type SimScreen = { width: number; height: number; scale: number; homeButton: boolean; inner?: { width: number; height: number } | null };
@@ -302,7 +302,7 @@ export function mountSimulator(root: HTMLElement, host: SimulatorHost) {
       }
     } finally { poseBusy = false; poseWanted = undefined; render(); pump(); }
   }
-  /** The Duo's hinge can move outside PandaCode (Xcode's Device Hub), so follow the real pose while it is on screen. */
+  /** The Duo's hinge can move outside Indocode (Xcode's Device Hub), so follow the real pose while it is on screen. */
   function watchPose(): void {
     clearInterval(poll); poll = 0;
     if (!visible || disposed) return;

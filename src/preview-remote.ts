@@ -1,4 +1,4 @@
-/** Browser preview for PandaCode Connect: in-memory sample account and computers, no network. Native builds use src-tauri/src/remote. */
+/** Browser preview for Indocode Connect: in-memory sample account and computers, no network. Native builds use src-tauri/src/remote. */
 import type { RemoteDevice, RemoteSignIn, RemoteStatus, RemoteTarget } from './remote-types';
 
 const THIS = 'dev-this';

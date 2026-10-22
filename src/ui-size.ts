@@ -5,7 +5,7 @@ import { commandKey } from './platform';
 /* Interface size. In the app it zooms the whole webview, like Safari's ⌘+, so icons, spacing and
  * layout grow with the text. The browser preview has no native zoom and scales only the root font. */
 
-const preferenceKey = 'pandacode.uiScale';
+const preferenceKey = 'indocode.uiScale';
 const minimum = .8, maximum = 1.6, step = .1;
 let scale = 1;
 try {
@@ -40,7 +40,7 @@ export function setUiScale(value: number): void {
   document.querySelectorAll<HTMLOutputElement>('[data-ui-size-value]').forEach(output => { output.value = `${Math.round(scale * 100)}%`; });
   document.querySelectorAll<HTMLButtonElement>('[data-action="ui-size-decrease"]').forEach(button => { button.disabled = scale === minimum; });
   document.querySelectorAll<HTMLButtonElement>('[data-action="ui-size-increase"]').forEach(button => { button.disabled = scale === maximum; });
-  window.dispatchEvent(new Event('pandacode-ui-scale-change'));
+  window.dispatchEvent(new Event('indocode-ui-scale-change'));
   // Existing floating menus and browser bounds respond without remounting their DOM.
   window.dispatchEvent(new Event('resize'));
 }

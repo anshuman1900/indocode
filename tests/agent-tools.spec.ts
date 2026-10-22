@@ -30,7 +30,7 @@ test('agent tools inventory is lazy, distinguishes sample data and keeps task ca
   await page.getByRole('button', { name: 'Manage', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Tools & integrations' })).toBeVisible();
   await expect(page.getByText('Browser preview · integration status is sample data.')).toBeVisible();
-  await page.locator('summary').filter({ hasText: 'PandaCode tools' }).click();
+  await page.locator('summary').filter({ hasText: 'Indocode tools' }).click();
   await expect(page.getByText(/Older tasks keep their original catalog/)).toBeVisible();
   await expect(page.getByText(/When enabled, Jev joins new and resumed tasks across connected harnesses/)).toBeVisible();
   await page.locator('summary').filter({ hasText: 'Preview documentation' }).click();
@@ -71,7 +71,7 @@ test('agent tools browser script reads bounded page content and performs only th
     for (let i = 0; i < 12; i++) { const node = document.createElement('div'); parent.append(node); parent = node; }
     const button = document.createElement('button'); button.textContent = 'Deeply nested'; parent.append(button);
   });
-  const run = (args: object) => page.evaluate(source => JSON.parse(window.eval(source)), script.replace('__PANDACODE_ARGS__', JSON.stringify(args)));
+  const run = (args: object) => page.evaluate(source => JSON.parse(window.eval(source)), script.replace('__INDOCODE_ARGS__', JSON.stringify(args)));
   const snapshot = await run({ action: 'read' });
   expect(snapshot.text.length).toBe(24000);
   expect(JSON.stringify(snapshot)).not.toContain('private-value');

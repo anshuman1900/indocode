@@ -33,7 +33,7 @@ export async function subscribe(name: string, callback: (event: any) => void): P
   if (preview) return (await import('./preview')).listen(name, callback);
   return (await import('@tauri-apps/api/event')).listen(name, event => callback(event.payload));
 }
-export async function chooseFolder(title = 'Open a project in PandaCode'): Promise<string | null> {
+export async function chooseFolder(title = 'Open a project in Indocode'): Promise<string | null> {
   if (preview) return '/Users/you/Projects/new-project';
   const result = await (await import('@tauri-apps/plugin-dialog')).open({ directory: true, multiple: false, title });
   return typeof result === 'string' ? result : null;

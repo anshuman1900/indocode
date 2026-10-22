@@ -5,9 +5,9 @@ import { execFileSync } from 'node:child_process';
 import { required } from './common.mjs';
 
 const dir = required('RUNNER_TEMP');
-const keychain = resolve(dir, 'pandacode-release.keychain-db');
-const certificate = resolve(dir, 'pandacode-signing.p12');
-const apiKey = resolve(dir, 'pandacode-apple.p8');
+const keychain = resolve(dir, 'indocode-release.keychain-db');
+const certificate = resolve(dir, 'indocode-signing.p12');
+const apiKey = resolve(dir, 'indocode-apple.p8');
 try {
   if (process.argv[2] === 'cleanup') {
     try { execFileSync('security', ['delete-keychain', keychain], { stdio: 'pipe' }); } catch { /* May not have been created. */ }

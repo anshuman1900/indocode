@@ -76,7 +76,7 @@ async function readHeader(appImage, offset) {
 export async function repackAppImage(appImage, { command = execute, log = () => {} } = {}) {
   const offset = await appImageOffset(appImage, command);
   const header = parseSquashfsHeader(await readHeader(appImage, offset));
-  const work = await mkdtemp(join(tmpdir(), 'pandacode-appimage-'));
+  const work = await mkdtemp(join(tmpdir(), 'indocode-appimage-'));
   const rebuilt = `${appImage}.rebuild`;
   try {
     try {

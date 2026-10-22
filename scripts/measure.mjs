@@ -9,7 +9,7 @@ const sizes = await Promise.all(assets.map(async name => {
   const body = await readFile(path.join(root, 'dist/assets', name));
   return { file: name, bytes: body.length, gzipBytes: gzipSync(body).length };
 }));
-const binary = await stat(path.join(root, 'src-tauri/target/release/pandacode')).catch(() => null);
+const binary = await stat(path.join(root, 'src-tauri/target/release/indocode')).catch(() => null);
 const result = { assets: sizes, nativeBinaryBytes: binary?.size ?? null, processes: [] };
 if (process.platform === 'darwin' || process.platform === 'linux') {
   try {
@@ -17,7 +17,7 @@ if (process.platform === 'darwin' || process.platform === 'linux') {
     const match = line.trim().match(/^(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/);
     return match ? { pid: Number(match[1]), parentPid: Number(match[2]), rssBytes: Number(match[3]) * 1024, command: match[4] } : null;
   }).filter(Boolean);
-  const processIds = new Set(rows.filter(p => /(?:\/|^)pandacode$/i.test(p.command)).map(p => p.pid));
+  const processIds = new Set(rows.filter(p => /(?:\/|^)indocode$/i.test(p.command)).map(p => p.pid));
   let changed = true;
   while (changed) {
     changed = false;

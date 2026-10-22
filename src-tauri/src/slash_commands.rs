@@ -431,7 +431,7 @@ fn normalize(catalog: &mut Catalog, provider: &str) {
             .map(|hint| bounded(hint, 160));
         command.reason = command.reason.as_ref().map(|reason| bounded(reason, 500));
     }
-    // Controls change PandaCode's persisted state, never hidden CLI state.
+    // Controls change Indocode's persisted state, never hidden CLI state.
     // Other local actions only fill gaps in the provider's command catalog.
     for &(name, description, action, hint) in LOCAL_ACTIONS {
         let action = if provider == "codex" && name == "/resume" {
@@ -480,7 +480,7 @@ const LOCAL_ACTIONS: &[(&str, &str, &str, Option<&str>)] = &[
         "permissions",
         None,
     ),
-    ("/settings", "Open PandaCode settings", "settings", None),
+    ("/settings", "Open Indocode settings", "settings", None),
     (
         "/theme",
         "Switch between dark and light appearance",
@@ -527,12 +527,12 @@ const LOCAL_ACTIONS: &[(&str, &str, &str, Option<&str>)] = &[
 
 fn action_command(name: &str, description: &str, action: &str, hint: Option<&str>) -> SlashCommand {
     SlashCommand {
-        id: format!("pandacode:{action}:{name}"),
+        id: format!("indocode:{action}:{name}"),
         name: name.into(),
         description: description.into(),
         argument_hint: hint.map(str::to_string),
         kind: "action".into(),
-        source: "PandaCode".into(),
+        source: "Indocode".into(),
         reason: None,
         invocation: Invocation::Action(action.into()),
     }
@@ -702,7 +702,7 @@ fn resolve_from_catalog(
         Invocation::Action(action) => {
             if !arguments.is_empty() && !action_accepts_arguments(action) {
                 return Err(format!(
-                    "{name} opens a PandaCode control and does not accept arguments."
+                    "{name} opens a Indocode control and does not accept arguments."
                 ));
             }
             result.action = Some(action.clone());
@@ -994,7 +994,7 @@ mod tests {
     #[test]
     fn snapshots_expose_local_controls_without_launching_a_harness() {
         let catalog = snapshot("antigravity", Path::new("/snapshot-only-project")).unwrap();
-        assert_eq!(command(&catalog, "/model").source, "PandaCode");
+        assert_eq!(command(&catalog, "/model").source, "Indocode");
         assert_eq!(command(&catalog, "/settings").kind, "action");
         assert!(snapshot("unknown", Path::new("/snapshot-only-project")).is_err());
     }
@@ -1155,7 +1155,7 @@ mod tests {
                 command(&value, name).invocation,
                 Invocation::Action(_)
             ));
-            assert_eq!(command(&value, name).source, "PandaCode");
+            assert_eq!(command(&value, name).source, "Indocode");
             assert!(resolve_from_catalog("claude", name, &value)
                 .unwrap()
                 .action

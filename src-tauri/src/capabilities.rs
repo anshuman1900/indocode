@@ -1,4 +1,4 @@
-//! Read-only local inventories for connected harnesses and PandaCode prompt caching.
+//! Read-only local inventories for connected harnesses and Indocode prompt caching.
 
 use serde::Serialize;
 use serde_json::Value;
@@ -125,7 +125,7 @@ pub(crate) async fn capabilities_inventory(
                 catalog
                     .commands
                     .into_iter()
-                    .filter(|command| command.source != "PandaCode")
+                    .filter(|command| command.source != "Indocode")
                     .filter_map(|command| {
                         let name = safe_label(&command.name)?;
                         Some(CapabilityEntry {
@@ -161,7 +161,7 @@ pub(crate) async fn capabilities_inventory(
     })
 }
 
-/// Shows PandaCode's instruction delivery logic and already-observed local cache counts.
+/// Shows Indocode's instruction delivery logic and already-observed local cache counts.
 #[tauri::command]
 pub(crate) async fn cache_alignment(
     app: tauri::AppHandle,
@@ -191,7 +191,7 @@ pub(crate) async fn cache_alignment(
         .map(|provider| {
             let (instruction_delivery, state) = instruction_delivery(&provider.id);
             // The local usage ledger parses provider-reported cache counts for Claude and Codex.
-            // Other harnesses do not currently persist cache read/write counts in PandaCode.
+            // Other harnesses do not currently persist cache read/write counts in Indocode.
             let observed = match (&usage_cache, provider.id.as_str()) {
                 (Some(cache), "claude") if !task_scoped || resume_id.is_some() => {
                     cache_tokens(cache, "claude", resume_id.as_deref())
@@ -698,7 +698,7 @@ mod tests {
 
     fn fixture_home(name: &str) -> PathBuf {
         let path = std::env::temp_dir().join(format!(
-            "pandacode-capabilities-{name}-{}-{}",
+            "indocode-capabilities-{name}-{}-{}",
             std::process::id(),
             uuid::Uuid::new_v4()
         ));

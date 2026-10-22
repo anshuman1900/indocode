@@ -1,7 +1,7 @@
 import type { Message, TurnChanges, TurnChangeDiff } from './types';
 
 type Snapshot = { sessionId: string; messageId: number; summary: TurnChanges; details: TurnChangeDiff[] };
-const key = 'pandacode.preview.turn-changes';
+const key = 'indocode.preview.turn-changes';
 const limit = 48;
 const samples = [
   {

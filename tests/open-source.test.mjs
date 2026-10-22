@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const SOURCE = /\.(?:ts|tsx|js|mjs|css|html|rs|json|toml)$/;
 // Built from parts so this file does not match itself if the scan is ever widened.
-const FORBIDDEN = [['pandacode', 'ai'].join('.'), ['feature', 'base'].join('')];
+const FORBIDDEN = [['indocode', 'ai'].join('.'), ['feature', 'base'].join('')];
 
 async function files(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -19,7 +19,7 @@ async function files(dir) {
   return nested.flat();
 }
 
-test('no app source references the paid PandaCode service or the old support portal', async () => {
+test('no app source references the paid Indocode service or the old support portal', async () => {
   const sources = [...await files(join(root, 'src')), ...await files(join(root, 'src-tauri', 'src'))];
   assert.ok(sources.length > 50, 'scanned the app sources');
   const offenders = [];
@@ -32,7 +32,7 @@ test('no app source references the paid PandaCode service or the old support por
 
 test('updates come only from signed GitHub Releases, and nothing reads license keys', async () => {
   const config = JSON.parse(await readFile(join(root, 'src-tauri', 'tauri.conf.json'), 'utf8'));
-  assert.deepEqual(config.plugins?.updater?.endpoints, ['https://github.com/aicodeking/pandacode/releases/latest/download/latest.json']);
+  assert.deepEqual(config.plugins?.updater?.endpoints, ['https://github.com/anshuman1900/indocode/releases/latest/download/latest.json']);
   assert.match(config.plugins.updater.pubkey, /^[A-Za-z0-9+/=]{40,}$/, 'a public key verifies every update');
   // Update files are produced only by builds that hold the signing key (scripts/release/build.mjs).
   assert.equal(config.bundle.createUpdaterArtifacts, undefined);

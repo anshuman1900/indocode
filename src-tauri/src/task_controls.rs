@@ -243,7 +243,7 @@ pub(super) async fn set_task_preference(
     let gate = preference_gate(&session_id)?;
     let _preference = gate.lock().await;
     if state.shutdown.load(Ordering::SeqCst) != 0 {
-        return Err("PandaCode is shutting down.".into());
+        return Err("Indocode is shutting down.".into());
     }
     if terminal::harness_running(&state.terminals, &session_id)? {
         return Err("Close this task's harness console before changing its settings here.".into());
@@ -341,7 +341,7 @@ impl TaskLease {
         let mut agents = state.agents.lock().map_err(|e| e.to_string())?;
         crate::agent_updates::ensure_not_installing()?;
         if state.shutdown.load(Ordering::SeqCst) != 0 {
-            return Err("PandaCode is shutting down.".into());
+            return Err("Indocode is shutting down.".into());
         }
         if agents.contains_key(sid) || terminal::harness_running(&state.terminals, sid)? {
             return Err(
@@ -631,7 +631,7 @@ pub(super) async fn start_harness_terminal(
     };
     if task.provider == "codex" {
         if let Some(remote) = task.resume_id.as_deref() {
-            // A native CLI can change the persisted goal while PandaCode is idle.
+            // A native CLI can change the persisted goal while Indocode is idle.
             // Read it without loading the thread: opening /vim must not restart
             // a goal whose active state was absent from the local UI cache.
             let goal = command_operations::read_goal(&cwd, remote).await?;
@@ -644,7 +644,7 @@ pub(super) async fn start_harness_terminal(
     blocking(move || {
         let active = lease.agents.lock().map_err(|error| error.to_string())?;
         if app.state::<AppState>().shutdown.load(Ordering::SeqCst) != 0 {
-            return Err("PandaCode is shutting down.".into());
+            return Err("Indocode is shutting down.".into());
         }
         if active
             .get(&session_id)

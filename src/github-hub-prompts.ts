@@ -74,7 +74,7 @@ export function isRecent(pushedAt: string, now = Date.now()): boolean {
 
 /** What to do when GitHub can't be reached; the view shows gh's own message underneath. */
 export function connectAdvice(error: string): string {
-  if (/not found|no such file|cannot find|failed to start|program not found/i.test(error)) return 'PandaCode uses the GitHub CLI. Install it (for example <code>brew install gh</code>), then try again.';
+  if (/not found|no such file|cannot find|failed to start|program not found/i.test(error)) return 'Indocode uses the GitHub CLI. Install it (for example <code>brew install gh</code>), then try again.';
   if (/auth login|not logged|authenticat|token/i.test(error)) return 'Sign in to the GitHub CLI by running <code>gh auth login</code> in a terminal, then try again.';
-  return 'PandaCode couldn’t reach GitHub through the GitHub CLI. Check your connection, then try again.';
+  return 'Indocode couldn’t reach GitHub through the GitHub CLI. Check your connection, then try again.';
 }

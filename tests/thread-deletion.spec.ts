@@ -65,7 +65,7 @@ test.describe('task deletion', () => {
     await openDelete(page);
     await expect(confirmation(page)).toContainText(title);
     await expect(confirmation(page).getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
-    await page.screenshot({ path: `/private/tmp/pandacode-delete-task-${browserName}.png`, animations: 'disabled' });
+    await page.screenshot({ path: `/private/tmp/indocode-delete-task-${browserName}.png`, animations: 'disabled' });
     await confirmation(page).getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(confirmation(page)).toBeHidden();
     expect(await calls(page, 'delete_session')).toEqual([]);
@@ -74,7 +74,7 @@ test.describe('task deletion', () => {
     await expect(page.getByRole('log', { name: 'Conversation', exact: true })).toContainText('Search feels a little slow.');
 
     await page.setViewportSize({ width: 460, height: 740 });
-    await page.addInitScript(() => localStorage.setItem('pandacode.uiScale', '1.4'));
+    await page.addInitScript(() => localStorage.setItem('indocode.uiScale', '1.4'));
     await page.reload();
     await openDelete(page);
     const bounds = (await confirmation(page).boundingBox())!;
@@ -84,7 +84,7 @@ test.describe('task deletion', () => {
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(740);
     expect(await confirmation(page).evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
     await expect(confirmation(page).getByRole('button', { name: 'Delete task', exact: true })).toBeVisible();
-    await page.screenshot({ path: `/private/tmp/pandacode-delete-task-${browserName}-140pct.png`, animations: 'disabled' });
+    await page.screenshot({ path: `/private/tmp/indocode-delete-task-${browserName}-140pct.png`, animations: 'disabled' });
     await confirmation(page).getByRole('button', { name: 'Cancel', exact: true }).click();
     expect(await calls(page, 'delete_session')).toEqual([]);
   });
@@ -241,7 +241,7 @@ test.describe('task deletion', () => {
       for (let index = snapshot.tasks.length - 1; index >= 0; index--) {
         if (sessionIds.includes(snapshot.tasks[index].sessionId)) snapshot.tasks.splice(index, 1);
       }
-      window.dispatchEvent(new CustomEvent('pandacode-overlay-sessions-deleted', { detail: { sessionIds } }));
+      window.dispatchEvent(new CustomEvent('indocode-overlay-sessions-deleted', { detail: { sessionIds } }));
     });
     await expect(page.locator('.launcher-thread')).toBeHidden();
     await expect(page.locator('.launcher-home')).toBeVisible();
@@ -268,7 +268,7 @@ test.describe('task deletion', () => {
               if (tasks[index].sessionId === sessionId) tasks.splice(index, 1);
             }
             threads.delete(sessionId + ':');
-            window.dispatchEvent(new CustomEvent('pandacode-overlay-sessions-deleted', { detail: { sessionIds: [sessionId] } }));
+            window.dispatchEvent(new CustomEvent('indocode-overlay-sessions-deleted', { detail: { sessionIds: [sessionId] } }));
           };
         ` });
       });

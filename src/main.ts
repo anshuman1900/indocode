@@ -84,16 +84,16 @@ type Stream = { text: string; retainedMessageKey?: string; tools: LiveTool[]; st
 const state = {
   projects: [] as Project[], sessions: [] as Session[], providers: [] as Provider[],
   projectId: '', sessionId: '', messages: [] as Message[], messagesLoading: false, messagesError: '', streams: new Map<string, Stream>(),
-  view: (({ board: 'board', github: 'github' } as Record<string, 'board' | 'github'>)[localStorage.getItem('pandacode.view') ?? ''] ?? 'conversation') as WorkspaceView, boardPanel: false,
-  sidebarCollapsed: localStorage.getItem('pandacode.sidebarCollapsed') === 'true',
+  view: (({ board: 'board', github: 'github' } as Record<string, 'board' | 'github'>)[localStorage.getItem('indocode.view') ?? ''] ?? 'conversation') as WorkspaceView, boardPanel: false,
+  sidebarCollapsed: localStorage.getItem('indocode.sidebarCollapsed') === 'true',
   query: '', archived: false, inspector: false, inspectorTab: 'files' as 'changes' | 'files' | 'search' | 'browser' | 'pull' | 'simulator' | 'vm' | 'design',
-  projectFilter: localStorage.getItem('pandacode.projectFilter') ?? '', collapsedFolders: readCollapsed(localStorage, 'pandacode.collapsedFolders'), expandedFolders: new Set<string>(),
+  projectFilter: localStorage.getItem('indocode.projectFilter') ?? '', collapsedFolders: readCollapsed(localStorage, 'indocode.collapsedFolders'), expandedFolders: new Set<string>(),
   /** Follow-ups typed while an agent works, per task, in delivery order; mirrored from native storage. */
   queues: new Map<string, QueuedMessage[]>(), queueHolds: new Map<string, HoldReason>(), queueEditing: '', queueBusy: new Set<string>(),
   git: null as GitStatus | null, jj: null as JjStatus | null, files: [] as FileEntry[], filePath: '', gitError: '', filesError: '', inspectorLoading: false,
   selectedFile: '', selectedContent: '', selectedKind: '' as '' | 'diff' | 'file', selectedStaged: false, filePreviewLoading: false,
   browserUrl: '',
-  attachments: [] as string[], drafts: new Map<string, string>(), defaultProvider: (localStorage.getItem('pandacode.defaultProvider') ?? localStorage.getItem('pandacode.provider') ?? 'claude') as ProviderId,
+  attachments: [] as string[], drafts: new Map<string, string>(), defaultProvider: (localStorage.getItem('indocode.defaultProvider') ?? localStorage.getItem('indocode.provider') ?? 'claude') as ProviderId,
   browserAttachments: new Map<string, BrowserAttachment[]>(),
   moodboardAttachments: new Map<string, { id: string; projectId: string; name: string }[]>(),
   generation: 0, hasOlder: false,
@@ -151,7 +151,7 @@ function setJevAvailability(enabled: boolean): void {
   architectView?.setAssistEnabled(enabled);
 }
 void call<import('./jev').JevConfiguration>('jev_configuration').then(config => setJevAvailability(Boolean(config.decisionsEnabled))).catch(() => { /* Optional integrations never block startup. */ });
-window.addEventListener('pandacode:jev-settings', event => setJevAvailability(Boolean((event as CustomEvent<import('./jev').JevConfiguration>).detail.decisionsEnabled)));
+window.addEventListener('indocode:jev-settings', event => setJevAvailability(Boolean((event as CustomEvent<import('./jev').JevConfiguration>).detail.decisionsEnabled)));
 async function ensureArchitectView(): Promise<ArchitectView> {
   return architectLoading ??= import('./architect').then(({ ArchitectView }) => {
     architectView = new ArchitectView({ setup: anchor => run(showArchitectSetup(anchor)), loadModels, updated: onArchitect, report, onFork: forkAtMessage, fileContext: sessionId => ({ projectId: state.projectId, sessionId }), assist: (sessionId, kind) => run(openJevAssist(kind, sessionId)) });
@@ -269,7 +269,7 @@ const ACTIVITY_WINDOW = 24 * 60 * 60 * 1000;
 const $app = document.querySelector<HTMLDivElement>('#app')!;
 $app.innerHTML = `<div class="workspace">
   <aside id="workspace-sidebar" class="sidebar" aria-label="Projects and tasks">
-    <div class="brand" data-tauri-drag-region><span class="brand-name" data-tauri-drag-region>PandaCode</span></div>
+    <div class="brand" data-tauri-drag-region><span class="brand-name" data-tauri-drag-region>Indocode</span></div>
     <div class="sidebar-actions"><button class="new-task-button" data-action="new-task">${icon('plus')}<span>New task</span><kbd>${shortcut('N')}</kbd></button><button class="new-chat-button" data-action="new-chat" title="New chat (no project)">${icon('chat')}<span>New chat</span></button><button class="search-trigger" data-action="search">${icon('search')}<span>Search</span><kbd>${shortcut('K')}</kbd></button></div>
     <div class="sidebar-projects"><button id="project-filter" class="project-filter" data-action="filter-projects" aria-label="Filter projects" aria-haspopup="dialog" aria-expanded="false"><span data-filter-label>All projects</span>${icon('down')}</button>${button('import-conversations', 'Import conversations', 'download', 'import-trigger')}${button('add-project', 'Open project', 'plus')}</div>
     <div id="navigation" class="navigation"></div>
@@ -279,7 +279,7 @@ $app.innerHTML = `<div class="workspace">
     <div class="sidebar-bottom">${button('support', 'Help & support', 'help', 'support-button', 'id="support-button"')}${button('agent-usage', 'Agent usage', 'activity', '', 'id="agent-usage-button"')}<button data-action="archive-view" id="archive-toggle" title="Archived tasks" aria-label="Archived tasks">${icon('archive')}</button><button data-action="settings" title="Settings (${shortcut(',')})" aria-label="Settings">${icon('settings')}</button><button data-action="toggle-theme" id="theme-toggle" aria-label="Dark mode" aria-pressed="false"></button></div>
   </aside>
   <main class="main-pane">
-    <header class="workspace-header" data-tauri-drag-region="deep"><div class="header-leading" data-tauri-drag-region>${button('toggle-sidebar', 'Hide sidebar', 'sidebar', 'sidebar-toggle', 'id="sidebar-toggle" aria-controls="workspace-sidebar" aria-expanded="true" aria-keyshortcuts="Meta+B Control+B"')}<div id="breadcrumb" class="breadcrumb" data-tauri-drag-region></div></div><div class="header-actions">${preview ? '<span class="preview-status">Browser preview · sample data</span>' : ''}<button type="button" id="update-status" class="update-status" hidden>${icon('refresh')}<span>Restart to update</span></button><div class="view-switch" role="group" aria-label="Workspace view"><button data-action="conversation-view" aria-label="Conversation view" aria-pressed="true">${icon('chat')}<span>Conversation</span></button><button data-action="board-view" aria-label="Board view" aria-pressed="false">${icon('board')}<span>Board</span></button><button data-action="github-view" aria-label="GitHub view" aria-pressed="false">${icon('github')}<span>GitHub</span></button></div><button type="button" class="header-run" id="run-project-button" data-action="run-project" aria-label="Run project" title="Run pandacode-run.sh" hidden>${icon('play')}<span>Run</span></button>${button('deploy', 'Deploy', 'upload', '', 'id="deploy-button" aria-haspopup="dialog"')}<span class="header-divider" aria-hidden="true"></span>${button('moodboards', 'Project moodboards', 'images')}${button('browser', 'Open browser', 'globe', '', 'id="browser-toggle"')}${button('terminal', `Toggle terminal (${shortcut('J')})`, 'terminal', '', 'id="terminal-toggle" aria-controls="terminal-drawer" aria-expanded="false"')}<span class="header-divider" aria-hidden="true"></span>${button('toggle-inspector', `Toggle inspector (${shortcut('B', true)})`, 'panel', 'active', 'id="inspector-toggle"')}${button('task-menu', 'Task actions', 'more', '', 'id="task-menu-trigger" aria-haspopup="dialog" aria-expanded="false"')}</div></header>
+    <header class="workspace-header" data-tauri-drag-region="deep"><div class="header-leading" data-tauri-drag-region>${button('toggle-sidebar', 'Hide sidebar', 'sidebar', 'sidebar-toggle', 'id="sidebar-toggle" aria-controls="workspace-sidebar" aria-expanded="true" aria-keyshortcuts="Meta+B Control+B"')}<div id="breadcrumb" class="breadcrumb" data-tauri-drag-region></div></div><div class="header-actions">${preview ? '<span class="preview-status">Browser preview · sample data</span>' : ''}<button type="button" id="update-status" class="update-status" hidden>${icon('refresh')}<span>Restart to update</span></button><div class="view-switch" role="group" aria-label="Workspace view"><button data-action="conversation-view" aria-label="Conversation view" aria-pressed="true">${icon('chat')}<span>Conversation</span></button><button data-action="board-view" aria-label="Board view" aria-pressed="false">${icon('board')}<span>Board</span></button><button data-action="github-view" aria-label="GitHub view" aria-pressed="false">${icon('github')}<span>GitHub</span></button></div><button type="button" class="header-run" id="run-project-button" data-action="run-project" aria-label="Run project" title="Run indocode-run.sh" hidden>${icon('play')}<span>Run</span></button>${button('deploy', 'Deploy', 'upload', '', 'id="deploy-button" aria-haspopup="dialog"')}<span class="header-divider" aria-hidden="true"></span>${button('moodboards', 'Project moodboards', 'images')}${button('browser', 'Open browser', 'globe', '', 'id="browser-toggle"')}${button('terminal', `Toggle terminal (${shortcut('J')})`, 'terminal', '', 'id="terminal-toggle" aria-controls="terminal-drawer" aria-expanded="false"')}<span class="header-divider" aria-hidden="true"></span>${button('toggle-inspector', `Toggle inspector (${shortcut('B', true)})`, 'panel', 'active', 'id="inspector-toggle"')}${button('task-menu', 'Task actions', 'more', '', 'id="task-menu-trigger" aria-haspopup="dialog" aria-expanded="false"')}</div></header>
     <div class="work-area"><section id="project-board" class="project-board" aria-label="Project board" hidden></section><section id="github-hub" aria-label="GitHub" hidden></section><section class="conversation-pane"><div id="task-details-heading" class="task-details-heading" hidden></div><div id="subagents-host" class="subagents-host" hidden></div><div id="transcript" class="transcript" role="log" aria-label="Conversation" aria-live="off"></div><div id="composer-area" class="composer-area"></div></section></div>
     <div id="terminal-drawer" class="terminal-drawer" hidden><div class="drawer-heading"><span>${icon('terminal')}<span id="terminal-project" class="muted"></span></span><div class="terminal-tabs" role="tablist" aria-label="Terminal tabs"></div><div class="terminal-heading-actions"><button class="icon-button" data-terminal-action="new" aria-label="New terminal" title="New terminal">${icon('plus')}</button><button class="icon-button" data-terminal-action="minimize" aria-label="Minimize terminal" title="Minimize terminal">${icon('minimize')}</button><button class="icon-button" data-terminal-action="close" aria-label="Close terminal" title="Close terminal" aria-haspopup="dialog">${icon('close')}</button></div></div><div id="terminal-host"></div></div>
   </main>
@@ -389,7 +389,7 @@ const worktrees = createWorktrees({
   extraItems: task => github.menuItems(task),
   onExtra: (id, task) => github.onMenu(id, task),
 });
-window.addEventListener('pandacode-github-change', () => { renderComposer(); renderHeader(); renderInspector(); });
+window.addEventListener('indocode-github-change', () => { renderComposer(); renderHeader(); renderInspector(); });
 window.addEventListener('focus', () => void github.refreshLinks(state.projectId));
 const attachments = mountPromptAttachments({
   taskId: () => state.sessionId,
@@ -564,7 +564,7 @@ const wallpapers = mountWallpapers($('.workspace'));
 // The accent follows the scene on screen; a VS Code theme keeps its own colors.
 const syncPaletteWallpaper = () => palette.setWallpaper(wallpapers.enabled ? wallpapers.currentId : undefined);
 wallpapers.subscribe(syncPaletteWallpaper); syncPaletteWallpaper();
-window.addEventListener('pandacode-theme-change', () => palette.refresh());
+window.addEventListener('indocode-theme-change', () => palette.refresh());
 const disposeSidebarResizing = initializeSidebarResizing($('.workspace'), $('.sidebar'));
 const disposeInspectorResizing = initializeSidebarResizing($('.workspace'), $('#inspector'), true);
 const disposeUiSizing = initializeUiSizing();
@@ -630,14 +630,14 @@ function renderThemeToggle(): void {
 }
 function activateProject(id: string, render = true): void {
   const changed = state.projectId !== id;
-  state.projectId = id; localStorage.setItem('pandacode.project', id);
+  state.projectId = id; localStorage.setItem('indocode.project', id);
   if (changed) {
     // Old file actions must disappear before any asynchronous task/terminal load.
     clearWorkspaceInspector(render);
   }
 }
-function setProjectFilter(id: string): void { state.projectFilter = id; localStorage.setItem('pandacode.projectFilter', id); }
-function saveCollapsedFolders(): void { try { localStorage.setItem('pandacode.collapsedFolders', JSON.stringify([...state.collapsedFolders])); } catch { /* per-launch preference only */ } }
+function setProjectFilter(id: string): void { state.projectFilter = id; localStorage.setItem('indocode.projectFilter', id); }
+function saveCollapsedFolders(): void { try { localStorage.setItem('indocode.collapsedFolders', JSON.stringify([...state.collapsedFolders])); } catch { /* per-launch preference only */ } }
 /** Tasks shown in lists: a New task draft appears only after its first prompt. */
 function listedSessions(): Session[] { return state.sessions.filter(task => !task.draft); }
 /** Leaving an untouched draft discards it; one with typed text, attachments or a worktree stays hidden and New task reopens it. */
@@ -817,7 +817,7 @@ function beginMenuOpen(anchor: HTMLElement): { epoch: number; release: () => voi
   return { epoch, release };
 }
 function rememberedModel(id: ProviderId): string {
-  const model = localStorage.getItem('pandacode.defaultModel.' + id) || localStorage.getItem('pandacode.model.' + id) || state.sessions.find(s => s.provider === id && s.model)?.model || 'default';
+  const model = localStorage.getItem('indocode.defaultModel.' + id) || localStorage.getItem('indocode.model.' + id) || state.sessions.find(s => s.provider === id && s.model)?.model || 'default';
   return model.length <= 200 ? model : 'default';
 }
 let openCodeSaved = false;
@@ -847,7 +847,7 @@ function loadModels(id: ProviderId): Promise<ProviderModel[]> {
   return pending;
 }
 
-/* Another computer's catalog (PandaCode Connect): kept per device, never in state.providers. */
+/* Another computer's catalog (Indocode Connect): kept per device, never in state.providers. */
 const remoteCatalogs = new Map<string, Promise<Provider[]>>();
 const remoteModelCatalogs = new Map<string, Promise<ProviderModel[]>>();
 let localChoice: { provider: ProviderId; model: string } | undefined;
@@ -1149,7 +1149,7 @@ function savedToolKey(message: Message): string {
   const tool = decodeToolActivity(message.content);
   return tool ? 'tool:' + tool.id : 'message:' + message.id;
 }
-function activityExpanded(): boolean { return localStorage.getItem('pandacode.activityExpanded') === 'true'; }
+function activityExpanded(): boolean { return localStorage.getItem('indocode.activityExpanded') === 'true'; }
 function activityHtml(key: string, label: string, body: string, live = false): string {
   return `<details class="turn-activity${live ? ' live-activity' : ''}" data-turn-key="${escape(key)}"${live || state.view === 'board' || activityExpanded() ? ' open' : ''}><summary class="turn-activity-summary"><span class="turn-activity-label">${escape(label)}</span>${icon('chevron')}</summary><div class="turn-activity-body">${body}</div></details>`;
 }
@@ -1201,7 +1201,7 @@ function messageHtml(m: Message): string {
 }
 // Context appended at send time (files, documents, folders, GitHub, browser, images) folds
 // behind one summary so the transcript reads as what you said, with the payload a click away.
-const CONTEXT_BOUNDARY = /\n\n(?=(?:File|Document|Folder|GitHub|Browser element) context[ :(]|Attached (?:browser screenshot|image|mockup)[ :]|Bot brief:\n|Response style \(PandaCode token saver)/;
+const CONTEXT_BOUNDARY = /\n\n(?=(?:File|Document|Folder|GitHub|Browser element) context[ :(]|Attached (?:browser screenshot|image|mockup)[ :]|Bot brief:\n|Response style \(Indocode token saver)/;
 function userContent(content: string): string {
   const index = content.search(CONTEXT_BOUNDARY);
   if (index < 0) return escape(content);
@@ -1598,7 +1598,7 @@ function toggleSidebar(): void {
   if (!state.sidebarCollapsed && (sidebar.contains(choiceMenuAnchor ?? null) || sidebar.contains(pendingMenuOpen?.anchor ?? null))) closeMenus();
   const moveFocus = !state.sidebarCollapsed && sidebar.contains(document.activeElement);
   state.sidebarCollapsed = !state.sidebarCollapsed;
-  try { localStorage.setItem('pandacode.sidebarCollapsed', String(state.sidebarCollapsed)); } catch { /* Keep the choice for this session. */ }
+  try { localStorage.setItem('indocode.sidebarCollapsed', String(state.sidebarCollapsed)); } catch { /* Keep the choice for this session. */ }
   renderSidebarVisibility();
   if (!state.sidebarCollapsed) glideIn(sidebar, 'left', 20);
   if (moveFocus) $('#sidebar-toggle').focus({ preventScroll: true });
@@ -1608,7 +1608,7 @@ function toggleSidebar(): void {
 function setWorkspaceView(view: WorkspaceView): void {
   if (state.view === view) return;
   closeMenus();
-  state.view = view; localStorage.setItem('pandacode.view', view);
+  state.view = view; localStorage.setItem('indocode.view', view);
   state.boardPanel = false;
   inspectorSuppressed = view !== 'conversation';
   renderInspector();
@@ -2012,7 +2012,7 @@ async function performSlashAction(action: string, argumentsText: string, task: S
       await navigator.clipboard.writeText(answer.content); notify('Response copied'); break;
     }
     case 'pwd': modal('Working directory', `<p class="dialog-description">${escape(workspacePath())}</p>`); break;
-    default: throw new Error('This command is not available in PandaCode yet.');
+    default: throw new Error('This command is not available in Indocode yet.');
   }
 }
 
@@ -2930,8 +2930,8 @@ async function showModel(anchor: HTMLElement): Promise<void> {
         const index = state.sessions.findIndex(s => s.id === selected.id); if (index >= 0) state.sessions[index] = updated;
         if (!device && (connection ?? null) !== (namedConnections.tasks[selected.id] ?? null)) namedConnections = await call('connection_assign', { sessionId: selected.id, connectionId: connection });
         if (!device) {
-          if (!localStorage.getItem('pandacode.defaultProvider')) state.defaultProvider = providerId;
-          localStorage.setItem('pandacode.provider', providerId); localStorage.setItem('pandacode.model.' + providerId, model);
+          if (!localStorage.getItem('indocode.defaultProvider')) state.defaultProvider = providerId;
+          localStorage.setItem('indocode.provider', providerId); localStorage.setItem('indocode.model.' + providerId, model);
         } else localChoice = undefined;
         if (selected.id === state.sessionId && generation === state.generation) {
           if (providerId !== selected.provider) {
@@ -2971,7 +2971,7 @@ async function createTask(projectId = state.projectId): Promise<void> {
   if (creatingTask) return;
   const projects = state.projects.filter(p => !isChatProject(p));
   const active = projects.find(p => p.id === projectId)
-    ?? projects.find(p => p.id === localStorage.getItem('pandacode.project')) ?? userProjects()[0];
+    ?? projects.find(p => p.id === localStorage.getItem('indocode.project')) ?? userProjects()[0];
   if (!active) { notify('Open a project to start a task.'); return; }
   closeModelPicker();
   closeProjectPicker();
@@ -3136,8 +3136,8 @@ async function showProjectFilter(anchor: HTMLElement): Promise<void> {
 }
 async function showDefaultProvider(anchor: HTMLElement): Promise<void> {
   await showChoices(anchor, { title: 'Default agent', items: state.providers.map(p => ({ id: p.id, label: p.name, provider: p.id, selected: state.defaultProvider === p.id })), onSelect: id => {
-    state.defaultProvider = id as ProviderId; localStorage.setItem('pandacode.provider', id);
-    localStorage.setItem('pandacode.defaultProvider', id);
+    state.defaultProvider = id as ProviderId; localStorage.setItem('indocode.provider', id);
+    localStorage.setItem('indocode.defaultProvider', id);
     refreshDefaultAgent();
   } });
 }
@@ -3162,15 +3162,15 @@ async function showDefaultModel(anchor: HTMLElement): Promise<void> {
     canSwitchProvider: true, loadModels, placement: 'below', onClose: () => { modelPickerCleanup = undefined; },
     onSelect: async (providerId, model) => {
       state.defaultProvider = providerId;
-      localStorage.setItem('pandacode.provider', providerId); localStorage.setItem('pandacode.model.' + providerId, model);
-      localStorage.setItem('pandacode.defaultProvider', providerId); localStorage.setItem('pandacode.defaultModel.' + providerId, model);
+      localStorage.setItem('indocode.provider', providerId); localStorage.setItem('indocode.model.' + providerId, model);
+      localStorage.setItem('indocode.defaultProvider', providerId); localStorage.setItem('indocode.defaultModel.' + providerId, model);
       refreshDefaultAgent();
     },
   });
 }
 function showDeleteTask(): void {
   const task = session(); if (!task || isRunning(task.id) || configuringSessions.has(task.id)) return;
-  const dialog = modal('Delete task?', `<form id="delete-task-form"><p class="delete-task-name">${escape(task.title)}</p><p class="delete-task-description">Permanently delete this conversation and its worker history from PandaCode? This cannot be undone. Its terminal tabs close and running commands may stop. Project files and worktrees stay.</p><p class="delete-task-error" role="alert" hidden></p><div class="dialog-footer"><button type="button" class="secondary-button" data-action="close-dialog">Cancel</button><button type="submit" class="secondary-button delete-task-confirm">Delete task</button></div></form>`, 'delete-task-dialog');
+  const dialog = modal('Delete task?', `<form id="delete-task-form"><p class="delete-task-name">${escape(task.title)}</p><p class="delete-task-description">Permanently delete this conversation and its worker history from Indocode? This cannot be undone. Its terminal tabs close and running commands may stop. Project files and worktrees stay.</p><p class="delete-task-error" role="alert" hidden></p><div class="dialog-footer"><button type="button" class="secondary-button" data-action="close-dialog">Cancel</button><button type="submit" class="secondary-button delete-task-confirm">Delete task</button></div></form>`, 'delete-task-dialog');
   const form = dialog.querySelector<HTMLFormElement>('#delete-task-form')!;
   const confirm = form.querySelector<HTMLButtonElement>('[type="submit"]')!;
   const error = form.querySelector<HTMLElement>('[role="alert"]')!;
@@ -3260,13 +3260,13 @@ function closeSettings(): void {
   (settingsReturnFocus?.isConnected ? settingsReturnFocus : $('#prompt'))?.focus({ preventScroll: true });
   settingsReturnFocus = null;
 }
-/** Light and dark belong to PandaCode's palette; switching leaves a VS Code theme. */
+/** Light and dark belong to Indocode's palette; switching leaves a VS Code theme. */
 function toggleTheme(): void {
   const vsix = palette.vsix;
   const next = currentTheme() === 'dark' ? 'light' : 'dark';
   if (vsix) palette.setVsix(null);
   setTheme(next); renderThemeToggle();
-  if (vsix) notify(`${vsix.name} turned off · PandaCode ${next}`);
+  if (vsix) notify(`${vsix.name} turned off · Indocode ${next}`);
   if (settingsView) { closeSettings(); void showSettings('appearance'); }
 }
 let colorsSettingsCleanup: (() => void) | undefined;
@@ -3477,7 +3477,7 @@ async function reloadBotProjects(withProjects = true): Promise<void> {
 const userProjects = (): Project[] => state.projects.filter(project => !botProjects.has(project.id) && !isChatProject(project));
 /** Whether a task runs as a projectless chat. */
 const chatTask = (task: Session | undefined): boolean => Boolean(task && isChatProject(state.projects.find(p => p.id === task.projectId)));
-/* PandaCode Connect. A new task can start on another computer: the context bar offers the
+/* Indocode Connect. A new task can start on another computer: the context bar offers the
  * signed-in account's targets; the started task is an ordinary session with `remoteDevice`. */
 const remoteHost: RemoteHost = { call, listen: (name, callback) => subscribe(name as 'remote://status', callback), notify, openUrl: url => call('open_external_url', { url }) };
 let remoteTargets: RemoteTarget[] = [], remoteChoice = LOCAL;
@@ -3761,7 +3761,7 @@ function resizePrompt(): void {
   // Scroll only past the cap; a pixel of rounding at rest must not show a scroll bar.
   prompt.style.overflowY = prompt.scrollHeight > prompt.clientHeight + 1 ? 'auto' : 'hidden';
 }
-window.addEventListener('pandacode-ui-scale-change', resizePrompt);
+window.addEventListener('indocode-ui-scale-change', resizePrompt);
 document.addEventListener('input', event => { const input = event.target as HTMLInputElement; if (input.id === 'command-query') renderCommands(input.value); if (input.id === 'prompt') resizePrompt(); });
 document.addEventListener('change', event => {
   const input = event.target as HTMLInputElement;
@@ -3769,9 +3769,9 @@ document.addEventListener('change', event => {
   if (input.id === 'turn-checks') turnChecksSetEnabled(input.checked);
   // A switch toggles natively (the data-action click path cancels the default), then saves.
   if (input.classList.contains('limit-resume-switch')) run(limitAction('limit-resume-at-reset', input));
-  if (input.id === 'compact-mode') { document.body.classList.toggle('compact', input.checked); localStorage.setItem('pandacode.compact', String(input.checked)); }
+  if (input.id === 'compact-mode') { document.body.classList.toggle('compact', input.checked); localStorage.setItem('indocode.compact', String(input.checked)); }
   if (input.id === 'expand-tool-activity') {
-    localStorage.setItem('pandacode.activityExpanded', String(input.checked));
+    localStorage.setItem('indocode.activityExpanded', String(input.checked));
     document.querySelectorAll<HTMLDetailsElement>('.turn-activity:not(.live-activity), .tool-group').forEach(group => { group.open = input.checked; });
   }
 });
@@ -3831,7 +3831,7 @@ installTooltips();
 new MutationObserver(() => compactSublines(document.querySelector('#dialog')!)).observe(document.querySelector('#dialog')!, { childList: true, subtree: true });
 window.addEventListener('focus', renderNavigation);
 document.addEventListener('visibilitychange', () => { renderNavigation(); if (!document.hidden) { renderHeader(); renderStream(); } updateWorkTimer(); });
-if (localStorage.getItem('pandacode.compact') === 'true') document.body.classList.add('compact');
+if (localStorage.getItem('indocode.compact') === 'true') document.body.classList.add('compact');
 // Material file icons arrive in a lazy chunk and have light-theme variants; markup is baked at render time.
 // A full render() here would close open menus mid-click; other icon spots pick the icons up on their next render.
 function refreshFileIcons(): void { if (state.inspector && state.inspectorTab === 'files' && !state.selectedFile) renderInspector(); }
@@ -3889,7 +3889,7 @@ async function boot(): Promise<void> {
   }
   scheduleLimitResumes();
   if (state.projectFilter && !state.projects.some(p => p.id === state.projectFilter)) setProjectFilter('');
-  const savedProject = localStorage.getItem('pandacode.project');
+  const savedProject = localStorage.getItem('indocode.project');
   const recent = state.sessions.find(s => !s.archived);
   activateProject(state.projects.find(p => p.id === savedProject)?.id ?? recent?.projectId ?? state.projects[0]?.id ?? '');
   const first = state.sessions.find(s => !s.archived && s.projectId === state.projectId);
@@ -3897,11 +3897,11 @@ async function boot(): Promise<void> {
   const selecting = first ? selectSession(first.id) : undefined, bootGeneration = state.generation;
   if (selecting) await selecting; else { render(); await refreshInspector(); }
   run(fileIconsReady.then(refreshFileIcons));
-  window.addEventListener('pandacode-theme-change', refreshFileIcons);
+  window.addEventListener('indocode-theme-change', refreshFileIcons);
   if (state.view !== 'conversation' && state.generation === bootGeneration) { state.boardPanel = false; renderInspector(); renderBoardView(); }
   if (!preview && !state.providers.some(p => p.installed)) notify('Open Settings to check your installed agent CLIs.');
 }
-// PandaCode's own updates: checked on GitHub Releases, installed when no agent is working.
+// Indocode's own updates: checked on GitHub Releases, installed when no agent is working.
 const updates = startAppUpdates({ busy: () => state.sessions.some(task => isRunning(task.id)), notify });
 {
   const pill = $('#update-status');
@@ -3909,7 +3909,7 @@ const updates = startAppUpdates({ busy: () => state.sessions.some(task => isRunn
     const current = updates.state;
     pill.hidden = current.kind !== 'ready' && current.kind !== 'installing';
     if (current.kind !== 'ready' && current.kind !== 'installing') return;
-    pill.title = current.kind === 'ready' ? `PandaCode ${current.version} is ready. Restart now, or it restarts on its own when your agents are done.` : `Installing ${current.version}…`;
+    pill.title = current.kind === 'ready' ? `Indocode ${current.version} is ready. Restart now, or it restarts on its own when your agents are done.` : `Installing ${current.version}…`;
     (pill as HTMLButtonElement).disabled = current.kind === 'installing';
   };
   updates.subscribe(paint);

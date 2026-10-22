@@ -8,7 +8,7 @@ struct Fixture {
 }
 impl Fixture {
     fn new() -> Self {
-        let base = std::env::temp_dir().join(format!("pandacode-skills-{}", uuid::Uuid::new_v4()));
+        let base = std::env::temp_dir().join(format!("indocode-skills-{}", uuid::Uuid::new_v4()));
         let home = base.join("home");
         fs::create_dir_all(home.join(".claude")).unwrap();
         fs::create_dir_all(home.join(".codex")).unwrap();
@@ -93,9 +93,9 @@ fn rules_become_managed_blocks_and_project_files_are_excluded() {
     fx.library.activate("no-force-push", "claude", Scope::Project, Some(&root), false).unwrap();
     fx.library.activate("no-force-push", "codex", Scope::Project, Some(&root), false).unwrap();
     let claude = fs::read_to_string(root.join("CLAUDE.md")).unwrap();
-    assert!(claude.starts_with("# Mine\nKeep this.\n\n<!-- pandacode:rule:no-force-push -->\nNever force-push to main.\n"), "{claude}");
+    assert!(claude.starts_with("# Mine\nKeep this.\n\n<!-- indocode:rule:no-force-push -->\nNever force-push to main.\n"), "{claude}");
     assert!(fs::read_to_string(root.join("AGENTS.md")).unwrap().contains("Never force-push"));
-    // Only the file PandaCode created is excluded; the user's own CLAUDE.md is not hidden.
+    // Only the file Indocode created is excluded; the user's own CLAUDE.md is not hidden.
     let exclude = fs::read_to_string(root.join(".git/info/exclude")).unwrap();
     assert!(exclude.lines().any(|l| l == "/AGENTS.md") && !exclude.contains("/CLAUDE.md"), "{exclude}");
 
@@ -142,7 +142,7 @@ fn unmanaged_skills_are_reported_and_never_replaced() {
     let matrix = fx.library.matrix(None).unwrap();
     let row = matrix.harnesses.iter().find(|h| h.harness == "claude").unwrap();
     let details: Vec<_> = row.unmanaged.iter().map(|u| u.detail.as_str()).collect();
-    assert_eq!(details, ["Not in the library.", "Same name as a library skill, not written by PandaCode."]);
+    assert_eq!(details, ["Not in the library.", "Same name as a library skill, not written by Indocode."]);
 }
 
 #[test]

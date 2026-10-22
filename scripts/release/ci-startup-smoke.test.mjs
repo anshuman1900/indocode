@@ -6,7 +6,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile, access } from 'node:fs/promise
 import { assertHostedRunner, bundleDirectory, selectPackage, smokeEnvironment, installArguments, observeProcess, linuxStartupCommand, cleanupSmokeDirectory, validatePackageSize } from './ci-startup-smoke.mjs';
 
 test('Linux starts Xvfb before the bus so portal services inherit the display', () => {
-  assert.deepEqual(linuxStartupCommand('/tmp/build with spaces/PandaCode.AppImage'), { command: 'xvfb-run', args: ['--auto-servernum', '--server-args=-screen 0 1440x940x24', 'dbus-run-session', '--', '/tmp/build with spaces/PandaCode.AppImage'] });
+  assert.deepEqual(linuxStartupCommand('/tmp/build with spaces/Indocode.AppImage'), { command: 'xvfb-run', args: ['--auto-servernum', '--server-args=-screen 0 1440x940x24', 'dbus-run-session', '--', '/tmp/build with spaces/Indocode.AppImage'] });
 });
 
 test('startup packages obey the same 200 MiB publisher size limit', () => {
@@ -15,7 +15,7 @@ test('startup packages obey the same 200 MiB publisher size limit', () => {
 });
 
 test('busy Linux runtime cleanup never descends into a portal mount or masks the app failure', async () => {
-  const directory = join(tmpdir(), 'pandacode-startup-fixture');
+  const directory = join(tmpdir(), 'indocode-startup-fixture');
   const primary = new Error('updater initialization failed');
   let recursiveCalls = 0;
   const warnings = [];
@@ -29,7 +29,7 @@ test('busy Linux runtime cleanup never descends into a portal mount or masks the
 });
 
 test('cleanup removes an owned empty-runtime fixture and rejects unrelated paths', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'pandacode-startup-'));
+  const directory = await mkdtemp(join(tmpdir(), 'indocode-startup-'));
   await mkdir(join(directory, 'runtime'));
   await writeFile(join(directory, 'fixture'), 'disposable');
   await cleanupSmokeDirectory(directory, { runnerTemp: tmpdir(), platform: 'linux' });
@@ -41,7 +41,7 @@ test('cleanup removes an owned empty-runtime fixture and rejects unrelated paths
 
 test('file-removal errors are warnings even when the original operation succeeded', async () => {
   const warnings = [];
-  await cleanupSmokeDirectory(join(tmpdir(), 'pandacode-startup-fixture'), { runnerTemp: tmpdir(), platform: 'win32', removeDirectory: async () => { throw new Error('cleanup timeout'); }, warn: value => warnings.push(value) });
+  await cleanupSmokeDirectory(join(tmpdir(), 'indocode-startup-fixture'), { runnerTemp: tmpdir(), platform: 'win32', removeDirectory: async () => { throw new Error('cleanup timeout'); }, warn: value => warnings.push(value) });
   assert.equal(warnings.length, 1);
 });
 
@@ -55,11 +55,11 @@ test('startup smoke refuses local, self-hosted, and mismatched systems', () => {
 });
 
 test('only the exact target/version package is launched', () => {
-  assert.equal(selectPackage(['PandaCode_1.2.3_x64-setup.exe', 'PandaCode_1.2.3_x64-setup.exe.sig'], '1.2.3', 'windows-x86_64'), 'PandaCode_1.2.3_x64-setup.exe');
-  assert.equal(selectPackage(['PandaCode_1.2.3_amd64.AppImage'], '1.2.3', 'linux-x86_64'), 'PandaCode_1.2.3_amd64.AppImage');
-  assert.equal(selectPackage(['PandaCode_1.2.3_aarch64.AppImage'], '1.2.3', 'linux-aarch64'), 'PandaCode_1.2.3_aarch64.AppImage');
-  assert.throws(() => selectPackage(['PandaCode_1.2.2_amd64.AppImage'], '1.2.3', 'linux-x86_64'), /exactly one/);
-  assert.throws(() => selectPackage(Array(101).fill('PandaCode_1.2.3_amd64.AppImage'), '1.2.3', 'linux-x86_64'), /exactly one/);
+  assert.equal(selectPackage(['Indocode_1.2.3_x64-setup.exe', 'Indocode_1.2.3_x64-setup.exe.sig'], '1.2.3', 'windows-x86_64'), 'Indocode_1.2.3_x64-setup.exe');
+  assert.equal(selectPackage(['Indocode_1.2.3_amd64.AppImage'], '1.2.3', 'linux-x86_64'), 'Indocode_1.2.3_amd64.AppImage');
+  assert.equal(selectPackage(['Indocode_1.2.3_aarch64.AppImage'], '1.2.3', 'linux-aarch64'), 'Indocode_1.2.3_aarch64.AppImage');
+  assert.throws(() => selectPackage(['Indocode_1.2.2_amd64.AppImage'], '1.2.3', 'linux-x86_64'), /exactly one/);
+  assert.throws(() => selectPackage(Array(101).fill('Indocode_1.2.3_amd64.AppImage'), '1.2.3', 'linux-x86_64'), /exactly one/);
 });
 
 test('isolated app data and literal NSIS arguments do not inherit credentials', () => {
@@ -79,12 +79,12 @@ test('startup observation rejects early clean exits, crashes, and missing execut
   const options = { env: process.env, cwd: tmpdir(), durationMs: 500, stdio: 'ignore' };
   await assert.rejects(observeProcess(process.execPath, ['-e', 'process.exit(0)'], options), /App exited/);
   await assert.rejects(observeProcess(process.execPath, ['-e', 'process.exit(42)'], options), /42/);
-  await assert.rejects(observeProcess(join(tmpdir(), 'nonexistent-pandacode-smoke-executable'), [], options), /ENOENT/);
+  await assert.rejects(observeProcess(join(tmpdir(), 'nonexistent-indocode-smoke-executable'), [], options), /ENOENT/);
 });
 
 test('startup observation stops a surviving fixture and bounds installer execution', async () => {
   const options = { env: process.env, cwd: tmpdir(), durationMs: 200, stdio: 'ignore' };
-  const directory = await mkdtemp(join(tmpdir(), 'pandacode-smoke-test-'));
+  const directory = await mkdtemp(join(tmpdir(), 'indocode-smoke-test-'));
   try {
     const pidFile = join(directory, 'pid');
     await observeProcess(process.execPath, ['-e', 'require("node:fs").writeFileSync(process.argv[1], String(process.pid)); setInterval(() => {}, 1000)', pidFile], { ...options, durationMs: 1000 });

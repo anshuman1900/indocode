@@ -87,7 +87,7 @@ export function createPreviewSkills() {
       }
       const k = key(entry.item.id, h, s);
       const previous = entry.item.activations.find(a => a.harness === h && a.scope === s);
-      if (previous && previous.surface !== 'prompt' && disk.get(k) !== previous.sha256) throw new Error('That file was edited on disk; PandaCode will not overwrite it.');
+      if (previous && previous.surface !== 'prompt' && disk.get(k) !== previous.sha256) throw new Error('That file was edited on disk; Indocode will not overwrite it.');
       const activation: SkillActivation = { harness: h, scope: s, project: s === 'project' ? PROJECT_ROOT : null, surface: PROMPT.has(h) ? 'prompt' : entry.item.kind === 'skill' ? 'folder' : 'block', sha256: entry.item.sha256, files: [] };
       if (!PROMPT.has(h)) disk.set(k, entry.item.sha256);
       entry.item = { ...entry.item, activations: [...entry.item.activations.filter(a => a !== previous), activation] };

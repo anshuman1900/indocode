@@ -1,5 +1,5 @@
 (() => {
-      const a = __PANDACODE_ARGS__;
+      const a = __INDOCODE_ARGS__;
       try {
         if (a.action === 'read') {
           const visible = el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';

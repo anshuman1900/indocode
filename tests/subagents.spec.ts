@@ -110,8 +110,8 @@ test.describe('subagents', () => {
     test(`subagents are one solid surface and keep detail sharp in ${theme} ${view}`, async ({ page, browserName }) => {
       await page.setViewportSize({ width: 1280, height: 820 });
       await page.addInitScript(theme => {
-        localStorage.setItem('pandacode.theme', theme);
-        localStorage.setItem('pandacode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 35, pinned: 'mon-morning' }));
+        localStorage.setItem('indocode.theme', theme);
+        localStorage.setItem('indocode.wallpaperPreferences', JSON.stringify({ enabled: true, visibility: 35, pinned: 'mon-morning' }));
       }, theme);
       await installSubagents(page, { 'session-1': [child('reader', 'Reader', {
         response: '**Search is ready.** The index now reuses its cached entries.\n\n```ts\nconst index = cachedIndex;\n```',
@@ -129,13 +129,13 @@ test.describe('subagents', () => {
       await row(page, 'reader').hover();
       await expect(row(page, 'reader')).not.toHaveCSS('background-color', normalRow);
       await expect(row(page, 'reader').locator('strong')).toBeVisible();
-      await page.screenshot({ path: `/private/tmp/pandacode-subagents-frost-${browserName}-${theme}-${view}-list.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-subagents-frost-${browserName}-${theme}-${view}-list.png`, animations: 'disabled' });
       await row(page, 'reader').click();
       await expect(response(page)).toContainText('Search is ready.');
       await expect(response(page)).toHaveCSS('filter', 'none'); await expect(response(page)).toHaveCSS('opacity', '1');
       expect(await subagentSurface(panel(page))).toEqual(material);
       expect(await panel(page).evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
-      await page.screenshot({ path: `/private/tmp/pandacode-subagents-frost-${browserName}-${theme}-${view}-detail.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-subagents-frost-${browserName}-${theme}-${view}-detail.png`, animations: 'disabled' });
       const preferences = browserName === 'chromium' ? ['prefers-contrast', 'prefers-reduced-transparency'] : ['prefers-contrast'];
       const cdp = browserName === 'chromium' ? await page.context().newCDPSession(page) : null;
       for (const name of preferences) {
@@ -215,7 +215,7 @@ test.describe('subagents', () => {
       await expect(trigger(page)).toContainText('3 running');
       await expect(row(page, 'tests')).toContainText('Test runner');
       await expect(row(page, 'tests')).toContainText('Reader');
-      await page.screenshot({ path: `/private/tmp/pandacode-subagents-${view}-list.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-subagents-${view}-list.png`, animations: 'disabled' });
       await row(page, 'reader').click();
       await expect(panel(page).locator('.subagent-detail-name')).toHaveText('Reader');
       await expect(panel(page)).toContainText('Work assigned to Reader.');
@@ -230,7 +230,7 @@ test.describe('subagents', () => {
       await panel(page).locator('.subagent-tools details.tool-activity > summary').click();
       await expect(panel(page).locator('.subagent-tools')).toContainText('src/search.ts');
       await expect(panel(page).locator('.subagent-tools')).toContainText('const index = buildIndex(items);');
-      await page.screenshot({ path: `/private/tmp/pandacode-subagents-${view}-detail.png`, animations: 'disabled' });
+      await page.screenshot({ path: `/private/tmp/indocode-subagents-${view}-detail.png`, animations: 'disabled' });
       await upsert(page, [child('reader', 'Reader', { status: 'completed', response: 'Index reuse fixed.', updatedAt: 1_800_000_000_003 })]);
       await expect(trigger(page)).toContainText('2 running');
       await expect(response(page)).toHaveText('Index reuse fixed.');
@@ -516,7 +516,7 @@ test.describe('subagents', () => {
 
   test('keeps the floating subagent panel inside a narrow thread and supports the light theme', async ({ page }) => {
     await page.setViewportSize({ width: 920, height: 700 });
-    await page.addInitScript(() => { localStorage.setItem('pandacode.theme', 'light'); });
+    await page.addInitScript(() => { localStorage.setItem('indocode.theme', 'light'); });
     await installSubagents(page, { 'session-1': [child('long', 'A reviewer with a long name that must not overflow the panel', {
       response: 'A compact response with `a_long_unbroken_identifier_that_should_stay_inside_the_details_panel_without_overflowing`.',
     })] });
@@ -529,6 +529,6 @@ test.describe('subagents', () => {
     expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(921);
     expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(701);
     expect(await panel(page).evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
-    await page.screenshot({ path: '/private/tmp/pandacode-subagents-light.png', animations: 'disabled' });
+    await page.screenshot({ path: '/private/tmp/indocode-subagents-light.png', animations: 'disabled' });
   });
 });

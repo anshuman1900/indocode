@@ -1,4 +1,4 @@
-/* Shapes of the PandaCode Connect commands and events (docs/remote-access.md). */
+/* Shapes of the Indocode Connect commands and events (docs/remote-access.md). */
 export interface RemoteStatus {
   configured: boolean; signedIn: boolean; account?: { login: string; avatarUrl?: string };
   device: { id: string; name: string; fingerprint: string }; hostEnabled: boolean; connected: boolean;

@@ -15,12 +15,12 @@ else
   exit 2
 fi
 sudo mkdir -p /etc/lightdm/lightdm.conf.d
-printf '[Seat:*]\nautologin-user=%s\nautologin-session=xfce\nuser-session=xfce\n' "$(id -un)" | sudo tee /etc/lightdm/lightdm.conf.d/50-pandacode.conf >/dev/null
+printf '[Seat:*]\nautologin-user=%s\nautologin-session=xfce\nuser-session=xfce\n' "$(id -un)" | sudo tee /etc/lightdm/lightdm.conf.d/50-indocode.conf >/dev/null
 getent group autologin >/dev/null || sudo groupadd -r autologin
 sudo usermod -aG autologin "$(id -un)"
 # Never blank or lock the screen an agent is looking at.
 mkdir -p ~/.config/autostart
-printf '[Desktop Entry]\nType=Application\nName=PandaCode screen\nExec=sh -c "xset s off -dpms"\n' > ~/.config/autostart/pandacode-screen.desktop
+printf '[Desktop Entry]\nType=Application\nName=Indocode screen\nExec=sh -c "xset s off -dpms"\n' > ~/.config/autostart/indocode-screen.desktop
 sudo systemctl set-default graphical.target >/dev/null
 sudo systemctl enable lightdm >/dev/null 2>&1 || true
 sudo systemctl restart lightdm 2>/dev/null || sudo systemctl start display-manager

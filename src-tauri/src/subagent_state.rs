@@ -385,7 +385,7 @@ mod tests {
     #[test]
     fn restart_retains_history_and_recovers_children_even_if_parent_status_was_saved_first() {
         let dir = std::env::temp_dir().join(format!(
-            "pandacode-subagent-history-{}",
+            "indocode-subagent-history-{}",
             uuid::Uuid::new_v4()
         ));
         std::fs::create_dir_all(&dir).unwrap();

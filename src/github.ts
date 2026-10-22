@@ -5,7 +5,7 @@ import type { FileEntry, GithubIssue, GithubItem, GithubReference, GithubStatus,
 /* GitHub through the user's signed-in `gh`. Everything here is optional: when the
  * switch is off or the project has no GitHub remote, nothing runs and nothing shows. */
 
-const STORAGE_KEY = 'pandacode.github';
+const STORAGE_KEY = 'indocode.github';
 const STATUS_TTL = 5 * 60 * 1000;
 const REFRESH_INTERVAL = 5 * 60 * 1000;
 export const MAX_REFERENCES = 5;
@@ -62,7 +62,7 @@ export function createGithub(host: GithubHost) {
   function setEnabled(value: boolean): void {
     try { localStorage.setItem(STORAGE_KEY, value ? 'on' : 'off'); } catch { /* The choice lasts for this session. */ }
     if (!value) statuses.clear();
-    window.dispatchEvent(new Event('pandacode-github-change'));
+    window.dispatchEvent(new Event('indocode-github-change'));
     host.changed();
   }
   function cached(projectId: string): GithubStatus | undefined {

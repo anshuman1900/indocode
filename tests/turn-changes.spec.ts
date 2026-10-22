@@ -135,7 +135,7 @@ test.describe('turn changes', () => {
     await expand(card);
     await expect(card.locator('.turn-change-file')).toHaveCount(3);
     await expect(card.locator('.turn-change-folder')).not.toHaveCount(0);
-    await card.screenshot({ path: '/private/tmp/pandacode-turn-changes-card.png', animations: 'disabled' });
+    await card.screenshot({ path: '/private/tmp/indocode-turn-changes-card.png', animations: 'disabled' });
     await card.locator('.turn-change-file').filter({ hasText: 'search.ts' }).click();
     await expect(review(page)).toBeVisible();
     await expect(review(page)).toContainText('src/components/search.ts');
@@ -144,10 +144,10 @@ test.describe('turn changes', () => {
     await expect(review(page).getByRole('button', { name: 'Split diff', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await review(page).getByRole('button', { name: 'Unified diff', exact: true }).click();
     await expect(review(page).getByRole('button', { name: 'Unified diff', exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await page.screenshot({ path: '/private/tmp/pandacode-turn-changes-dark.png', animations: 'disabled' });
+    await page.screenshot({ path: '/private/tmp/indocode-turn-changes-dark.png', animations: 'disabled' });
     await page.evaluate(() => document.documentElement.dataset.theme = 'light');
     await expect(review(page).getByText('normalized', { exact: true }).first()).toBeVisible();
-    await page.screenshot({ path: '/private/tmp/pandacode-turn-changes-light.png', animations: 'disabled' });
+    await page.screenshot({ path: '/private/tmp/indocode-turn-changes-light.png', animations: 'disabled' });
     const before = await page.evaluate(() => (window as any).__turnChangesTest.calls.filter((call: any) => call.command === 'turn_change_diff').at(-1).args);
     await review(page).getByRole('button', { name: 'Close dialog', exact: true }).click();
     await page.reload();

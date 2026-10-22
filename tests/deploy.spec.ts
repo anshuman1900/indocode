@@ -52,7 +52,7 @@ test('deploy offers connected platforms and starts a task with the brief', async
   const sent = (await calls(page, 'send_message'))[0];
   expect(sent.sessionId).not.toBe(before);
   expect(sent.text).toMatch(/^Deploy this project to Vercel\./);
-  expect(sent.text).toContain('pandacode_cloud_cli');
+  expect(sent.text).toContain('indocode_cloud_cli');
   expect(sent.text).toContain('deploy --prod --yes');
   expect(sent.text).not.toContain('vcp_token');
 });
@@ -84,7 +84,7 @@ test('Google Cloud connects with the gcloud login, a project and a region', asyn
   const sent = (await calls(page, 'send_message'))[0];
   expect(sent.text).toMatch(/^Deploy this project to Google Cloud\./);
   expect(sent.text).toContain('run deploy <service> --source .');
-  expect(sent.text).toContain('pandacode=deploy');
+  expect(sent.text).toContain('indocode=deploy');
 });
 
 test('Cloudflare connects for deploys first and sets up container sandboxes separately', async ({ page }) => {

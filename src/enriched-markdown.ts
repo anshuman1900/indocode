@@ -70,7 +70,7 @@ export function renderMarkdown(root: MarkdownNode, options: RenderOptions = {}):
       return '';
     });
     const body = html.trim() ? (a.tight === 'true' ? html : `<p>${html}</p>\n`) : '';
-    return followups.length ? `${body}<pandacode-ui><pre><code class="language-ui">${escapeText(JSON.stringify({ type: 'followups', items: followups.slice(0, 8) }))}</code></pre></pandacode-ui>\n` : body;
+    return followups.length ? `${body}<indocode-ui><pre><code class="language-ui">${escapeText(JSON.stringify({ type: 'followups', items: followups.slice(0, 8) }))}</code></pre></indocode-ui>\n` : body;
   };
   const cell = (tag: string, node: MarkdownNode) => {
     const align = node.attributes?.align ?? '';
@@ -116,9 +116,9 @@ export function renderMarkdown(root: MarkdownNode, options: RenderOptions = {}):
       case 'CodeBlock': {
         const language = (a.language ?? '').trim().split(/\s/)[0];
         const code = `<pre><code${language ? ` class="language-${escapeAttr(language)}"` : ''}>${escapeText(text(node))}</code></pre>`;
-        // Generative UI: the source stays in the light DOM; <pandacode-ui> draws it in a shadow root.
-        // Other code gets a copy button from <pandacode-code>, which slots the block unchanged.
-        return GENERATIVE.has(language.toLowerCase()) ? `<pandacode-ui>${code}</pandacode-ui>\n` : `<pandacode-code>${code}</pandacode-code>\n`;
+        // Generative UI: the source stays in the light DOM; <indocode-ui> draws it in a shadow root.
+        // Other code gets a copy button from <indocode-code>, which slots the block unchanged.
+        return GENERATIVE.has(language.toLowerCase()) ? `<indocode-ui>${code}</indocode-ui>\n` : `<indocode-code>${code}</indocode-code>\n`;
       }
       case 'ThematicBreak': return '<hr>\n';
       case 'Table': return `<table>\n${kids(node)}</table>\n`;

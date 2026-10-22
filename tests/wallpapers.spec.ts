@@ -88,8 +88,8 @@ test('wallpapers load one scene shared by thread and board without remounting it
 for (const theme of ['light', 'dark']) {
   test(`wallpapers restore normal header surfaces when disabled or contrast increases in ${theme} mode`, async ({ page }) => {
     await page.addInitScript(theme => {
-      localStorage.setItem('pandacode.theme', theme);
-      localStorage.setItem('pandacode.wallpapers', 'false');
+      localStorage.setItem('indocode.theme', theme);
+      localStorage.setItem('indocode.wallpapers', 'false');
     }, theme);
     await open(page);
     const normal = await barStyles(page);

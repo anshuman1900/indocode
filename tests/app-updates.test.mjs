@@ -15,7 +15,7 @@ test('About explains each state in one line', () => {
   const now = Date.parse('2026-10-18T12:00:00Z');
   assert.equal(describeUpdate({ kind: 'current', checkedAt: now - 5 * 60_000 }, true, now), 'Up to date · checked 5m ago');
   assert.equal(describeUpdate({ kind: 'downloading', version: '0.3.1', percent: 42 }, true), 'Downloading 0.3.1 · 42%');
-  assert.match(describeUpdate({ kind: 'ready', version: '0.3.1' }, true), /^0\.3\.1 is ready\. PandaCode restarts when your agents are done/);
+  assert.match(describeUpdate({ kind: 'ready', version: '0.3.1' }, true), /^0\.3\.1 is ready\. Indocode restarts when your agents are done/);
   assert.equal(describeUpdate({ kind: 'ready', version: '0.3.1' }, false), '0.3.1 is ready. Restart to finish.');
   assert.equal(describeUpdate({ kind: 'idle' }, false), 'Automatic updates are off.');
   assert.match(describeUpdate({ kind: 'error', message: 'offline' }, true), /offline$/);

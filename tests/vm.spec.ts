@@ -47,8 +47,8 @@ async function createAndStart(page: Page): Promise<void> {
   await panel(page).getByRole('button', { name: /^Ubuntu 24\.04/ }).click();
   // A new VM starts at once and shows its screen while the desktop installs.
   await expect(panel(page).getByRole('img', { name: 'VM screen' })).toBeVisible();
-  expect((await calls(page, 'vm_create'))[0]).toEqual({ image: 'ubuntu', name: 'pandacode-ubuntu' });
-  await expect(panel(page).getByRole('button', { name: 'Choose VM' })).toContainText('pandacode-ubuntu');
+  expect((await calls(page, 'vm_create'))[0]).toEqual({ image: 'ubuntu', name: 'indocode-ubuntu' });
+  await expect(panel(page).getByRole('button', { name: 'Choose VM' })).toContainText('indocode-ubuntu');
 }
 
 test('sets up Tart, creates a VM and shows its live screen', async ({ page }) => {
@@ -66,7 +66,7 @@ test('sets up Tart, creates a VM and shows its live screen', async ({ page }) =>
   const size = await panel(page).getByRole('img', { name: 'VM screen' }).evaluate((canvas: HTMLCanvasElement) => [canvas.width, canvas.height]);
   expect(size).toEqual([1024, 768]);
   await control(page, 'Stop VM').click();
-  await expect(panel(page).getByText('pandacode-ubuntu is stopped')).toBeVisible();
+  await expect(panel(page).getByText('indocode-ubuntu is stopped')).toBeVisible();
   await expect(panel(page).getByRole('img', { name: 'VM screen' })).toBeHidden();
 });
 
@@ -102,7 +102,7 @@ test('shares the project read-only when asked, and a VM can be deleted', async (
   await panel(page).getByRole('button', { name: /^Debian/ }).click();
   await expect(panel(page).getByRole('img', { name: 'VM screen' })).toBeVisible();
   await control(page, 'Stop VM').click();
-  await expect(panel(page).getByText('pandacode-debian is stopped')).toBeVisible();
+  await expect(panel(page).getByText('indocode-debian is stopped')).toBeVisible();
   await control(page, 'Share project read-only at start').click();
   await expect(control(page, 'Share project read-only at start')).toHaveAttribute('aria-pressed', 'true');
   await control(page, 'Start VM').click();
@@ -110,7 +110,7 @@ test('shares the project read-only when asked, and a VM can be deleted', async (
   const start = (await calls(page, 'vm_power')).filter(call => call.action === 'start').at(-1);
   expect(start.share).toMatch(/^\//);
   await panel(page).getByRole('button', { name: 'Choose VM' }).click();
-  await page.getByRole('menuitemradio', { name: 'Delete pandacode-debian' }).click();
+  await page.getByRole('menuitemradio', { name: 'Delete indocode-debian' }).click();
   await expect(panel(page).getByText('Create a machine', { exact: true })).toBeVisible();
 });
 

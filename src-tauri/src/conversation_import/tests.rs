@@ -27,7 +27,7 @@ fn log(dir: &Path, cwd: &Path) -> PathBuf {
 }
 
 fn temp() -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("pandacode-import-{}", uuid::Uuid::new_v4()));
+    let dir = std::env::temp_dir().join(format!("indocode-import-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
     dir
 }

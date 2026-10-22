@@ -16,7 +16,7 @@ The browser preview uses labeled sample limits and costs. The desktop reads the 
 
 The estimate answers "what would these tokens have cost through the API?". It does not show what a subscription bills.
 
-- **Sources.** Claude Code project logs (`$CLAUDE_CONFIG_DIR` or `~/.claude`, plus `~/.config/claude`, under `projects/`) and Codex rollouts (`$CODEX_HOME` or `~/.codex`, under `sessions/` and `archived_sessions/`). Other harnesses show "Cost not tracked". Their calendars count prompts sent from PandaCode (`prompt_activity`).
+- **Sources.** Claude Code project logs (`$CLAUDE_CONFIG_DIR` or `~/.claude`, plus `~/.config/claude`, under `projects/`) and Codex rollouts (`$CODEX_HOME` or `~/.codex`, under `sessions/` and `archived_sessions/`). Other harnesses show "Cost not tracked". Their calendars count prompts sent from Indocode (`prompt_activity`).
 - **Counting.** A Claude reply streams several copies and resumed sessions copy history, so replies are de-duplicated by message ID and request ID across all files. Subagent logs count toward cost but not toward sessions.
   - Codex events carry a running total. An event whose total has not moved is a repeat and is skipped. A September 2026 check across 1,200 local rollouts found no token events duplicated between files.
   - Codex `input_tokens` already includes cached and cache-write tokens, and `output_tokens` includes reasoning, so neither is counted twice.
@@ -31,13 +31,13 @@ The estimate answers "what would these tokens have cost through the API?". It do
 Researched on September 22, 2026:
 
 - [CodexBar](https://github.com/steipete/CodexBar) implements separate provider readers using CLI account interfaces or vendor quota endpoints. Its [Claude reader documentation](https://github.com/steipete/CodexBar/blob/main/docs/claude.md) describes OAuth usage and credential-source limitations.
-- [Quotio](https://github.com/nguyenphutrong/quotio) also provides quota tracking, alongside account routing and a local proxy. PandaCode already owns its harness connections and does not need another proxy or a bundled menu-bar app.
+- [Quotio](https://github.com/nguyenphutrong/quotio) also provides quota tracking, alongside account routing and a local proxy. Indocode already owns its harness connections and does not need another proxy or a bundled menu-bar app.
 - The [Codex app-server API](https://developers.openai.com/codex/app-server/) exposes `account/read` and `account/rateLimits/read`. The global panel skips the separate historical-token query used by the existing Codex command center.
 - [Kimi's managed usage reader](https://github.com/MoonshotAI/kimi-code/blob/main/packages/oauth/src/managed-usage.ts), [Z.ai's official quota script](https://github.com/zai-org/zai-coding-plugins/blob/main/plugins/glm-plan-usage/skills/usage-query-skill/scripts/query-usage.mjs), and [OpenCode Go's usage endpoint](https://github.com/anomalyco/opencode/blob/dev/packages/console/app/src/routes/zen/go/v1/usage.ts) supply the provider response contracts.
 - Kimi credential locations follow the [modern CLI paths](https://github.com/MoonshotAI/kimi-code/blob/main/apps/kimi-code/src/utils/paths.ts), [legacy Python paths](https://github.com/MoonshotAI/kimi-cli/blob/main/src/kimi_cli/share.py), and [legacy OAuth file format](https://github.com/MoonshotAI/kimi-cli/blob/main/src/kimi_cli/auth/oauth.py). Configuration selection reads only the default model's provider; unrelated keys are ignored.
-- Antigravity's [native usage command](https://antigravity.google/docs/cli/commands/usage/) and [headless mode](https://antigravity.google/docs/cli/headless/) support standalone reporting. The version floor and structured response fixtures are covered by [CodexBar's CLI report tests](https://github.com/steipete/CodexBar/blob/main/Tests/CodexBarTests/AntigravityCLIUsageReportTests.swift). PandaCode verifies a stable version of at least 1.1.11 before invoking the report, bounds execution to 12 seconds after a 3-second version check, and declines explicit credential overrides that cannot be matched to the report's account.
+- Antigravity's [native usage command](https://antigravity.google/docs/cli/commands/usage/) and [headless mode](https://antigravity.google/docs/cli/headless/) support standalone reporting. The version floor and structured response fixtures are covered by [CodexBar's CLI report tests](https://github.com/steipete/CodexBar/blob/main/Tests/CodexBarTests/AntigravityCLIUsageReportTests.swift). Indocode verifies a stable version of at least 1.1.11 before invoking the report, bounds execution to 12 seconds after a 3-second version check, and declines explicit credential overrides that cannot be matched to the report's account.
 
-These projects informed the approach and response interpretation. PandaCode uses its own small Rust readers and existing dependencies; none of those applications is installed or bundled.
+These projects informed the approach and response interpretation. Indocode uses its own small Rust readers and existing dependencies; none of those applications is installed or bundled.
 
 ## Provider behavior
 
@@ -61,10 +61,10 @@ OpenCode authentication content takes precedence over its saved file, and saved 
 
 - The UI and its stylesheet load only when opened. No usage requests run at startup or on a background timer.
 - Provider cards settle independently with at most three reads in flight. Closing the panel stops its queued reads and ignores late responses.
-- The native cache coalesces concurrent reads per provider, caches for 60 seconds, and limits explicit refresh to one attempt every 10 seconds. Configuration changes in PandaCode invalidate the relevant entry.
+- The native cache coalesces concurrent reads per provider, caches for 60 seconds, and limits explicit refresh to one attempt every 10 seconds. Configuration changes in Indocode invalidate the relevant entry.
 - Only bounded local credential files and fixed HTTPS quota endpoints are used. Requests have time and response-size limits and do not follow redirects carrying credentials.
-- No prompt or paid inference is needed. PandaCode does not independently refresh or rewrite harness OAuth tokens; the Codex CLI remains responsible for its own authentication lifecycle.
-- No credentials or raw provider responses cross into the webview, logs, analytics, or PandaCode servers. Only normalized limit fields are returned. The limit cache is in memory and creates no database migration or new credential store.
+- No prompt or paid inference is needed. Indocode does not independently refresh or rewrite harness OAuth tokens; the Codex CLI remains responsible for its own authentication lifecycle.
+- No credentials or raw provider responses cross into the webview, logs, analytics, or Indocode servers. Only normalized limit fields are returned. The limit cache is in memory and creates no database migration or new credential store.
 - Agent logs are read only while the panel is open, one scan at a time, in a blocking worker with a 5-minute bound. Parsers keep token counts, the model name and the hour; prompt, reply and tool text is discarded as each line is parsed. Per-file counts are saved as `usage-ledger-cache.json` in the app data folder with each file's read offset, so a reopen only reads appended bytes. On the September 2026 test machine the first scan of 7.9 GB took about 6 s, a rescan 10 ms, and the UI payload was about 100 KB. Results are reused for 60 seconds unless Refresh is pressed.
 - The price-list download is the only network request the estimate makes. No usage data is sent.
 - Locked or inaccessible credentials produce an actionable state rather than a Keychain prompt. macOS Keychain reads run in a short-lived, bounded helper with user interaction disabled; this does not change the main app’s credential behavior. Users can sign in through their harness and refresh.

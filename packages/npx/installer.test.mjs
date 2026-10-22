@@ -44,19 +44,19 @@ test('rejects a tampered trusted comment', () => {
 });
 
 test('picks the asset per platform', () => {
-  assert.equal(assetFor('darwin', 'arm64'), 'PandaCode-macOS-arm64.app.tar.gz');
-  assert.equal(assetFor('win32', 'x64'), 'PandaCode-Windows-x64-setup.exe');
-  assert.equal(assetFor('linux', 'x64'), 'PandaCode-Linux-x86_64.AppImage');
-  assert.equal(assetFor('darwin', 'x64'), 'PandaCode-macOS-x64.app.tar.gz');
+  assert.equal(assetFor('darwin', 'arm64'), 'Indocode-macOS-arm64.app.tar.gz');
+  assert.equal(assetFor('win32', 'x64'), 'Indocode-Windows-x64-setup.exe');
+  assert.equal(assetFor('linux', 'x64'), 'Indocode-Linux-x86_64.AppImage');
+  assert.equal(assetFor('darwin', 'x64'), 'Indocode-macOS-x64.app.tar.gz');
   assert.throws(() => assetFor('darwin', 'ia32'), /no build/);
-  assert.equal(assetFor('linux', 'arm64'), 'PandaCode-Linux-aarch64.AppImage');
+  assert.equal(assetFor('linux', 'arm64'), 'Indocode-Linux-aarch64.AppImage');
   assert.throws(() => assetFor('win32', 'arm64'), /no build/);
 });
 
 test('writes a desktop entry', () => {
-  const text = desktopEntry('/h/.local/bin/pandacode', '/h/icon.png');
+  const text = desktopEntry('/h/.local/bin/indocode', '/h/icon.png');
   assert.match(text, /^\[Desktop Entry\]\n/);
-  assert.match(text, /\nExec=\/h\/\.local\/bin\/pandacode\n/);
+  assert.match(text, /\nExec=\/h\/\.local\/bin\/indocode\n/);
   assert.match(text, /\nIcon=\/h\/icon\.png\n/);
 });
 

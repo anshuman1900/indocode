@@ -457,7 +457,7 @@ pub(crate) fn executable_path() -> Result<OsString, String> {
 
 /// Widens this process's PATH to the installed-tool locations, once, at startup. Apps opened
 /// from Finder or the Dock start with PATH=/usr/bin:/bin, and every agent, script and helper
-/// PandaCode launches inherits it: without this, an agent cannot run `gh`, `node` or anything
+/// Indocode launches inherits it: without this, an agent cannot run `gh`, `node` or anything
 /// else installed with Homebrew, even though the user's terminal can. Existing entries keep
 /// their order; missing standard locations are appended.
 pub(crate) fn widen_process_path() {
@@ -536,7 +536,7 @@ mod tests {
     impl Fixture {
         fn new() -> Self {
             let root =
-                std::env::temp_dir().join(format!("pandacode-launch-{}", uuid::Uuid::new_v4()));
+                std::env::temp_dir().join(format!("indocode-launch-{}", uuid::Uuid::new_v4()));
             fs::create_dir_all(&root).unwrap();
             Self(root.canonicalize().unwrap())
         }
@@ -568,7 +568,7 @@ mod tests {
         // node installed under its own prefix, reached only through a symlink on PATH.
         let node = executable(&f, "runtime/bin/node");
         // A name no system directory holds, so a real Homebrew CLI cannot answer first.
-        let cli = "pandacode-fixture-npm-cli";
+        let cli = "indocode-fixture-npm-cli";
         let dsh = executable(&f, &format!("runtime/bin/{cli}"));
         fs::create_dir_all(f.0.join("links")).unwrap();
         std::os::unix::fs::symlink(&node, f.0.join("links/node")).unwrap();
@@ -591,11 +591,11 @@ mod tests {
     fn grok_installer_directory_is_searched() {
         let f = Fixture::new();
         // The official Grok Build installer puts the CLI in ~/.grok/bin only.
-        let grok = executable(&f, "home/.grok/bin/pandacode-fixture-grok");
+        let grok = executable(&f, "home/.grok/bin/indocode-fixture-grok");
         let home = f.0.join("home").into_os_string();
         let env = |key: &str| (key == "HOME").then(|| home.clone());
         assert_eq!(
-            find_in_directories("pandacode-fixture-grok", search_directories(false, &env), false),
+            find_in_directories("indocode-fixture-grok", search_directories(false, &env), false),
             Some(grok)
         );
     }
@@ -878,9 +878,9 @@ mod tests {
     fn scripts_find_installed_user_tools_with_a_minimal_gui_path() {
         use std::os::unix::fs::PermissionsExt;
         let f = Fixture::new();
-        let tool = f.file(".local/bin/pandacode-test-tool", "#!/bin/sh\nprintf 'found installed tool'\n");
+        let tool = f.file(".local/bin/indocode-test-tool", "#!/bin/sh\nprintf 'found installed tool'\n");
         fs::set_permissions(&tool, fs::Permissions::from_mode(0o755)).unwrap();
-        let script = f.file("script.sh", "#!/bin/sh\npandacode-test-tool\n");
+        let script = f.file("script.sh", "#!/bin/sh\nindocode-test-tool\n");
         let env = |name: &str| match name {
             "PATH" => Some("/usr/bin:/bin".into()),
             "HOME" => Some(f.0.clone().into_os_string()),

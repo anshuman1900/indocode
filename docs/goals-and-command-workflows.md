@@ -1,12 +1,12 @@
 # Goals and harness command workflows
 
-PandaCode uses the installed harness's protocol and native command registry. Public Codex operations have task-scoped controls; commands that belong to a terminal interface open that real harness in the embedded terminal. Terminal commands are inserted only when the user presses the insert button and are never passed as model prompts. The user submits them in the visible terminal, after authentication/trust screens have finished.
+Indocode uses the installed harness's protocol and native command registry. Public Codex operations have task-scoped controls; commands that belong to a terminal interface open that real harness in the embedded terminal. Terminal commands are inserted only when the user presses the insert button and are never passed as model prompts. The user submits them in the visible terminal, after authentication/trust screens have finished.
 
 ## Goals
 
 `/goal` opens a goal editor with an objective and optional token budget. The task menu exposes the same control while a task is running. The retained goal banner shows provider-reported state, token usage, and elapsed work time. Pause, resume, edit, and clear use `thread/goal/*` APIs.
 
-Codex itself schedules initial and subsequent turns. PandaCode keeps one connection alive while the goal is active and streams each turn through the existing transcript path. It does not inject continuation prompts or treat a completed turn as a completed goal. Active, blocked, paused, and limited goals remain in progress on the board; only completed goals can advance to review automatically.
+Codex itself schedules initial and subsequent turns. Indocode keeps one connection alive while the goal is active and streams each turn through the existing transcript path. It does not inject continuation prompts or treat a completed turn as a completed goal. Active, blocked, paused, and limited goals remain in progress on the board; only completed goals can advance to review automatically.
 
 An explicit stop pauses the goal before interrupting the turn. Interrupted app sessions recover with a paused goal, allowing the user to resume deliberately. Before loading an existing Codex thread, the adapter reads its goal and pauses any active goal before continuing; merely inspecting, pausing, or clearing a saved goal does not load it and cannot accidentally start work. Goal state is validated against the saved provider thread ID and persisted separately from transcript text.
 
@@ -51,5 +51,5 @@ and Claude console launches receive explicit approval-mode arguments. Kimi's
 Standard console retains its saved native permissions because its installed CLI
 does not expose a flag to reset that state; the console banner identifies this.
 Terminal-only output remains in the console/native history. Imported Codex
-conversations load bounded text history into PandaCode; Claude/Kimi terminal
+conversations load bounded text history into Indocode; Claude/Kimi terminal
 history is not synthesized into app comments.

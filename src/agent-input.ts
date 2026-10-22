@@ -155,7 +155,7 @@ function renderQuestion(host: HTMLElement, question: AgentQuestion, context: Ric
 
 type FieldReader = { name: string; read(): unknown };
 function renderSchema(host: HTMLElement, raw: unknown): FieldReader[] {
-  const unsupported = () => new Error('This integration asks for a form format that PandaCode cannot display yet. Cancel this request to continue.');
+  const unsupported = () => new Error('This integration asks for a form format that Indocode cannot display yet. Cancel this request to continue.');
   if (!object(raw) || raw.type !== 'object' || !object(raw.properties) || Object.keys(raw.properties).length > 30) throw unsupported();
   const topKeys = new Set(['type', 'properties', 'required', 'title', 'description', 'additionalProperties', '$schema', '$id']);
   if (Object.keys(raw).some(key => !topKeys.has(key))) throw unsupported();
