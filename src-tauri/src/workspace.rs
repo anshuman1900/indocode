@@ -641,7 +641,7 @@ pub fn worktree_branch_name(branch: &str) -> Result<String, String> {
     }
     // Keep explicitly named historical branches intact when creating worktrees.
     Ok(if branch.starts_with("indocode/")
-        || branch.starts_with("indocode/")
+        || branch.starts_with("kingcode/")
         || branch.starts_with("codex/")
     {
         branch.to_string()
@@ -1173,7 +1173,7 @@ pub fn legacy_worktree_parent(path: &Path, registered: &[PathBuf]) -> Option<Pat
         let leaf = checkout.file_name()?.to_str()?;
         // Existing installations may still have either historical prefix on disk.
         if !leaf.starts_with("indocode-")
-            && !leaf.starts_with("indocode-")
+            && !leaf.starts_with("kingcode-")
             && !leaf.starts_with("codex-")
         {
             return None;
@@ -1797,7 +1797,7 @@ mod tests {
     fn worktree_preserves_explicit_current_and_legacy_prefixes() {
         let f = Fixture::new(true);
         // Historical branch and path prefixes remain supported after a rename.
-        for prefix in ["indocode", "indocode", "codex"] {
+        for prefix in ["indocode", "kingcode", "codex"] {
             let branch = format!("{prefix}/existing-convention");
             let path = create_worktree(&f.root, branch.clone()).unwrap();
             assert_eq!(git_status(&path).unwrap().branch, branch);

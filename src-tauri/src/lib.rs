@@ -16,6 +16,7 @@ mod context_recovery;
 mod conversation_fork;
 mod conversation_import;
 mod design;
+mod direct;
 mod file_preview;
 mod run_script;
 mod github;
@@ -3105,6 +3106,13 @@ pub fn run() {
             let handler: fn(tauri::ipc::Invoke<tauri::Wry>) -> bool = tauri::generate_handler![
                 support::open_support,
                 support::support_details,
+                direct::direct_providers_list,
+                direct::direct_provider_save,
+                direct::direct_provider_delete,
+                direct::direct_provider_set_key,
+                direct::direct_provider_test,
+                direct::direct_models_refresh,
+                direct::direct_models_list,
                 local_sign_app,
                 agent_updates::check_agent_updates,
                 agent_updates::update_agent,

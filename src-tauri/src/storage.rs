@@ -156,7 +156,7 @@ pub struct Store {
 type Result<T> = std::result::Result<T, String>;
 /// The newest `PRAGMA user_version`. Every migration step below must run for any
 /// database older than this, so the guard reads this constant, never a literal.
-pub const SCHEMA_VERSION: i64 = 26;
+pub const SCHEMA_VERSION: i64 = 27;
 
 const SIDEBAR_ORDER: &str = "pinned DESC,sidebar_order IS NULL,sidebar_order,COALESCE(MAX(last_response_at,last_prompt_at),last_response_at,last_prompt_at,created_at) DESC,id";
 
@@ -419,6 +419,34 @@ impl Store {
                     }
                 }
                 migration.execute_batch("CREATE UNIQUE INDEX IF NOT EXISTS sessions_remote ON sessions(remote_device,remote_session) WHERE remote_session IS NOT NULL; PRAGMA user_version=26;").map_err(|e| e.to_string())?;
+            }
+            if version < 27 {
+                // Direct-API model providers (OpenAI-compatible, Anthropic, Gemini,
+                // Ollama): non-secret configuration plus a model-discovery cache.
+                // API keys live only in the OS secure store, never here.
+                migration.execute_batch(
+                    "CREATE TABLE IF NOT EXISTS api_providers(
+                        id TEXT PRIMARY KEY,
+                        kind TEXT NOT NULL CHECK(kind IN ('openai_compatible','anthropic','gemini','ollama')),
+                        base_url TEXT,
+                        label TEXT NOT NULL,
+                        default_model TEXT,
+                        enabled INTEGER NOT NULL DEFAULT 1,
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL);
+                    CREATE INDEX IF NOT EXISTS api_providers_enabled ON api_providers(enabled, label);
+                    CREATE TABLE IF NOT EXISTS api_models(
+                        provider_id TEXT NOT NULL REFERENCES api_providers(id) ON DELETE CASCADE,
+                        model_id TEXT NOT NULL,
+                        label TEXT NOT NULL DEFAULT '',
+                        context_window INTEGER,
+                        supports_tools INTEGER NOT NULL DEFAULT 1,
+                        input_price_per_mtok INTEGER,
+                        output_price_per_mtok INTEGER,
+                        discovered_at INTEGER NOT NULL,
+                        PRIMARY KEY(provider_id, model_id));
+                    CREATE INDEX IF NOT EXISTS api_models_provider ON api_models(provider_id, label);
+                    PRAGMA user_version=27;").map_err(|e| e.to_string())?;
             }
             migration.commit().map_err(|e| e.to_string())?;
         }
@@ -996,6 +1024,7 @@ impl Store {
             "github-copilot",
         ]
         .contains(&provider)
+            && !provider.starts_with("direct:")
         {
             return Err("Unknown provider.".into());
         }
@@ -1178,6 +1207,7 @@ impl Store {
             "github-copilot",
         ]
         .contains(&provider)
+            && !provider.starts_with("direct:")
         {
             return Err("Unknown provider.".into());
         }
@@ -1696,6 +1726,202 @@ fn handoff_from_provider(content: &str) -> Option<String> {
         )
     };
     (known(from) && known(to)).then(|| from.to_owned())
+}
+
+/// A direct-API provider configuration (non-secret half; keys live in the OS secure store).
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DirectProvider {
+    pub id: String,
+    /// `openai_compatible` (OpenAI, OpenRouter, Groq, Mistral, xAI, LM Studio, llama.cpp,
+    /// any custom gateway), `anthropic`, `gemini` or `ollama`.
+    pub kind: String,
+    pub base_url: Option<String>,
+    pub label: String,
+    pub default_model: Option<String>,
+    pub enabled: bool,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+/// Everything needed to create or update a direct provider (key travels separately).
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DirectProviderDraft {
+    pub id: Option<String>,
+    pub kind: String,
+    pub base_url: Option<String>,
+    pub label: String,
+    pub default_model: Option<String>,
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+/// A model a direct provider reported during discovery.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DirectModel {
+    pub provider_id: String,
+    pub model_id: String,
+    pub label: String,
+    pub context_window: Option<i64>,
+    pub supports_tools: bool,
+    pub input_price_per_mtok: Option<i64>,
+    pub output_price_per_mtok: Option<i64>,
+    pub discovered_at: i64,
+}
+
+/// One discovered model before persistence (identities already resolved).
+pub(crate) struct DirectModelRow {
+    pub model_id: String,
+    pub label: String,
+    pub context_window: Option<i64>,
+    pub supports_tools: bool,
+    pub input_price_per_mtok: Option<i64>,
+    pub output_price_per_mtok: Option<i64>,
+}
+
+const DIRECT_KINDS: [&str; 4] = ["openai_compatible", "anthropic", "gemini", "ollama"];
+
+impl Store {
+    pub fn direct_providers(&self) -> Result<Vec<DirectProvider>> {
+        let mut statement = self.db.prepare(
+            "SELECT id, kind, base_url, label, default_model, enabled, created_at, updated_at
+             FROM api_providers ORDER BY label COLLATE NOCASE, id",
+        ).map_err(|e| e.to_string())?;
+        let rows = statement
+            .query_map([], direct_provider_from_row)
+            .map_err(|e| e.to_string())?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?;
+        Ok(rows)
+    }
+
+    pub fn direct_provider(&self, id: &str) -> Result<DirectProvider> {
+        self.db
+            .query_row(
+                "SELECT id, kind, base_url, label, default_model, enabled, created_at, updated_at
+                 FROM api_providers WHERE id = ?1",
+                [id],
+                direct_provider_from_row,
+            )
+            .map_err(|error| match error {
+                rusqlite::Error::QueryReturnedNoRows => "That direct provider no longer exists.".into(),
+                other => other.to_string(),
+            })
+    }
+
+    pub fn direct_provider_save(&self, draft: DirectProviderDraft) -> Result<DirectProvider> {
+        if !DIRECT_KINDS.contains(&draft.kind.as_str()) {
+            return Err("Unknown direct provider type.".into());
+        }
+        let label = draft.label.trim();
+        if label.is_empty() {
+            return Err("Give the provider a name.".into());
+        }
+        let id = draft.id.unwrap_or_else(|| id());
+        let now = chrono::Utc::now().timestamp();
+        let enabled: i64 = draft.enabled.into();
+        self.db.execute(
+            "INSERT INTO api_providers(id, kind, base_url, label, default_model, enabled, created_at, updated_at)
+             VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)
+             ON CONFLICT(id) DO UPDATE SET
+                kind=excluded.kind, base_url=excluded.base_url, label=excluded.label,
+                default_model=excluded.default_model, enabled=excluded.enabled, updated_at=excluded.updated_at",
+            rusqlite::params![id, draft.kind, draft.base_url, label.trim(), draft.default_model, enabled, now],
+        ).map_err(|e| e.to_string())?;
+        self.direct_provider(&id)
+    }
+
+    pub fn direct_provider_delete(&self, id: &str) -> Result<()> {
+        let changed = self.db.execute("DELETE FROM api_providers WHERE id = ?1", [id]).map_err(|e| e.to_string())?;
+        if changed == 0 {
+            return Err("That direct provider no longer exists.".into());
+        }
+        Ok(())
+    }
+
+    /// Replaces the whole discovery cache for one provider (models are a snapshot).
+    pub fn direct_models_replace(&self, provider_id: &str, rows: Vec<DirectModelRow>) -> Result<Vec<DirectModel>> {
+        let now = chrono::Utc::now().timestamp();
+        let mut models = Vec::with_capacity(rows.len());
+        let mut statement = self.db.prepare(
+            "INSERT OR REPLACE INTO api_models(provider_id, model_id, label, context_window, supports_tools,
+                                             input_price_per_mtok, output_price_per_mtok, discovered_at)
+             VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        ).map_err(|e| e.to_string())?;
+        for row in rows {
+            if row.model_id.trim().is_empty() {
+                continue;
+            }
+            statement.execute(rusqlite::params![
+                provider_id,
+                row.model_id.trim(),
+                row.label.trim(),
+                row.context_window,
+                row.supports_tools,
+                row.input_price_per_mtok,
+                row.output_price_per_mtok,
+                now,
+            ]).map_err(|e| e.to_string())?;
+            models.push(DirectModel {
+                provider_id: provider_id.to_owned(),
+                model_id: row.model_id.trim().to_owned(),
+                label: row.label.trim().to_owned(),
+                context_window: row.context_window,
+                supports_tools: row.supports_tools,
+                input_price_per_mtok: row.input_price_per_mtok,
+                output_price_per_mtok: row.output_price_per_mtok,
+                discovered_at: now,
+            });
+        }
+        Ok(models)
+    }
+
+    pub fn direct_models(&self, provider_id: Option<&str>) -> Result<Vec<DirectModel>> {
+        let mut statement = self.db.prepare(
+            "SELECT provider_id, model_id, label, context_window, supports_tools,
+                    input_price_per_mtok, output_price_per_mtok, discovered_at
+             FROM api_models WHERE (?1 IS NULL OR provider_id = ?1)
+             ORDER BY label COLLATE NOCASE, model_id",
+        ).map_err(|e| e.to_string())?;
+        let rows = statement
+            .query_map([provider_id], direct_model_from_row)
+            .map_err(|e| e.to_string())?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?;
+        Ok(rows)
+    }
+}
+
+fn direct_provider_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<DirectProvider> {
+    Ok(DirectProvider {
+        id: row.get("id")?,
+        kind: row.get("kind")?,
+        base_url: row.get("base_url")?,
+        label: row.get("label")?,
+        default_model: row.get("default_model")?,
+        enabled: row.get::<_, i64>("enabled")? != 0,
+        created_at: row.get("created_at")?,
+        updated_at: row.get("updated_at")?,
+    })
+}
+
+fn direct_model_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<DirectModel> {
+    Ok(DirectModel {
+        provider_id: row.get("provider_id")?,
+        model_id: row.get("model_id")?,
+        label: row.get("label")?,
+        context_window: row.get("context_window")?,
+        supports_tools: row.get::<_, i64>("supports_tools")? != 0,
+        input_price_per_mtok: row.get("input_price_per_mtok")?,
+        output_price_per_mtok: row.get("output_price_per_mtok")?,
+        discovered_at: row.get("discovered_at")?,
+    })
 }
 
 #[cfg(test)]
