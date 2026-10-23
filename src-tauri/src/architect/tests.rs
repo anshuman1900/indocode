@@ -898,6 +898,18 @@ fn config() -> TeamConfig {
         lead_guidance: None,
     }
 }
+#[test]
+fn direct_providers_are_valid_worker_profiles() {
+    // Regression: team setups rejected direct:<id> providers ("Worker profiles
+    // need unique IDs and an installed harness type"), so a custom API provider
+    // could not be used for the architect or its workers.
+    let mut team = config();
+    team.workers[0].provider = "direct:532abbff-4352-421e-9eac-07953d0faaf9".into();
+    assert!(team.validate().is_ok(), "a direct provider must be a valid worker profile");
+    let mut team = config();
+    team.workers[0].provider = "not-a-harness".into();
+    assert!(team.validate().is_err(), "an unknown provider must still be rejected");
+}
 fn fixture() -> (Store, TeamSnapshot) {
     let store = Store::open(std::path::Path::new(":memory:")).unwrap();
     let project = store.add_project(&std::env::temp_dir()).unwrap();
@@ -1546,7 +1558,7 @@ fn dispatch_requires_explicit_file_scopes_without_persisting_any_part_of_the_bat
         let count: i64 = store.db.query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| row.get(0)).unwrap();
         assert_eq!(count, expected, "{table}");
     }
-    let tools = catalog();
+    let tools = catalog(&HARNESSES.iter().map(|harness| (*harness).to_string()).collect::<Vec<String>>());
     let dispatch = tools.iter().find(|tool| tool["name"] == "indocode_dispatch_workers").unwrap();
     assert!(dispatch["inputSchema"]["properties"]["assignments"]["items"]["required"]
         .as_array().unwrap().contains(&json!("files")));
@@ -2102,7 +2114,7 @@ fn architect_that_stops_waiting_on_a_background_job_is_asked_once_to_continue() 
 }
 #[test]
 fn every_registered_team_tool_runs_without_an_approval_prompt() {
-    let names = catalog().into_iter().chain(coordination::tools(true)).chain(coordination::tools(false))
+    let names = catalog(&HARNESSES.iter().map(|harness| (*harness).to_string()).collect::<Vec<String>>()).into_iter().chain(coordination::tools(true)).chain(coordination::tools(false))
         .map(|tool| tool["name"].as_str().unwrap().to_owned()).collect::<HashSet<_>>();
     for name in &names {
         assert!(team_tool(name), "{name} is not auto-allowed");

@@ -200,7 +200,7 @@ fn rank(status: &str) -> u8 {
 /// `/`) the harness offers in this task, from `list_slash_commands`. A step never silently
 /// takes a weaker path: a missing command is `blocked`, unless the step carries fallback text.
 pub fn dry_run(recipe: &Recipe, provider: &str, slash: &[String]) -> Result<Vec<StepReport>, String> {
-    if !HARNESSES.contains(&provider) {
+    if !HARNESSES.contains(&provider) && !provider.starts_with("direct:") {
         return Err("Unknown harness.".into());
     }
     validate(recipe)?;
