@@ -35,7 +35,7 @@
   "bundle": {
     "active": true,
     "targets": [
-      "app"
+      "nsis"
     ],
     "icon": [
       "icons/32x32.png",
@@ -61,6 +61,20 @@
           "x": 480,
           "y": 170
         }
+      }
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": [
+          "English"
+        ]
       }
     }
   },
