@@ -27,6 +27,12 @@ interface Configuration {
   claudeConnectionMode?: ClaudeMode;
 }
 
+/** A direct-API provider configuration (non-secret half). Keys live in the OS secure store. */
+interface DirectProviderStatus { id: string; kind: 'openai_compatible' | 'anthropic' | 'gemini' | 'ollama'; baseUrl: string | null; label: string; defaultModel: string | null; enabled: boolean; hasKey: boolean; keyHint: string | null; chatPath: string | null; extraHeaders: string | null; }
+interface DirectTestResult { ok: boolean; latencyMs: number; error: string | null; }
+interface DirectModelEntry { providerId: string; modelId: string; label: string; contextWindow: number | null; supportsTools: boolean; }
+const directKindLabels: Record<DirectProviderStatus['kind'], string> = { openai_compatible: 'OpenAI-compatible', anthropic: 'Anthropic API', gemini: 'Gemini API', ollama: 'Ollama (local)' };
+
 /** Key-based connections share one form/status/remove pattern; the native side owns the secret. */
 const keyed = {
   glm: { env: 'ZAI_API_KEY', save: 'provider_save_glm_key', remove: 'provider_remove_glm_key', saved: 'GLM key saved. Choose GLM Coding Plan in the model selector.', savedFlag: 'glmKeySaved', envFlag: 'glmKeyFromEnvironment' },
@@ -78,6 +84,36 @@ export function mountProviderSettings(host: HTMLElement, saved: () => Promise<un
       ${keyForm('commandcode', 'Command Code API key')}
       <a href="https://commandcode.ai/docs/acp" target="_blank" rel="noopener noreferrer">Command Code docs ${icon('forward')}</a>${pathForm('commandcode', 'Command Code executable', '/path/to/command-code')}</section>
     <section class="connection-card"><h3>${providerLogo('github-copilot')}GitHub Copilot CLI<small>GitHub Copilot, via ACP</small></h3><p>Install with <code>npm install -g @github/copilot</code>, then run <code>copilot login</code> in a terminal. Indocode uses the CLI sign-in; GitHub credentials stay with Copilot CLI.</p><div class="connection-model-actions"><a href="https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli" target="_blank" rel="noopener noreferrer">Install and sign in ${icon('forward')}</a><a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/acp-server" target="_blank" rel="noopener noreferrer">ACP support details ${icon('forward')}</a></div>${pathForm('github-copilot', 'GitHub Copilot CLI executable', '/path/to/copilot')}</section>
+    <section class="connection-card" id="direct-card"><h3>API models<small>any provider by key</small></h3>
+      <p>Bring any model by API key — OpenRouter, OpenAI, Anthropic, Gemini, Groq, a local Ollama or any OpenAI-compatible endpoint. Tools, approvals and steering work like every other harness.</p>
+      <div id="direct-list" role="list" aria-label="Configured API providers"></div>
+      <details class="connection-path" id="direct-add"><summary>Add a provider ${icon('down')}</summary>
+        <form id="direct-form">
+          <label for="direct-label">Name</label>
+          <div class="connection-input-row"><input id="direct-label" placeholder="OpenRouter" autocomplete="off" spellcheck="false" maxlength="80" required></div>
+          <label for="direct-kind">Type</label>
+          <div class="connection-select"><select id="direct-kind">
+            <option value="openai_compatible">OpenAI-compatible (OpenRouter, OpenAI, Groq, LM Studio…)</option>
+            <option value="anthropic">Anthropic API</option>
+            <option value="gemini">Google Gemini API</option>
+            <option value="ollama">Ollama (local, no key)</option>
+          </select></div>
+          <label for="direct-base">Base URL <small>optional — defaults to the provider's own endpoint</small></label>
+          <div class="connection-input-row"><input id="direct-base" placeholder="https://openrouter.ai/api/v1" autocomplete="off" spellcheck="false" maxlength="300"></div>
+          <label for="direct-model">Default model <small>optional</small></label>
+          <div class="connection-input-row"><input id="direct-model" placeholder="anthropic/claude-3.5-sonnet" autocomplete="off" spellcheck="false" maxlength="200"></div>
+          <details class="connection-path" id="direct-advanced"><summary>Advanced <small>custom endpoints and headers</small> ${icon('down')}</summary>
+            <label for="direct-chat-path">Chat path <small>only if the endpoint differs from /chat/completions</small></label>
+            <div class="connection-input-row"><input id="direct-chat-path" placeholder="/chat/completions" autocomplete="off" spellcheck="false" maxlength="300"></div>
+            <label for="direct-headers">Extra headers <small>one per line, Name: value</small></label>
+            <div class="connection-input-row"><textarea id="direct-headers" rows="2" spellcheck="false" maxlength="2048" placeholder="X-Title: My App"></textarea></div>
+          </details>
+          <label for="direct-key">API key <small>not needed for Ollama</small></label>
+          <div class="connection-input-row"><input id="direct-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" maxlength="4096"><button class="primary-button" type="submit">Save provider</button></div>
+          <small>The key is stored in the OS secure store and sent only to this provider. Saved providers appear in the model picker under their name.</small>
+        </form>
+      </details>
+    </section>
     <p class="connection-feedback" role="status" hidden></p>${preview ? '<p class="settings-preview-note">Browser preview · keys are never saved here.</p>' : ''}`;
   const feedback = host.querySelector<HTMLElement>('.connection-feedback')!;
   const keyInput = (provider: KeyedProvider) => host.querySelector<HTMLInputElement>(`#${provider}-key`)!;
@@ -158,9 +194,109 @@ export function mountProviderSettings(host: HTMLElement, saved: () => Promise<un
       if (!disposed) { claudeMode.disabled = false; host.removeAttribute('aria-busy'); host.querySelectorAll<HTMLButtonElement>('button').forEach(button => button.disabled = false); for (const input of keyInputs) host.querySelector<HTMLButtonElement>(`#${input.id}-form button`)!.disabled = input.disabled; }
     }
   }
+  const directList = host.querySelector<HTMLElement>('#direct-list')!;
+  const directForm = host.querySelector<HTMLFormElement>('#direct-form')!;
+  let directPending = false;
+  function renderDirect(rows: DirectProviderStatus[]): void {
+    if (!rows.length) {
+      directList.innerHTML = '<small>No API providers yet. Add one below to bring any model by key.</small>';
+      return;
+    }
+    directList.innerHTML = rows.map(provider => `
+      <div class="direct-row" role="listitem" data-direct-row="${escape(provider.id)}">
+        <div class="direct-row-main">
+          <strong>${escape(provider.label)}</strong>
+          <small>${escape(directKindLabels[provider.kind])}${provider.baseUrl ? ` · ${escape(provider.baseUrl)}` : ''} · ${provider.hasKey ? `key ${escape(provider.keyHint ?? 'saved')}` : 'no key'}</small>
+          <small class="direct-status" role="status"></small>
+        </div>
+        <div class="connection-model-actions">
+          <button type="button" class="secondary-button" data-direct-test="${escape(provider.id)}">Test</button>
+          <button type="button" class="secondary-button" data-direct-refresh="${escape(provider.id)}">Load models</button>
+          <button type="button" class="secondary-button" data-direct-delete="${escape(provider.id)}">Remove</button>
+        </div>
+      </div>`).join('');
+  }
+  async function loadDirect(): Promise<void> {
+    try {
+      renderDirect(await call<DirectProviderStatus[]>('direct_providers_list'));
+    } catch (error) {
+      directList.innerHTML = `<small class="connection-endpoint-hint error">${escape(String(error))}</small>`;
+    }
+  }
+  async function runDirect(operation: () => Promise<unknown>, statusEl?: HTMLElement | null): Promise<unknown> {
+    if (directPending) throw new Error('Wait for the current action to finish.');
+    directPending = true;
+    host.querySelectorAll<HTMLButtonElement>('[data-direct-test],[data-direct-refresh],[data-direct-delete]').forEach(button => button.disabled = true);
+    try {
+      return await operation();
+    } finally {
+      directPending = false;
+      if (!disposed) host.querySelectorAll<HTMLButtonElement>('[data-direct-test],[data-direct-refresh],[data-direct-delete]').forEach(button => button.disabled = false);
+      void statusEl;
+    }
+  }
+  const directStatus = (id: string) => host.querySelector<HTMLElement>(`[data-direct-row="${CSS.escape(id)}"] .direct-status`);
+  const directSubmit = async (): Promise<void> => {
+    if (preview) { message('API keys can only be saved in the desktop app.'); return; }
+    const label = (host.querySelector<HTMLInputElement>('#direct-label')!);
+    const kind = host.querySelector<HTMLSelectElement>('#direct-kind')!.value as DirectProviderStatus['kind'];
+    const baseUrl = host.querySelector<HTMLInputElement>('#direct-base')!.value.trim();
+    const defaultModel = host.querySelector<HTMLInputElement>('#direct-model')!.value.trim();
+    const chatPath = host.querySelector<HTMLInputElement>('#direct-chat-path')!.value.trim();
+    const headersRaw = host.querySelector<HTMLTextAreaElement>('#direct-headers')!.value.trim();
+    const key = host.querySelector<HTMLInputElement>('#direct-key')!.value.trim();
+    if (!label.value.trim()) { label.focus(); return; }
+    if (kind !== 'ollama' && !key) { host.querySelector<HTMLInputElement>('#direct-key')!.focus(); message('Enter the API key for this provider.', true); return; }
+    let extraHeaders: string | null = null;
+    if (headersRaw) {
+      const headers: Record<string, string> = {};
+      for (const line of headersRaw.split('\n').map(line => line.trim()).filter(Boolean)) {
+        const separator = line.indexOf(':');
+        if (separator <= 0) { message('Extra headers must be one "Name: value" per line.', true); return; }
+        headers[line.slice(0, separator).trim()] = line.slice(separator + 1).trim();
+      }
+      if (!Object.keys(headers).length) { message('Extra headers must be one "Name: value" per line.', true); return; }
+      extraHeaders = JSON.stringify(headers);
+    }
+    try {
+      await runDirect(() => call('direct_provider_save', { provider: { kind, baseUrl: baseUrl || null, label: label.value.trim(), defaultModel: defaultModel || null, enabled: true, chatPath: chatPath || null, extraHeaders }, key: key || null }));
+      message(`${label.value.trim()} saved. Load models to fill the model picker.`);
+      directForm.reset();
+      host.querySelector<HTMLDetailsElement>('#direct-add')!.open = false;
+      await loadDirect();
+    } catch (error) { message(String(error), true); }
+  };
+  const directAction = async (target: HTMLElement): Promise<void> => {
+    const testId = target.dataset.directTest;
+    const refreshId = target.dataset.directRefresh;
+    const deleteId = target.dataset.directDelete;
+    if (preview) { message('Direct providers can only be managed in the desktop app.'); return; }
+    if (testId) {
+      const status = directStatus(testId);
+      if (status) status.textContent = 'Testing connection…';
+      try {
+        const result = await runDirect(() => call<DirectTestResult>('direct_provider_test', { id: testId }), status) as DirectTestResult;
+        if (status) { status.textContent = result.ok ? `Connected in ${result.latencyMs} ms.` : result.error ?? 'The connection failed.'; status.classList.toggle('error', !result.ok); }
+      } catch (error) { if (status) { status.textContent = String(error); status.classList.add('error'); } }
+    } else if (refreshId) {
+      const status = directStatus(refreshId);
+      if (status) status.textContent = 'Loading models…';
+      try {
+        const models = (await runDirect(() => call<DirectModelEntry[]>('direct_models_refresh', { id: refreshId }), status)) as DirectModelEntry[];
+        if (status) status.textContent = `${models.length} models in the picker.`;
+      } catch (error) { if (status) { status.textContent = String(error); status.classList.add('error'); } }
+    } else if (deleteId) {
+      try {
+        await runDirect(() => call('direct_provider_delete', { id: deleteId }));
+        message('Provider removed. Its key was cleared from secure storage.');
+        await loadDirect();
+      } catch (error) { message(String(error), true); }
+    }
+  };
   const submit = (event: Event) => {
     const form = (event.target as HTMLElement).closest<HTMLFormElement>('form'); if (!form || !host.contains(form)) return;
     event.preventDefault(); event.stopPropagation();
+    if (form.id === 'direct-form') { void directSubmit(); return; }
     const keyedProvider = form.dataset.keyProvider as KeyedProvider | undefined;
     if (keyedProvider) {
       const key = keyInput(keyedProvider);
@@ -176,6 +312,7 @@ export function mountProviderSettings(host: HTMLElement, saved: () => Promise<un
   };
   const click = async (event: MouseEvent) => {
     const target = (event.target as HTMLElement).closest<HTMLElement>('button'); if (!target) return;
+    if (target.dataset.directTest || target.dataset.directRefresh || target.dataset.directDelete) { void directAction(target); return; }
     if (target.hasAttribute('data-check-claude')) { void checkClaude(); return; }
     const removing = target.dataset.removeKey as KeyedProvider | undefined;
     if (removing) { void perform(() => call(keyed[removing].remove), 'Saved key removed.'); return; }
@@ -212,6 +349,7 @@ export function mountProviderSettings(host: HTMLElement, saved: () => Promise<un
     void perform(() => call('provider_set_mimo_endpoint', { endpoint: chosen }), 'MiMo endpoint saved.').finally(() => { endpointEdited = false; });
   };
   host.addEventListener('submit', submit); host.addEventListener('click', click); host.addEventListener('input', input); host.addEventListener('change', change);
+  void loadDirect();
   void call<Configuration>('provider_configuration').then(config => { if (!disposed && configurationRevision === 0) render(config); }).catch(error => { if (!disposed && configurationRevision === 0) message(String(error), true); });
   void checkClaude();
   if (named) void import('./connections').then(({ mountConnections }) => { if (!disposed) unmountNamed = mountConnections(host.querySelector<HTMLElement>('#named-connections')!, named.harnesses, named.saved); });

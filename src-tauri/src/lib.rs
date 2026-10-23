@@ -2055,7 +2055,10 @@ async fn list_providers(app: tauri::AppHandle, force: Option<bool>, device_id: O
     if let Some(remote) = remote::catalog::providers(&app, device_id, force).await? {
         return Ok(remote);
     }
-    serde_json::to_value(local_providers(force).await).map_err(|e| e.to_string())
+    let mut providers = local_providers(force).await;
+    let state = app.state::<AppState>();
+    providers.extend(crate::direct::provider_rows(&state)?);
+    serde_json::to_value(providers).map_err(|e| e.to_string())
 }
 /// This computer's harnesses; `force` drops the cached ACP catalogs first.
 pub(crate) async fn local_providers(force: bool) -> Vec<providers::ProviderInfo> {
@@ -2072,6 +2075,11 @@ async fn list_provider_models(app: tauri::AppHandle, provider: String, force: Op
     let force = force.unwrap_or(false);
     if let Some(remote) = remote::catalog::models(&app, device_id, &provider, force).await? {
         return Ok(remote);
+    }
+    if provider.starts_with("direct:") {
+        let state = app.state::<AppState>();
+        return serde_json::to_value(crate::direct::models_for_picker(&state, &provider).await?)
+            .map_err(|e| e.to_string());
     }
     serde_json::to_value(local_provider_models(&provider, force).await?).map_err(|e| e.to_string())
 }

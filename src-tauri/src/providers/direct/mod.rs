@@ -268,6 +268,8 @@ mod tests {
             base_url: String::new(),
             key: None,
             default_model: Some("test-model".into()),
+            chat_path: "/chat/completions".into(),
+            extra_headers: Vec::new(),
         }
     }
 

@@ -156,7 +156,7 @@ pub struct Store {
 type Result<T> = std::result::Result<T, String>;
 /// The newest `PRAGMA user_version`. Every migration step below must run for any
 /// database older than this, so the guard reads this constant, never a literal.
-pub const SCHEMA_VERSION: i64 = 27;
+pub const SCHEMA_VERSION: i64 = 28;
 
 const SIDEBAR_ORDER: &str = "pinned DESC,sidebar_order IS NULL,sidebar_order,COALESCE(MAX(last_response_at,last_prompt_at),last_response_at,last_prompt_at,created_at) DESC,id";
 
@@ -447,6 +447,19 @@ impl Store {
                         PRIMARY KEY(provider_id, model_id));
                     CREATE INDEX IF NOT EXISTS api_models_provider ON api_models(provider_id, label);
                     PRAGMA user_version=27;").map_err(|e| e.to_string())?;
+            }
+            if version < 28 {
+                // Custom-provider plumbing: an explicit chat path and extra request
+                // headers make any OpenAI-speaking endpoint addressable (Azure-style
+                // deployment paths, api-key header auth, gateways). Headers are a
+                // JSON object; secrets belong in the keychain, never here.
+                for (name, definition) in [("chat_path", "TEXT"), ("extra_headers", "TEXT")] {
+                    let exists: bool = migration.query_row("SELECT EXISTS(SELECT 1 FROM pragma_table_info('api_providers') WHERE name=?1)", [name], |r| r.get(0)).map_err(|e| e.to_string())?;
+                    if !exists {
+                        migration.execute_batch(&format!("ALTER TABLE api_providers ADD COLUMN {name} {definition};")).map_err(|e| e.to_string())?;
+                    }
+                }
+                migration.execute_batch("PRAGMA user_version=28;").map_err(|e| e.to_string())?;
             }
             migration.commit().map_err(|e| e.to_string())?;
         }
@@ -1742,6 +1755,10 @@ pub struct DirectProvider {
     pub enabled: bool,
     pub created_at: i64,
     pub updated_at: i64,
+    /// Chat endpoint path under the base URL (default `/chat/completions`).
+    pub chat_path: Option<String>,
+    /// Extra request headers as a JSON object (non-secret only).
+    pub extra_headers: Option<String>,
 }
 
 /// Everything needed to create or update a direct provider (key travels separately).
@@ -1755,6 +1772,10 @@ pub struct DirectProviderDraft {
     pub default_model: Option<String>,
     #[serde(default = "default_true")]
     pub enabled: bool,
+    #[serde(default)]
+    pub chat_path: Option<String>,
+    #[serde(default)]
+    pub extra_headers: Option<String>,
 }
 
 fn default_true() -> bool {
@@ -1790,7 +1811,7 @@ const DIRECT_KINDS: [&str; 4] = ["openai_compatible", "anthropic", "gemini", "ol
 impl Store {
     pub fn direct_providers(&self) -> Result<Vec<DirectProvider>> {
         let mut statement = self.db.prepare(
-            "SELECT id, kind, base_url, label, default_model, enabled, created_at, updated_at
+            "SELECT id, kind, base_url, label, default_model, enabled, created_at, updated_at, chat_path, extra_headers
              FROM api_providers ORDER BY label COLLATE NOCASE, id",
         ).map_err(|e| e.to_string())?;
         let rows = statement
@@ -1804,7 +1825,7 @@ impl Store {
     pub fn direct_provider(&self, id: &str) -> Result<DirectProvider> {
         self.db
             .query_row(
-                "SELECT id, kind, base_url, label, default_model, enabled, created_at, updated_at
+                "SELECT id, kind, base_url, label, default_model, enabled, created_at, updated_at, chat_path, extra_headers
                  FROM api_providers WHERE id = ?1",
                 [id],
                 direct_provider_from_row,
@@ -1823,16 +1844,25 @@ impl Store {
         if label.is_empty() {
             return Err("Give the provider a name.".into());
         }
+        if let Some(headers) = draft.extra_headers.as_deref().filter(|h| !h.trim().is_empty()) {
+            let parsed: serde_json::Value = serde_json::from_str(headers)
+                .map_err(|_| "Extra headers must be a JSON object like {\"X-Title\": \"My App\"}.".to_string())?;
+            if !parsed.as_object().is_some_and(|map| map.iter().all(|(k, v)| k.len() <= 256 && v.is_string())) {
+                return Err("Extra headers must map header names to string values.".into());
+            }
+        }
         let id = draft.id.unwrap_or_else(|| id());
         let now = chrono::Utc::now().timestamp();
         let enabled: i64 = draft.enabled.into();
         self.db.execute(
-            "INSERT INTO api_providers(id, kind, base_url, label, default_model, enabled, created_at, updated_at)
-             VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)
+            "INSERT INTO api_providers(id, kind, base_url, label, default_model, enabled, created_at, updated_at, chat_path, extra_headers)
+             VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7, ?8, ?9)
              ON CONFLICT(id) DO UPDATE SET
                 kind=excluded.kind, base_url=excluded.base_url, label=excluded.label,
-                default_model=excluded.default_model, enabled=excluded.enabled, updated_at=excluded.updated_at",
-            rusqlite::params![id, draft.kind, draft.base_url, label.trim(), draft.default_model, enabled, now],
+                default_model=excluded.default_model, enabled=excluded.enabled, updated_at=excluded.updated_at,
+                chat_path=excluded.chat_path, extra_headers=excluded.extra_headers",
+            rusqlite::params![id, draft.kind, draft.base_url, label.trim(), draft.default_model, enabled, now,
+                draft.chat_path.as_deref().map(str::trim).filter(|p| !p.is_empty()), draft.extra_headers.as_deref().map(str::trim).filter(|h| !h.is_empty())],
         ).map_err(|e| e.to_string())?;
         self.direct_provider(&id)
     }
@@ -1948,6 +1978,8 @@ fn direct_provider_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<DirectP
         enabled: row.get::<_, i64>("enabled")? != 0,
         created_at: row.get("created_at")?,
         updated_at: row.get("updated_at")?,
+        chat_path: row.get("chat_path")?,
+        extra_headers: row.get("extra_headers")?,
     })
 }
 

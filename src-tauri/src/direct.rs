@@ -2,6 +2,7 @@
 //! tests. The provider configuration (non-secret) lives in SQLite; API keys live only
 //! in the OS secure store under one service. Turn execution is in `providers/direct/`.
 use crate::cloud::http;
+use crate::providers::{ModelInfo, ProviderInfo};
 use crate::secret_store;
 use crate::storage::{DirectModel, DirectModelRow, DirectProvider, DirectProviderDraft};
 use serde::Serialize;
@@ -55,13 +56,33 @@ fn trim_base(base: &str) -> String {
 }
 
 /// Resolves a stored provider into the runtime handle the engine turns use
-/// (endpoint, key from the secure store, default model).
+/// (endpoint, key from the secure store, default model, custom path/headers).
 pub(crate) fn runtime_for(provider: &DirectProvider) -> crate::providers::DirectRuntime {
+    let extra_headers = provider
+        .extra_headers
+        .as_deref()
+        .and_then(|headers| serde_json::from_str::<serde_json::Value>(headers).ok())
+        .and_then(|value| value.as_object().cloned())
+        .map(|map| {
+            map.into_iter()
+                .filter(|(_, value)| value.is_string())
+                .map(|(name, value)| (name, value.as_str().unwrap_or_default().to_owned()))
+                .collect()
+        })
+        .unwrap_or_default();
     crate::providers::DirectRuntime {
         kind: provider.kind.clone(),
         base_url: api_base(provider),
         key: secret_store::get(SECRET_SERVICE, &secret_account(&provider.id)),
         default_model: provider.default_model.clone(),
+        chat_path: provider
+            .chat_path
+            .as_deref()
+            .map(str::trim)
+            .filter(|path| !path.is_empty())
+            .unwrap_or("/chat/completions")
+            .to_owned(),
+        extra_headers,
     }
 }
 
@@ -227,20 +248,80 @@ pub async fn direct_provider_test(state: State<'_, crate::AppState>, id: String)
 }
 
 /// Re-runs model discovery for one provider and replaces its cached catalog.
-#[tauri::command]
-pub async fn direct_models_refresh(
-    state: State<'_, crate::AppState>,
-    id: String,
-) -> Result<Vec<DirectModel>, String> {
-    let provider = require_provider(&state, &id)?;
-    let key = secret_store::get(SECRET_SERVICE, &secret_account(&provider.id));
+async fn discover_models(state: &crate::AppState, id: &str) -> Result<Vec<DirectModel>, String> {
+    let provider = state.store.lock().map_err(|e| e.to_string())?.direct_provider(id)?;
+    let key = secret_store::get(SECRET_SERVICE, &secret_account(id));
     let value = http::send("Model provider", catalog_request(&provider, key.as_deref())).await?;
     let rows = parse_models(&provider, &value);
     if rows.is_empty() {
         return Err("The provider answered but reported no models. Check the base URL.".into());
     }
+    state.store.lock().map_err(|e| e.to_string())?.direct_models_replace(id, rows)
+}
+
+#[tauri::command]
+pub async fn direct_models_refresh(
+    state: State<'_, crate::AppState>,
+    id: String,
+) -> Result<Vec<DirectModel>, String> {
+    discover_models(&state, &id).await
+}
+
+/// Cached models for the picker; discovers once when the cache is cold.
+pub(crate) async fn models_for_picker(
+    state: &crate::AppState,
+    provider_with_prefix: &str,
+) -> Result<Vec<DirectModel>, String> {
+    let id = provider_with_prefix.trim_start_matches("direct:");
+    let cached = state.store.lock().map_err(|e| e.to_string())?.direct_models(Some(id))?;
+    if cached.is_empty() { discover_models(state, id).await } else { Ok(cached) }
+}
+
+/// Every enabled direct provider as a first-class picker row.
+pub(crate) fn provider_rows(state: &crate::AppState) -> Result<Vec<ProviderInfo>, String> {
     let store = state.store.lock().map_err(|e| e.to_string())?;
-    store.direct_models_replace(&provider.id, rows)
+    let mut rows = Vec::new();
+    for provider in store.direct_providers()?.into_iter().filter(|provider| provider.enabled) {
+        let kind: String = match provider.kind.as_str() {
+            "anthropic" => "Anthropic API".into(),
+            "gemini" => "Gemini API".into(),
+            "ollama" => "local · Ollama".into(),
+            _ => "OpenAI-compatible".into(),
+        };
+        let models = store.direct_models(Some(&provider.id))?;
+        rows.push(ProviderInfo {
+            id: format!("direct:{}", provider.id),
+            name: provider.label.clone(),
+            installed: true,
+            path: None,
+            version: format!("Direct · {kind}"),
+            models: models
+                .iter()
+                .map(|model| ModelInfo {
+                    id: model.model_id.clone(),
+                    name: if model.label.is_empty() { model.model_id.clone() } else { model.label.clone() },
+                    description: model_description(model),
+                    reasoning_efforts: Vec::new(),
+                    default_reasoning_effort: None,
+                    context_window: model.context_window.map(|window| window as u64),
+                })
+                .collect(),
+        });
+    }
+    Ok(rows)
+}
+
+fn model_description(model: &DirectModel) -> String {
+    let mut parts = Vec::new();
+    if let (Some(input), Some(output)) = (model.input_price_per_mtok, model.output_price_per_mtok) {
+        if input > 0 || output > 0 {
+            parts.push(format!("${:.2} in / ${:.2} out per Mtok", input as f64 / 100.0, output as f64 / 100.0));
+        }
+    }
+    if !model.supports_tools {
+        parts.push("no tool calls".into());
+    }
+    parts.join(" · ")
 }
 
 /// Cached models across all (or one) direct providers.
@@ -271,6 +352,8 @@ mod tests {
             label: label.into(),
             default_model: Some("gpt-4o-mini".into()),
             enabled: true,
+            chat_path: None,
+            extra_headers: None,
         }
     }
 
@@ -335,6 +418,8 @@ mod tests {
             enabled: true,
             created_at: 0,
             updated_at: 0,
+            chat_path: None,
+            extra_headers: None,
         };
         let value: serde_json::Value = serde_json::json!({
             "data": [{
@@ -367,6 +452,8 @@ mod tests {
             enabled: true,
             created_at: 0,
             updated_at: 0,
+            chat_path: None,
+            extra_headers: None,
         };
         let value = http::send(
             "Model provider",
@@ -394,6 +481,8 @@ mod tests {
             enabled: true,
             created_at: 0,
             updated_at: 0,
+            chat_path: None,
+            extra_headers: None,
         };
         let outcome = http::send("Model provider", catalog_request(&provider, Some("nope"))).await;
         let error = outcome.unwrap_err();

@@ -129,6 +129,8 @@ const previewMimoEndpoints = [
   { id: 'api', url: 'https://api.xiaomimimo.com/anthropic', label: 'Pay-as-you-go API' },
 ];
 let previewMimoEndpoint: string | null = null;
+/** Direct-API providers; the preview list is sample data, never real keys. */
+let previewDirectProviders: { id: string; kind: string; baseUrl: string | null; label: string; defaultModel: string | null; enabled: boolean; hasKey: boolean; keyHint: string | null }[] = [{ id: 'openrouter', kind: 'openai_compatible', baseUrl: null, label: 'OpenRouter', defaultModel: 'anthropic/claude-3.5-sonnet', enabled: true, hasKey: true, keyHint: '••••demo' }];
 /** Named connections; secret values are dropped, only their names are kept, as on the native side. */
 let previewConnections: import('./connections').ConnectionSnapshot = { connections: [], tasks: {} };
 function previewSaveConnection(input: { id?: string | null; provider: ProviderId; name: string; executable?: string | null; args?: string[]; env?: { name: string; value: string | null; secret: boolean }[]; configDir?: string | null }): import('./connections').ConnectionSnapshot {
@@ -697,6 +699,31 @@ export async function invoke<T>(command: string, args: Record<string, any>): Pro
       previewMimoEndpoint = args.endpoint;
       result = { executablePaths: {}, claudeConnectionMode: previewClaudeMode, glmKeySaved: false, glmKeyFromEnvironment: false, deepseekKeySaved: false, deepseekKeyFromEnvironment: false, commandcodeKeySaved: false, commandcodeKeyFromEnvironment: false, mimoKeySaved: false, mimoKeyFromEnvironment: false, mimoEndpoint: previewMimoEndpoint, mimoEndpoints: previewMimoEndpoints, secureStorageAvailable: false }; break;
     case 'provider_save_glm_key': case 'provider_remove_glm_key': case 'provider_save_deepseek_key': case 'provider_remove_deepseek_key': case 'provider_save_commandcode_key': case 'provider_remove_commandcode_key': case 'provider_save_mimo_key': case 'provider_remove_mimo_key': case 'provider_set_executable': throw new Error('Provider connections can only be changed in the desktop app.');
+    case 'direct_providers_list': result = previewDirectProviders; break;
+    case 'direct_provider_save': {
+      const draft = args.provider as { kind: string; baseUrl: string | null; label: string; defaultModel: string | null };
+      const saved = { id: `preview-${previewDirectProviders.length + 1}`, kind: draft.kind, baseUrl: draft.baseUrl, label: draft.label, defaultModel: draft.defaultModel, enabled: true, hasKey: Boolean(args.key), keyHint: args.key ? '••••demo' : null };
+      previewDirectProviders = [...previewDirectProviders, saved];
+      result = saved; break;
+    }
+    case 'direct_provider_delete': {
+      previewDirectProviders = previewDirectProviders.filter(provider => provider.id !== args.id);
+      result = null; break;
+    }
+    case 'direct_provider_set_key': {
+      const provider = previewDirectProviders.find(entry => entry.id === args.id);
+      if (!provider) throw new Error('That direct provider no longer exists.');
+      provider.hasKey = Boolean(args.key); provider.keyHint = args.key ? '••••demo' : null;
+      result = provider; break;
+    }
+    case 'direct_provider_test': result = { ok: true, latencyMs: 231, error: null }; break;
+    case 'direct_models_refresh': case 'direct_models_list':
+      result = [
+        { providerId: 'openrouter', modelId: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', contextWindow: 200000, supportsTools: true, inputPricePerMtok: 300, outputPricePerMtok: 1500, discoveredAt: 0 },
+        { providerId: 'openrouter', modelId: 'openai/gpt-4o-mini', label: 'GPT-4o mini', contextWindow: 128000, supportsTools: true, inputPricePerMtok: 15, outputPricePerMtok: 60, discoveredAt: 0 },
+        { providerId: 'openrouter', modelId: 'meta-llama/llama-3.1-70b', label: 'Llama 3.1 70B', contextWindow: 131072, supportsTools: false, inputPricePerMtok: 60, outputPricePerMtok: 60, discoveredAt: 0 },
+      ].filter(model => !args.id || model.providerId === args.id || model.providerId === args.id.split(':').pop());
+      break;
     case 'turn_change_summary': {
       session(args.sessionId);
       const summary = (messages[String(args.sessionId)] ?? []).find(m => m.turnChanges?.id === args.changeId)?.turnChanges;

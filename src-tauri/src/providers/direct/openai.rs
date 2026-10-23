@@ -68,11 +68,12 @@ pub async fn chat(
     }
     let client = crate::cloud::http::client(std::time::Duration::from_secs(600))
         .map_err(StreamEnd::Error)?;
-    let url = format!("{}/chat/completions", rt.base_url.trim_end_matches('/'));
-    let response = auth_headers(rt, client.post(&url).json(&body))
-        .send()
-        .await
-        .map_err(|e| {
+    let url = format!("{}{}", rt.base_url.trim_end_matches('/'), if rt.chat_path.starts_with('/') { rt.chat_path.clone() } else { format!("/{}", rt.chat_path) });
+    let mut request = auth_headers(rt, client.post(&url).json(&body));
+    for (name, value) in &rt.extra_headers {
+        request = request.header(name.as_str(), value.as_str());
+    }
+    let response = request.send().await.map_err(|e| {
             if e.is_connect() {
                 StreamEnd::Error(format!("Could not reach {url}. Check the base URL and your connection."))
             } else if e.is_timeout() {
@@ -209,6 +210,8 @@ mod tests {
             base_url: "http://127.0.0.1:1".into(),
             key: Some("k".into()),
             default_model: None,
+            chat_path: "/chat/completions".into(),
+            extra_headers: Vec::new(),
         }
     }
 

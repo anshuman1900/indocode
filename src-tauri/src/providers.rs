@@ -104,6 +104,10 @@ pub struct DirectRuntime {
     pub base_url: String,
     pub key: Option<String>,
     pub default_model: Option<String>,
+    /// Chat endpoint under the base URL; always set (default `/chat/completions`).
+    pub chat_path: String,
+    /// Extra request headers validated at save time.
+    pub extra_headers: Vec<(String, String)>,
 }
 
 #[derive(Clone, Debug)]

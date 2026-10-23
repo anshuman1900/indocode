@@ -13,6 +13,16 @@
 .connection-input-row input{flex:1;min-width:0;font-size:.82rem;padding:.6rem .7rem}
 .connection-input-row button{flex-shrink:0;font-size:.78rem;padding:.6rem .75rem}
 .connection-key-status{display:flex;gap:.7rem;align-items:center;justify-content:space-between;margin:.65rem 0;color:var(--muted);font-size:.73rem;line-height:1.5}
+.direct-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.55rem 0;border-top:1px solid var(--border)}
+.direct-row:first-child{border-top:none}
+.direct-row-main{display:grid;gap:2px;min-width:0}
+.direct-row-main strong{font-size:.84rem}
+.direct-row-main small{color:var(--muted);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.direct-row-main .direct-status.error{color:var(--red,#ff908b)}
+#direct-list{display:grid;gap:2px;margin-bottom:.4rem}
+#direct-form label{display:block;margin:.55rem 0 .25rem;font-size:.76rem;color:var(--muted)}
+#direct-form label small{color:var(--muted);opacity:.8}
+#direct-form input,#direct-form select{width:100%}
 .connection-key-status button{font-size:.72rem;padding:.4rem .6rem}
 .connection-select{display:flex;align-items:center;gap:.7rem}
 .connection-select select{flex:1;min-width:0;font-size:.82rem;padding:.55rem .7rem;border-radius:.24rem;border:1px solid var(--border);background:color-mix(in srgb,var(--panel) 70%,transparent);color:var(--text)}
