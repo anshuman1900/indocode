@@ -2,7 +2,7 @@
 //! tests. The provider configuration (non-secret) lives in SQLite; API keys live only
 //! in the OS secure store under one service. Turn execution is in `providers/direct/`.
 use crate::cloud::http;
-use crate::providers::{ModelInfo, ProviderInfo};
+use crate::providers::ProviderInfo;
 use crate::secret_store;
 use crate::storage::{DirectModel, DirectModelRow, DirectProvider, DirectProviderDraft};
 use serde::Serialize;
@@ -267,14 +267,29 @@ pub async fn direct_models_refresh(
     discover_models(&state, &id).await
 }
 
+/// Picker shape for one discovered model. Every provider must answer with the
+/// same `ModelInfo` fields (`id`, `name`, ...) - the picker drops any entry
+/// without an `id`, which silently reduced a provider to its default model.
+pub(crate) fn model_info(model: &DirectModel) -> crate::providers::ModelInfo {
+    crate::providers::ModelInfo {
+        id: model.model_id.clone(),
+        name: if model.label.is_empty() { model.model_id.clone() } else { model.label.clone() },
+        description: model_description(model),
+        reasoning_efforts: Vec::new(),
+        default_reasoning_effort: None,
+        context_window: model.context_window.map(|window| window as u64),
+    }
+}
+
 /// Cached models for the picker; discovers once when the cache is cold.
 pub(crate) async fn models_for_picker(
     state: &crate::AppState,
     provider_with_prefix: &str,
-) -> Result<Vec<DirectModel>, String> {
+) -> Result<Vec<crate::providers::ModelInfo>, String> {
     let id = provider_with_prefix.trim_start_matches("direct:");
     let cached = state.store.lock().map_err(|e| e.to_string())?.direct_models(Some(id))?;
-    if cached.is_empty() { discover_models(state, id).await } else { Ok(cached) }
+    let models = if cached.is_empty() { discover_models(state, id).await? } else { cached };
+    Ok(models.iter().map(model_info).collect())
 }
 
 /// Every enabled direct provider as a first-class picker row.
@@ -295,17 +310,7 @@ pub(crate) fn provider_rows(state: &crate::AppState) -> Result<Vec<ProviderInfo>
             installed: true,
             path: None,
             version: format!("Direct · {kind} · {} models", models.len()),
-            models: models
-                .iter()
-                .map(|model| ModelInfo {
-                    id: model.model_id.clone(),
-                    name: if model.label.is_empty() { model.model_id.clone() } else { model.label.clone() },
-                    description: model_description(model),
-                    reasoning_efforts: Vec::new(),
-                    default_reasoning_effort: None,
-                    context_window: model.context_window.map(|window| window as u64),
-                })
-                .collect(),
+            models: models.iter().map(model_info).collect(),
         });
     }
     Ok(rows)

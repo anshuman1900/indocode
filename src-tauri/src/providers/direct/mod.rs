@@ -495,6 +495,27 @@ mod tests {
         assert!(seen.lock().unwrap().len() >= 1, "the engine reached the provider");
     }
 
+    #[tokio::test]
+    async fn picker_models_carry_the_id_shape_the_picker_reads() {
+        // Regression: the picker drops entries without `id`; direct models used
+        // to serialize as `modelId`, leaving only the synthetic default row.
+        let info = crate::direct::model_info(&crate::storage::DirectModel {
+            provider_id: "shape".into(),
+            model_id: "vendor/model-a".into(),
+            label: String::new(),
+            context_window: Some(128000),
+            supports_tools: true,
+            input_price_per_mtok: None,
+            output_price_per_mtok: None,
+            discovered_at: 0,
+        });
+        let json = serde_json::to_value(&info).unwrap();
+        assert_eq!(json["id"], "vendor/model-a");
+        assert_eq!(json["name"], "vendor/model-a");
+        assert_eq!(json["contextWindow"], 128000);
+        assert!(json.get("modelId").is_none(), "the picker reads `id`, not `modelId`");
+    }
+
     fn temp_marker() -> std::path::PathBuf {
         let dir = std::env::temp_dir().join(format!("indocode-engine-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
