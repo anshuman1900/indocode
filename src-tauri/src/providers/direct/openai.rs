@@ -6,30 +6,7 @@ use futures_util::StreamExt;
 use serde_json::{json, Value};
 use tokio::sync::mpsc::UnboundedReceiver;
 
-/// One tool invocation the model asked for.
-#[derive(Clone, Debug)]
-pub struct ToolCall {
-    pub id: String,
-    pub name: String,
-    pub arguments: Value,
-}
-
-/// A completed model turn: streamed text plus any tool calls it requested.
-#[derive(Clone, Debug, Default)]
-pub struct Turn {
-    pub text: String,
-    pub tool_calls: Vec<ToolCall>,
-    pub prompt_tokens: Option<i64>,
-    pub completion_tokens: Option<i64>,
-}
-
-/// Why a stream ended before producing a turn.
-#[derive(Debug)]
-pub enum StreamEnd {
-    /// The user pressed stop; the run ends cleanly.
-    Stopped,
-    Error(String),
-}
+pub use super::types::{StreamEnd, ToolCall, Turn};
 
 const MAX_TOOL_NAME: usize = 256;
 

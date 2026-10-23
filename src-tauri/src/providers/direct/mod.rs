@@ -2,10 +2,14 @@
 //! HTTP (no CLI harness). Streams through the same normalized event sink, asks
 //! the same approval bar, consumes the same RunInput channel as the CLI
 //! providers, and executes the built-in tools in `tools.rs` itself.
+pub mod anthropic;
+pub mod gemini;
+pub mod ollama;
 pub mod openai;
 pub mod tools;
+pub mod types;
 
-use openai::StreamEnd;
+use types::StreamEnd;
 use super::{AgentEvent, HistoryMessage, RunConfig, RunInput, Sink, ToolActivity};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::{json, Value};
@@ -98,15 +102,44 @@ async fn wait_approval(
     }
 }
 
+/// Emits the turn boundary events the app's change tracker and transcript
+/// flusher wait on, whichever way the turn ends (the run-epilogue captures any
+/// remaining changes itself on the failure path).
+struct TurnBoundary<'a> {
+    sink: &'a Sink,
+    session_id: &'a str,
+}
+impl Drop for TurnBoundary<'_> {
+    fn drop(&mut self) {
+        (self.sink)(AgentEvent {
+            session_id: self.session_id.to_owned(),
+            kind: "turn_complete".into(),
+            text: String::new(),
+            request_id: None,
+            data: None,
+            tool: None,
+        });
+    }
+}
+
 pub async fn run(
     config: RunConfig,
     sink: Sink,
     mut input: UnboundedReceiver<RunInput>,
-    _host: Option<crate::providers::ToolHost>,
+    host: Option<crate::providers::ToolHost>,
 ) -> Result<(), String> {
     let Some(direct) = config.direct.clone() else {
         return Err("Direct provider configuration is missing.".into());
     };
+    let _boundary = TurnBoundary { sink: &sink, session_id: &config.session_id };
+    sink(AgentEvent {
+        session_id: config.session_id.clone(),
+        kind: "turn_start".into(),
+        text: String::new(),
+        request_id: None,
+        data: None,
+        tool: None,
+    });
     let model = if config.model.is_empty() || config.model == "default" {
         direct
             .default_model
@@ -130,28 +163,41 @@ pub async fn run(
     }
     messages.push(user_message(&config.prompt, &config.images));
 
-    let catalog = tools::catalog();
+    // The app's own tools (deploys, previews, git, turn-change capture) ride
+    // alongside the built-ins so a direct provider reaches everything a CLI
+    // harness can; the host executes them under its own approval rules.
+    let mut catalog = tools::catalog();
+    if let Some(host) = &host {
+        catalog.extend(host.tools.iter().cloned());
+    }
+    let host_tools: std::collections::HashSet<String> = host
+        .as_ref()
+        .map(|host| {
+            host.tools
+                .iter()
+                .filter_map(|tool| tool["name"].as_str().map(|name| name.to_owned()))
+                .collect()
+        })
+        .unwrap_or_default();
     let mut steered: Vec<String> = Vec::new();
 
     for _round in 0..MAX_ROUNDS {
         let sink_for_stream = sink.clone();
-        let outcome = openai::chat(
-            &direct,
-            &model,
-            config.reasoning_effort.as_deref(),
-            &messages,
-            &catalog,
-            &mut input,
-            &|delta| sink_for_stream(AgentEvent {
-                session_id: config.session_id.clone(),
-                kind: "text".into(),
-                text: delta.to_owned(),
-                request_id: None,
-                data: None,
-                tool: None,
-            }),
-        )
-        .await;
+        let on_delta = &|delta: &str| sink_for_stream(AgentEvent {
+            session_id: config.session_id.clone(),
+            kind: "text".into(),
+            text: delta.to_owned(),
+            request_id: None,
+            data: None,
+            tool: None,
+        });
+        // One protocol per provider kind; the agent loop below stays identical.
+        let outcome = match direct.kind.as_str() {
+            "anthropic" => anthropic::chat(&direct, &model, config.reasoning_effort.as_deref(), &messages, &catalog, &mut input, on_delta).await,
+            "gemini" => gemini::chat(&direct, &model, config.reasoning_effort.as_deref(), &messages, &catalog, &mut input, on_delta).await,
+            "ollama" => ollama::chat(&direct, &model, config.reasoning_effort.as_deref(), &messages, &catalog, &mut input, on_delta).await,
+            _ => openai::chat(&direct, &model, config.reasoning_effort.as_deref(), &messages, &catalog, &mut input, on_delta).await,
+        };
 
         let (turn, more_steered) = match outcome {
             Ok(pair) => pair,
@@ -159,6 +205,23 @@ pub async fn run(
             Err(StreamEnd::Error(message)) => return Err(message),
         };
         steered.extend(more_steered);
+
+        // Token counts reach the usage panel and the context meter, exactly as a
+        // CLI harness's own usage rows do.
+        let used = turn
+            .prompt_tokens
+            .unwrap_or(0)
+            .saturating_add(turn.completion_tokens.unwrap_or(0));
+        if used > 0 {
+            sink(AgentEvent {
+                session_id: config.session_id.clone(),
+                kind: "usage".into(),
+                text: String::new(),
+                request_id: None,
+                data: Some(json!({ "usedTokens": used })),
+                tool: None,
+            });
+        }
 
         if turn.tool_calls.is_empty() {
             if !steered.is_empty() && config.resume_id.is_none() {
@@ -213,20 +276,69 @@ pub async fn run(
                     None => return Ok(()), // stopped while waiting
                 }
             }
-            if !tools::known(&call.name) {
+            if !tools::known(&call.name) && !host_tools.contains(&call.name) {
                 let note = format!("Unknown tool {name}; use the tools from the catalog.", name = call.name);
                 sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, &note, None));
                 messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": note}));
                 continue;
             }
-            let result = tools::execute(&call.name, &call.arguments, &config.cwd).await;
+            if tools::known(&call.name) {
+                let result = tools::execute(&call.name, &call.arguments, &config.cwd).await;
+                match result {
+                    Ok(output) => {
+                        sink(tool_event(&config, &call.id, &call.name, "completed", &input_preview, &output, write_paths_for(&call.name, &call.arguments)));
+                        messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": output}));
+                    }
+                    Err(error) => {
+                        sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, &error, write_paths_for(&call.name, &call.arguments)));
+                        messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": format!("Error: {error}")}));
+                    }
+                }
+                continue;
+            }
+            // An app tool: the host executes it under its own approval rules.
+            let Some(host) = host.as_ref() else {
+                let note = "That Indocode tool is unavailable right now.";
+                sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, note, None));
+                messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": note}));
+                continue;
+            };
+            if host.approval_tools.contains(&call.name) {
+                if config.mode == "plan" {
+                    let note = "Plan mode: this Indocode tool was refused. Report what you would do instead.";
+                    sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, &note, None));
+                    messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": note}));
+                    continue;
+                }
+                if config.mode != "full"
+                    || crate::cloud::deploy::ALWAYS_ASK.contains(&call.name.as_str())
+                {
+                    let request_id = uuid::Uuid::new_v4().to_string();
+                    sink(approval_event(&config, &request_id, &call.name, &input_preview));
+                    match wait_approval(&mut input, &request_id, &mut steered).await {
+                        Some(true) => {}
+                        Some(false) => {
+                            let note = "The user declined this action.";
+                            sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, note, None));
+                            messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": note}));
+                            continue;
+                        }
+                        None => return Ok(()),
+                    }
+                }
+            }
+            let result = (host.handler)(call.name.clone(), call.arguments.clone()).await;
             match result {
-                Ok(output) => {
-                    sink(tool_event(&config, &call.id, &call.name, "completed", &input_preview, &output, write_paths_for(&call.name, &call.arguments)));
+                Ok(value) => {
+                    let output = crate::providers::limited(
+                        &serde_json::to_string(&value).unwrap_or_default(),
+                        64 * 1024,
+                    );
+                    sink(tool_event(&config, &call.id, &call.name, "completed", &input_preview, &output, None));
                     messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": output}));
                 }
                 Err(error) => {
-                    sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, &error, write_paths_for(&call.name, &call.arguments)));
+                    sink(tool_event(&config, &call.id, &call.name, "failed", &input_preview, &error, None));
                     messages.push(json!({"role": "tool", "tool_call_id": call.id, "content": format!("Error: {error}")}));
                 }
             }
@@ -454,6 +566,54 @@ mod tests {
         let tool = seen.iter().filter_map(|e| e.tool.clone()).last().unwrap();
         assert_eq!(tool.status, "failed");
         assert!(tool.output.contains("declined"));
+    }
+
+    #[tokio::test]
+    async fn host_tools_run_through_the_direct_engine() {
+        // Regression: the direct engine ignored the host, so app tools
+        // (previews, deploys, turn-change capture) were unreachable and the
+        // instructions advertised tools the model could not call.
+        let rounds: std::sync::Arc<std::sync::Mutex<u32>> = std::sync::Arc::default();
+        let rounds_served = rounds.clone();
+        let (base, _) = crate::cloud::http::mock::serve(move |_, _| {
+            let round = { let mut count = rounds_served.lock().unwrap(); *count += 1; *count };
+            if round == 1 {
+                (200, sse_tool_round("call_1", "indocode_preview_file", "{\"path\": \"index.html\"}").into_bytes())
+            } else {
+                (200, "data: {\"choices\":[{\"delta\":{\"content\":\"preview opened\"}}]}\n\ndata: [DONE]\n\n".as_bytes().to_vec())
+            }
+        });
+        let direct = crate::providers::DirectRuntime { base_url: base, ..runtime() };
+        let host = crate::providers::ToolHost {
+            tools: vec![json!({"type": "function", "name": "indocode_preview_file", "description": "preview", "inputSchema": {"type": "object"}})],
+            handler: std::sync::Arc::new(|_, arguments| {
+                Box::pin(async move { Ok(json!({"opened": arguments["path"]})) })
+            }),
+            approval_tools: std::collections::HashSet::new(),
+        };
+        let (sink, events) = events();
+        run(config("ask", direct), sink, channel(), Some(host)).await.unwrap();
+        let seen = events.lock().unwrap();
+        let tool = seen.iter().filter_map(|e| e.tool.clone()).last().unwrap();
+        assert_eq!(tool.name, "indocode_preview_file");
+        assert_eq!(tool.status, "completed");
+        assert!(tool.output.contains("index.html"), "{}", tool.output);
+        assert!(seen.iter().any(|e| e.kind == "usage"), "usage reaches the panel");
+    }
+
+    #[tokio::test]
+    async fn turn_boundary_events_reach_the_tracker() {
+        // Regression: without turn_start/turn_complete the change tracker never
+        // snapshotted, so a direct-provider turn showed no diff at all.
+        let (base, _) = crate::cloud::http::mock::serve(|_, _| {
+            (200, "data: {\"choices\":[{\"delta\":{\"content\":\"hi\"}}]}\n\ndata: [DONE]\n\n".as_bytes().to_vec())
+        });
+        let direct = crate::providers::DirectRuntime { base_url: base, ..runtime() };
+        let (sink, events) = events();
+        run(config("ask", direct), sink, channel(), None).await.unwrap();
+        let seen = events.lock().unwrap();
+        assert_eq!(seen.first().unwrap().kind, "turn_start");
+        assert_eq!(seen.last().unwrap().kind, "turn_complete");
     }
 
     #[test]

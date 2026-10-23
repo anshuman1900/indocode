@@ -80,7 +80,12 @@ pub(crate) fn runtime_for(provider: &DirectProvider) -> crate::providers::Direct
             .as_deref()
             .map(str::trim)
             .filter(|path| !path.is_empty())
-            .unwrap_or("/chat/completions")
+            .unwrap_or_else(|| match provider.kind.as_str() {
+                // Gemini builds its path per model in the protocol module.
+                "anthropic" => "/v1/messages",
+                "ollama" => "/api/chat",
+                _ => "/chat/completions",
+            })
             .to_owned(),
         extra_headers,
     }
