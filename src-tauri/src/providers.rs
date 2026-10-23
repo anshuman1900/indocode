@@ -86,7 +86,24 @@ pub(crate) const CLAUDE_SESSION_BOUND_TOOLS: &str = "ScheduleWakeup,Monitor,Cron
 
 /// Harnesses that take app instructions as a system prompt (`--append-system-prompt`).
 pub fn takes_system_instructions(provider: &str) -> bool {
-    matches!(provider, "claude" | "glm" | "mimo" | "pi" | "omp")
+    provider.starts_with("direct:") || matches!(provider, "claude" | "glm" | "mimo" | "pi" | "omp")
+}
+
+/// Replayed conversation text for direct providers (roles: user | assistant).
+#[derive(Clone, Debug)]
+pub struct HistoryMessage {
+    pub role: String,
+    pub content: String,
+}
+
+/// Everything the direct engine needs to reach the API (resolved at turn start;
+/// the engine itself never touches the database or the keychain).
+#[derive(Clone, Debug)]
+pub struct DirectRuntime {
+    pub kind: String,
+    pub base_url: String,
+    pub key: Option<String>,
+    pub default_model: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -111,7 +128,13 @@ pub struct RunConfig {
     pub codex_settings: Option<Value>,
     /// Only native-validated, managed screenshot paths; never arbitrary web content.
     pub images: Vec<PathBuf>,
+    /// Replayed user/assistant text (direct providers only; CLIs resume by session id).
+    pub history: Vec<HistoryMessage>,
+    /// Resolved direct-API endpoint + key (direct providers only).
+    pub direct: Option<DirectRuntime>,
 }
+
+pub mod direct;
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -204,7 +227,7 @@ impl Write for Preview {
         Ok(())
     }
 }
-fn limited(text: &str, limit: usize) -> String {
+pub(crate) fn limited(text: &str, limit: usize) -> String {
     let mut preview = Preview::new(limit);
     preview.text(text);
     preview.finish()
@@ -2721,6 +2744,10 @@ async fn run_inner(
         return Err("Unknown permission mode".into());
     }
     validate_reasoning_effort(&config.provider, config.reasoning_effort.as_deref())?;
+    if config.provider.starts_with("direct:") {
+        // No CLI process: the loop runs in this crate and speaks the same events.
+        return direct::run(config, sink, input, host).await;
+    }
     let connection = crate::connections::for_task(&config.session_id, &config.provider)
         .map(|connection| crate::connections::launch(&connection))
         .transpose()?;
@@ -3099,6 +3126,8 @@ mod tests {
             goal: None,
             codex_settings: None,
             images: Vec::new(),
+            history: Vec::new(),
+            direct: None,
         }
     }
 
@@ -4358,6 +4387,8 @@ mod tests {
                 goal: None,
                 codex_settings: None,
                 images: Vec::new(),
+                history: Vec::new(),
+                direct: None,
             };
             let mut task = tokio::spawn(run(cfg, sink, receiver));
             let outcome = match tokio::time::timeout(Duration::from_secs(90), &mut task).await {

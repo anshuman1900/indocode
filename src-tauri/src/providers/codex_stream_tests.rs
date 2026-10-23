@@ -15,6 +15,8 @@ fn protocol() -> Protocol {
         goal: None,
         codex_settings: None,
         images: Vec::new(),
+        history: Vec::new(),
+        direct: None,
     });
     protocol.remote_id = "main".into();
     protocol.turn_id = "turn-main".into();

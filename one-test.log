@@ -1,0 +1,78 @@
+
+running 1 test
+test providers::direct::tests::runs_a_shell_tool_round_then_answers ... [engine] round start
+[engine] turn: text=0 calls=1 steered=0
+[engine] round start
+[engine] turn: text=4 calls=0 steered=0
+
+thread 'providers::direct::tests::runs_a_shell_tool_round_then_answers' (2700) panicked at src\providers\direct\mod.rs:376:9:
+
+stack backtrace:
+   0: std::panicking::panic_handler
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\std\src\panicking.rs:679
+   1: core::panicking::panic_fmt
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\core\src\panicking.rs:80
+   2: core::panicking::panic_display<alloc::string::String>
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\core\src\panicking.rs:259
+   3: indocode_lib::providers::direct::tests::runs_a_shell_tool_round_then_answers::async_block$0
+             at .\src\providers\direct\mod.rs:376
+   4: core::future::future::impl$1::poll<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > >
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\core\src\future\future.rs:133
+   5: core::future::future::impl$1::poll<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > > >
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\core\src\future\future.rs:133
+   6: tokio::runtime::scheduler::current_thread::impl$9::block_on::closure$0::closure$0::closure$0<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:830
+   7: tokio::task::coop::with_budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\task\coop\mod.rs:167
+   8: tokio::task::coop::budget
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\task\coop\mod.rs:133
+   9: tokio::runtime::scheduler::current_thread::impl$9::block_on::closure$0::closure$0<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:830
+  10: tokio::runtime::scheduler::current_thread::Context::enter<enum2$<core::task::poll::Poll<tuple$<> > >,tokio::runtime::scheduler::current_thread::impl$9::block_on::closure$0::closure_env$0<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::fu
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:488
+  11: tokio::runtime::scheduler::current_thread::impl$9::block_on::closure$0<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:829
+  12: tokio::runtime::scheduler::current_thread::impl$9::enter::closure$0<tokio::runtime::scheduler::current_thread::impl$9::block_on::closure_env$0<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > 
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:906
+  13: tokio::runtime::context::scoped::Scoped<enum2$<tokio::runtime::scheduler::Context> >::set<enum2$<tokio::runtime::scheduler::Context>,tokio::runtime::scheduler::current_thread::impl$9::enter::closure_env$0<tokio::runtime::scheduler::current_thread::impl$9::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\context\scoped.rs:40
+  14: tokio::runtime::context::set_scheduler::closure$0<tuple$<alloc::boxed::Box<tokio::runtime::scheduler::current_thread::Core,alloc::alloc::Global>,enum2$<core::option::Option<tuple$<> > > >,tokio::runtime::scheduler::current_thread::impl$9::enter::closure_en
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\context.rs:187
+  15: std::thread::local::LocalKey<tokio::runtime::context::Context>::try_with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<alloc::boxed::Box<tokio::runtime::scheduler::current_thread::Core,alloc::alloc::Global>,e
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\std\src\thread\local.rs:463
+  16: std::thread::local::LocalKey<tokio::runtime::context::Context>::with<tokio::runtime::context::Context,tokio::runtime::context::set_scheduler::closure_env$0<tuple$<alloc::boxed::Box<tokio::runtime::scheduler::current_thread::Core,alloc::alloc::Global>,enum2
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\std\src\thread\local.rs:427
+  17: tokio::runtime::context::set_scheduler<tuple$<alloc::boxed::Box<tokio::runtime::scheduler::current_thread::Core,alloc::alloc::Global>,enum2$<core::option::Option<tuple$<> > > >,tokio::runtime::scheduler::current_thread::impl$9::enter::closure_env$0<tokio::
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\context.rs:187
+  18: tokio::runtime::scheduler::current_thread::CoreGuard::enter<tokio::runtime::scheduler::current_thread::impl$9::block_on::closure_env$0<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > > > >,
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:906
+  19: tokio::runtime::scheduler::current_thread::CoreGuard::block_on<core::pin::Pin<ref_mut$<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:817
+  20: tokio::runtime::scheduler::current_thread::impl$0::block_on::closure$0<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:218
+  21: tokio::runtime::context::runtime::enter_runtime<tokio::runtime::scheduler::current_thread::impl$0::block_on::closure_env$0<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > >,tuple$<> >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\context\runtime.rs:65
+  22: tokio::runtime::scheduler::current_thread::CurrentThread::block_on<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\scheduler\current_thread\mod.rs:206
+  23: tokio::runtime::runtime::Runtime::block_on_inner<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\runtime.rs:374
+  24: tokio::runtime::runtime::Runtime::block_on<core::pin::Pin<ref_mut$<dyn$<core::future::future::Future<assoc$<Output,tuple$<> > > > > > >
+             at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tokio-1.53.1\src\runtime\runtime.rs:343
+  25: indocode_lib::providers::direct::tests::runs_a_shell_tool_round_then_answers
+             at .\src\providers\direct\mod.rs:377
+  26: indocode_lib::providers::direct::tests::runs_a_shell_tool_round_then_answers::closure$0
+             at .\src\providers\direct\mod.rs:352
+  27: core::ops::function::FnOnce::call_once<indocode_lib::providers::direct::tests::runs_a_shell_tool_round_then_answers::closure_env$0,tuple$<> >
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\core\src\ops\function.rs:250
+  28: core::ops::function::FnOnce::call_once
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library\core\src\ops\function.rs:250
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+FAILED
+
+failures:
+
+failures:
+    providers::direct::tests::runs_a_shell_tool_round_then_answers
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1105 filtered out; finished in 4.70s
+

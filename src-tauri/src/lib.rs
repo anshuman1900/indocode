@@ -1363,6 +1363,21 @@ fn prepare_task_run_in_project(
             )
         );
     let prompt = architect::prompt(&store, &session_id, &prompt, admission.team.as_ref())?;
+    let direct = if session.provider.starts_with("direct:") {
+        let id = session.provider.trim_start_matches("direct:").to_owned();
+        let provider = store.direct_provider(&id)?;
+        Some(crate::direct::runtime_for(&provider))
+    } else {
+        None
+    };
+    let history = if direct.is_some() {
+        let rows = store.direct_history(&session_id, turn_message_id)?;
+        rows.into_iter()
+            .map(|(role, content)| crate::providers::HistoryMessage { role, content })
+            .collect()
+    } else {
+        Vec::new()
+    };
     let config = RunConfig {
         session_id: session_id.clone(),
         provider: session.provider,
@@ -1377,6 +1392,8 @@ fn prepare_task_run_in_project(
         skill,
         goal: admission.goal,
         codex_settings: session.codex_settings,
+        history,
+        direct,
     };
     architect::mark_started(&store, &session_id, admission.team.as_ref())?;
     let agent = RunningAgent::new(tx, stopped.clone());

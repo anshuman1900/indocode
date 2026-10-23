@@ -1896,6 +1896,46 @@ impl Store {
             .map_err(|e| e.to_string())?;
         Ok(rows)
     }
+
+    /// The user/assistant text before this turn, for direct-provider context replay.
+    /// Bounded: the newest 200 messages, at most 64 KiB each and 512 KiB in total.
+    pub fn direct_history(&self, session_id: &str, before_message_id: i64) -> Result<Vec<(String, String)>> {
+        let mut statement = self.db.prepare(
+            "SELECT role, content FROM messages
+             WHERE session_id = ?1 AND id < ?2 AND role IN ('user','assistant') AND trim(content) <> ''
+             ORDER BY id",
+        ).map_err(|e| e.to_string())?;
+        let mut rows = statement
+            .query_map([session_id, &before_message_id.to_string()], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(|e| e.to_string())?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?;
+        let total_budget: usize = 512 * 1024;
+        let mut total = 0usize;
+        let mut keep_from = rows.len();
+        for (index, (_, content)) in rows.iter().enumerate().rev() {
+            total += content.len().min(64 * 1024);
+            if total > total_budget {
+                keep_from = index + 1;
+                break;
+            }
+            if rows.len() - keep_from >= 200 {
+                keep_from = index;
+                break;
+            }
+            keep_from = index;
+        }
+        rows.drain(..keep_from.min(rows.len()));
+        for (_, content) in &mut rows {
+            if content.len() > 64 * 1024 {
+                content.truncate(64 * 1024);
+                content.push_str("\n…[earlier message truncated]");
+            }
+        }
+        Ok(rows)
+    }
 }
 
 fn direct_provider_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<DirectProvider> {

@@ -33,7 +33,7 @@ fn secret_account(id: &str) -> String {
     format!("provider:{id}")
 }
 
-fn with_key(state: &crate::AppState, provider: DirectProvider) -> DirectProviderStatus {
+fn with_key(provider: DirectProvider) -> DirectProviderStatus {
     let stored = secret_store::get(SECRET_SERVICE, &secret_account(&provider.id));
     DirectProviderStatus {
         key_hint: stored.as_ref().map(|key| {
@@ -52,6 +52,17 @@ fn require_provider(state: &crate::AppState, id: &str) -> Result<DirectProvider,
 
 fn trim_base(base: &str) -> String {
     base.trim().trim_end_matches('/').to_owned()
+}
+
+/// Resolves a stored provider into the runtime handle the engine turns use
+/// (endpoint, key from the secure store, default model).
+pub(crate) fn runtime_for(provider: &DirectProvider) -> crate::providers::DirectRuntime {
+    crate::providers::DirectRuntime {
+        kind: provider.kind.clone(),
+        base_url: api_base(provider),
+        key: secret_store::get(SECRET_SERVICE, &secret_account(&provider.id)),
+        default_model: provider.default_model.clone(),
+    }
 }
 
 /// Resolved API root: explicit base_url, else the kind's default endpoint.
@@ -153,7 +164,7 @@ pub fn direct_providers_list(state: State<'_, crate::AppState>) -> Result<Vec<Di
     Ok(store
         .direct_providers()?
         .into_iter()
-        .map(|provider| with_key(&state, provider))
+        .map(|provider| with_key(provider))
         .collect())
 }
 
@@ -174,7 +185,7 @@ pub async fn direct_provider_save(
         Some(key) => secret_store::set(SECRET_SERVICE, &secret_account(&saved.id), &key)?,
         None => {}
     }
-    Ok(with_key(&state, saved))
+    Ok(with_key(saved))
 }
 
 #[tauri::command]
@@ -199,7 +210,7 @@ pub async fn direct_provider_set_key(
     } else {
         secret_store::set(SECRET_SERVICE, &secret_account(&id), &key)?;
     }
-    Ok(with_key(&state, saved))
+    Ok(with_key(saved))
 }
 
 #[tauri::command]
