@@ -264,6 +264,7 @@ export function mountProviderSettings(host: HTMLElement, saved: () => Promise<un
       directForm.reset();
       host.querySelector<HTMLDetailsElement>('#direct-add')!.open = false;
       await loadDirect();
+      await saved();
     } catch (error) { message(String(error), true); }
   };
   const directAction = async (target: HTMLElement): Promise<void> => {
@@ -284,12 +285,14 @@ export function mountProviderSettings(host: HTMLElement, saved: () => Promise<un
       try {
         const models = (await runDirect(() => call<DirectModelEntry[]>('direct_models_refresh', { id: refreshId }), status)) as DirectModelEntry[];
         if (status) status.textContent = `${models.length} models in the picker.`;
+        await saved();
       } catch (error) { if (status) { status.textContent = String(error); status.classList.add('error'); } }
     } else if (deleteId) {
       try {
         await runDirect(() => call('direct_provider_delete', { id: deleteId }));
         message('Provider removed. Its key was cleared from secure storage.');
         await loadDirect();
+        await saved();
       } catch (error) { message(String(error), true); }
     }
   };

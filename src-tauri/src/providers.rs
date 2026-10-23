@@ -492,6 +492,15 @@ pub fn validate_reasoning_effort(provider: &str, effort: Option<&str>) -> Result
         }
         ("pi" | "omp", Some(value)) => ["off", "minimal", "low", "medium", "high", "xhigh"].contains(&value),
         ("kimi", Some(value)) => ["on", "off"].contains(&value),
+        // Direct providers pass the effort through to the API; gateways vary.
+        (provider, None) if provider.starts_with("direct:") => true,
+        (provider, Some(value)) if provider.starts_with("direct:") => {
+            !value.is_empty()
+                && value.len() <= 64
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+        }
         _ => false,
     };
     if valid {
@@ -2741,6 +2750,7 @@ async fn run_inner(
         "github-copilot",
     ]
     .contains(&config.provider.as_str())
+        && !config.provider.starts_with("direct:")
     {
         return Err("Unknown provider".into());
     }

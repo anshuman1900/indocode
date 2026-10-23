@@ -474,6 +474,27 @@ mod tests {
         assert_eq!(history[1].role, "assistant");
     }
 
+    #[tokio::test]
+    async fn run_inner_routes_direct_providers_to_the_engine() {
+        // Regression: run_inner's harness allowlist used to reject direct:* before
+        // the engine branch, so tasks failed with "Unknown provider".
+        let (base, seen) = crate::cloud::http::mock::serve(|_, _| {
+            (200, "data: {\"choices\":[{\"delta\":{\"content\":\"routed\"}}]}\n\ndata: [DONE]\n\n".as_bytes().to_vec())
+        });
+        let direct = crate::providers::DirectRuntime { base_url: base, ..runtime() };
+        let (sink, events) = events();
+        crate::providers::run(config("ask", direct), sink, channel()).await.unwrap();
+        let text: String = events
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|event| event.kind == "text")
+            .map(|event| event.text.clone())
+            .collect();
+        assert_eq!(text, "routed");
+        assert!(seen.lock().unwrap().len() >= 1, "the engine reached the provider");
+    }
+
     fn temp_marker() -> std::path::PathBuf {
         let dir = std::env::temp_dir().join(format!("indocode-engine-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();

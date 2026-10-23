@@ -294,7 +294,7 @@ pub(crate) fn provider_rows(state: &crate::AppState) -> Result<Vec<ProviderInfo>
             name: provider.label.clone(),
             installed: true,
             path: None,
-            version: format!("Direct · {kind}"),
+            version: format!("Direct · {kind} · {} models", models.len()),
             models: models
                 .iter()
                 .map(|model| ModelInfo {
