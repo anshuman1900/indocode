@@ -102,6 +102,64 @@ async fn wait_approval(
     }
 }
 
+/// Host tool specs use the flat shape (`{type:"function", name, description,
+/// inputSchema}`); OpenAI-compatible providers require the nested `function`
+/// object and reject the whole request body when one entry lacks it. Namespaced
+/// entries (`{type:"namespace", tools:[...]}`) flatten into plain functions -
+/// the host handler is dispatched by bare tool name.
+///
+/// Returns the normalized catalog AND the callable names, so the names the
+/// model was offered can never drift from the names the engine accepts: an
+/// offered tool that the engine then refuses as "unknown" is a dead end for
+/// the model (it retries forever against a tool it can see).
+pub(crate) fn openai_tool_specs(
+    host: &crate::providers::ToolHost,
+) -> (Vec<Value>, std::collections::HashSet<String>) {
+    /// A flat host spec becomes the nested OpenAI shape. A spec that already
+    /// carries a `function` object passes through untouched, so the
+    /// normalizer is idempotent and safe to apply twice.
+    fn nested(spec: &Value) -> Option<Value> {
+        if spec["function"].is_object() {
+            return Some(spec.clone());
+        }
+        let name = spec["name"].as_str()?;
+        Some(json!({
+            "type": "function",
+            "function": {
+                "name": name,
+                "description": spec["description"].as_str().unwrap_or_default(),
+                "parameters": spec["inputSchema"].clone(),
+            }
+        }))
+    }
+    let mut specs = Vec::new();
+    let mut names = std::collections::HashSet::new();
+    for tool in &host.tools {
+        match tool["type"].as_str() {
+            Some("function") => {
+                if let Some(spec) = nested(tool) {
+                    if let Some(name) = spec["function"]["name"].as_str() {
+                        names.insert(name.to_owned());
+                    }
+                    specs.push(spec);
+                }
+            }
+            Some("namespace") => {
+                for entry in tool["tools"].as_array().into_iter().flatten() {
+                    if let Some(spec) = nested(entry) {
+                        if let Some(name) = spec["function"]["name"].as_str() {
+                            names.insert(name.to_owned());
+                        }
+                        specs.push(spec);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    (specs, names)
+}
+
 /// Emits the turn boundary events the app's change tracker and transcript
 /// flusher wait on, whichever way the turn ends (the run-epilogue captures any
 /// remaining changes itself on the failure path).
@@ -167,18 +225,16 @@ pub async fn run(
     // alongside the built-ins so a direct provider reaches everything a CLI
     // harness can; the host executes them under its own approval rules.
     let mut catalog = tools::catalog();
+    // The names the model was offered come from the normalizer itself, so an
+    // offered tool is never refused as unknown further down.
+    let mut host_tools: std::collections::HashSet<String> = std::collections::HashSet::new();
     if let Some(host) = &host {
-        catalog.extend(host.tools.iter().cloned());
+        // Normalized to the nested shape: a flat entry makes strict
+        // OpenAI-compatible providers reject the entire request body.
+        let (specs, names) = openai_tool_specs(host);
+        catalog.extend(specs);
+        host_tools = names;
     }
-    let host_tools: std::collections::HashSet<String> = host
-        .as_ref()
-        .map(|host| {
-            host.tools
-                .iter()
-                .filter_map(|tool| tool["name"].as_str().map(|name| name.to_owned()))
-                .collect()
-        })
-        .unwrap_or_default();
     let mut steered: Vec<String> = Vec::new();
 
     for _round in 0..MAX_ROUNDS {
@@ -568,6 +624,76 @@ mod tests {
         assert!(tool.output.contains("declined"));
     }
 
+    #[test]
+    fn host_tool_specs_reach_the_provider_in_the_nested_shape() {
+        // Regression: NVIDIA rejected the request body with "missing field
+        // 'function'" because host specs are flat and were merged verbatim.
+        let host = crate::providers::ToolHost {
+            tools: vec![
+                json!({"type": "function", "name": "indocode_preview_file", "description": "preview", "inputSchema": {"type": "object", "properties": {"path": {"type": "string"}}}}),
+                json!({"type": "namespace", "name": "mcp", "tools": [{"name": "mcp_read", "description": "read", "inputSchema": {"type": "object"}}]}),
+                json!({"type": "namespace", "name": "ignored"}),
+            ],
+            handler: std::sync::Arc::new(|_, _| Box::pin(async { Ok(json!({})) })),
+            approval_tools: std::collections::HashSet::new(),
+        };
+        let (specs, names) = openai_tool_specs(&host);
+        assert_eq!(specs.len(), 2, "the flat tool and the namespaced entry");
+        for spec in &specs {
+            assert!(spec["function"].is_object(), "{spec} must carry the nested function object");
+            assert!(spec["function"]["parameters"].is_object(), "{spec} must carry a parameters schema");
+        }
+        assert_eq!(specs[0]["function"]["name"], "indocode_preview_file");
+        assert_eq!(specs[0]["function"]["parameters"]["properties"]["path"]["type"], "string");
+        assert_eq!(specs[1]["function"]["name"], "mcp_read", "the namespaced tool dispatches by bare name");
+        // The callable names are derived from the same specs the model was
+        // offered, so an offered tool can never be refused as unknown.
+        assert!(names.contains("indocode_preview_file"));
+        assert!(names.contains("mcp_read"));
+        assert_eq!(names.len(), 2);
+    }
+
+    #[test]
+    fn already_nested_tool_specs_pass_through_unchanged() {
+        // The normalizer must be idempotent: a spec that already carries the
+        // nested `function` object is not wrapped a second time.
+        let host = crate::providers::ToolHost {
+            tools: vec![json!({"type": "function", "function": {"name": "shell", "description": "run", "parameters": {"type": "object"}}})],
+            handler: std::sync::Arc::new(|_, _| Box::pin(async { Ok(json!({})) })),
+            approval_tools: std::collections::HashSet::new(),
+        };
+        let (specs, names) = openai_tool_specs(&host);
+        assert_eq!(specs.len(), 1);
+        assert_eq!(specs[0]["function"]["name"], "shell");
+        assert_eq!(specs[0]["function"]["parameters"]["type"], "object");
+        assert!(names.contains("shell"));
+    }
+
+    #[tokio::test]
+    async fn the_request_body_carries_only_nested_tool_specs() {
+        // End-to-end guard on the exact provider failure: a strict
+        // OpenAI-compatible endpoint (NVIDIA NIM) deserializes the whole body
+        // and answers "missing field 'function'" when one tool entry is flat.
+        let (base, seen) = crate::cloud::http::mock::serve(|_, _| {
+            (200, "data: {\"choices\":[{\"delta\":{\"content\":\"done\"}}]}\n\ndata: [DONE]\n\n".as_bytes().to_vec())
+        });
+        let host = crate::providers::ToolHost {
+            tools: vec![json!({"type": "function", "name": "indocode_preview_file", "description": "preview", "inputSchema": {"type": "object"}})],
+            handler: std::sync::Arc::new(|_, _| Box::pin(async { Ok(json!({})) })),
+            approval_tools: std::collections::HashSet::new(),
+        };
+        let direct = crate::providers::DirectRuntime { base_url: base, ..runtime() };
+        let (sink, _events) = events();
+        run(config("ask", direct), sink, channel(), Some(host)).await.unwrap();
+        let requests = seen.lock().unwrap();
+        let body: Value = serde_json::from_str(&requests[0].body).expect("the body is JSON");
+        let tools = body["tools"].as_array().expect("the body carries tools");
+        assert!(!tools.is_empty());
+        for tool in tools {
+            assert!(tool["function"].is_object(), "every tool must be nested: {tool}");
+        }
+    }
+
     #[tokio::test]
     async fn host_tools_run_through_the_direct_engine() {
         // Regression: the direct engine ignored the host, so app tools
@@ -580,7 +706,7 @@ mod tests {
             if round == 1 {
                 (200, sse_tool_round("call_1", "indocode_preview_file", "{\"path\": \"index.html\"}").into_bytes())
             } else {
-                (200, "data: {\"choices\":[{\"delta\":{\"content\":\"preview opened\"}}]}\n\ndata: [DONE]\n\n".as_bytes().to_vec())
+                (200, "data: {\"choices\":[{\"delta\":{\"content\":\"preview opened\"}}],\"usage\":{\"prompt_tokens\":30,\"completion_tokens\":12}}\n\ndata: [DONE]\n\n".as_bytes().to_vec())
             }
         });
         let direct = crate::providers::DirectRuntime { base_url: base, ..runtime() };
