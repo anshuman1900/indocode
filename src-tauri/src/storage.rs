@@ -1035,6 +1035,7 @@ impl Store {
             "commandcode",
             "omp",
             "github-copilot",
+            "hermes",
         ]
         .contains(&provider)
             && !provider.starts_with("direct:")
@@ -1218,6 +1219,7 @@ impl Store {
             "commandcode",
             "omp",
             "github-copilot",
+            "hermes",
         ]
         .contains(&provider)
             && !provider.starts_with("direct:")
@@ -1736,6 +1738,7 @@ fn handoff_from_provider(content: &str) -> Option<String> {
                 | "commandcode"
                 | "omp"
                 | "github-copilot"
+                | "hermes"
         )
     };
     (known(from) && known(to)).then(|| from.to_owned())
@@ -3753,6 +3756,7 @@ mod tests {
                 "commandcode",
                 "omp",
                 "github-copilot",
+                "hermes",
             ] {
                 for mode in ["ask", "auto", "plan", "full"] {
                     let session = store

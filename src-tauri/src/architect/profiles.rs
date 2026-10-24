@@ -39,6 +39,7 @@ impl ModelSelection {
             "commandcode",
             "omp",
             "github-copilot",
+            "hermes",
         ]
         .contains(&self.provider.as_str())
             || self.model.len() > 200

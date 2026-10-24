@@ -26,6 +26,9 @@ pub(super) async fn discover(provider: &str, cwd: &Path) -> Result<Catalog, Stri
         "github-copilot" => {
             command.args(["--no-auto-update", "--acp", "--stdio"]);
         }
+        "hermes" => {
+            command.arg("acp");
+        }
         _ => {
             #[cfg(target_os = "linux")]
             command.arg("--uid=");

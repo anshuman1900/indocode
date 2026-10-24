@@ -300,7 +300,7 @@ impl Subagents {
     pub(super) fn route(&mut self, frame: &mut Value, protocol: &Protocol) -> Option<Step> {
         match protocol.config.provider.as_str() {
             "codex" => self.codex(frame, protocol),
-            "kimi" | "opencode" | "antigravity" | "grok" | "pi" | "deepseek" | "commandcode" | "omp" | "github-copilot" => {
+            "kimi" | "opencode" | "antigravity" | "grok" | "pi" | "deepseek" | "commandcode" | "omp" | "github-copilot" | "hermes" => {
                 None
             } // ACP providers expose main-session progress; Agent results remain available.
             _ => self.claude(frame, protocol),

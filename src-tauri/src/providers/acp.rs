@@ -45,6 +45,11 @@ pub(super) fn configure(command: &mut Command, config: &RunConfig) {
             // Modes are Command Code's own session modes; the saved key is set by the run.
             command.args(super::commandcode::ACP_ARGS);
         }
+        "hermes" => {
+            // `hermes acp` is the documented ACP entry point; provider credentials
+            // stay in Hermes' own config (`hermes model`).
+            command.arg("acp");
+        }
         "opencode" => {
             command.arg("acp");
             command.env("OPENCODE_CONFIG_CONTENT", configuration(&config.mode));
@@ -177,6 +182,9 @@ impl Protocol {
             if self.config.provider == "commandcode" && value["error"]["code"] == -32000 {
                 return Err(super::commandcode::SIGN_IN.into());
             }
+            if self.config.provider == "hermes" && value["error"]["code"] == -32000 {
+                return Err(super::hermes::NO_PROVIDER.into());
+            }
             if value["error"]["code"] == -32000 {
                 return Err(format!("{} requires authentication. Sign in using its own CLI or official extension, then retry.", self.config.provider));
             }
@@ -214,6 +222,11 @@ impl Protocol {
                         return Err("This harness does not support ACP protocol v1.".into());
                     }
                     let capabilities = &result["agentCapabilities"];
+                    // Hermes registers ACP-provided HTTP MCP servers but its adapter
+                    // does not advertise the mcpCapabilities flag, so the catalog's
+                    // HTTP entry is trusted for it and missing tools degrade softly.
+                    let mcp_http = capabilities["mcpCapabilities"]["http"] == true
+                        || self.config.provider == "hermes";
                     if !self.image_blocks.is_empty()
                         && capabilities["promptCapabilities"]["image"] != true
                     {
@@ -223,7 +236,7 @@ impl Protocol {
                             "This harness does not advertise image input. Remove the images or update the harness.".into()
                         });
                     }
-                    if self.mcp_server.is_some() && capabilities["mcpCapabilities"]["http"] != true
+                    if self.mcp_server.is_some() && !mcp_http
                     {
                         if self.mcp_required {
                             return Err("This harness does not advertise HTTP MCP support required for Indocode tools. Update its ACP server.".into());
@@ -354,6 +367,26 @@ impl Protocol {
                     step.write.push(json!({"jsonrpc":"2.0","id":value["id"],"result":{"outcome":{"outcome":"selected","optionId":selected["optionId"]}}}));
                     return Ok(step);
                 }
+            }
+            // Hermes has no read-only session mode; plan mode is enforced here by
+            // declining its edit and execute tools and allowing its read tools.
+            if self.config.provider == "hermes" && self.config.mode == "plan" {
+                let tool = &value["params"]["toolCall"];
+                let read_only = matches!(field(tool, "kind"), "read" | "think");
+                let wanted = if read_only { "allow_once" } else { "reject_once" };
+                let choice = options.and_then(|values| values.iter().find(|entry| entry["kind"] == wanted));
+                if let Some(selected) = choice {
+                    if !read_only {
+                        let title = model_text(tool["title"].as_str(), "a state-changing action", 200);
+                        step.events.push(self.event("status", format!("Plan mode declined: {title}"), None));
+                    }
+                    step.write.push(json!({"jsonrpc":"2.0","id":value["id"],"result":{"outcome":{"outcome":"selected","optionId":selected["optionId"]}}}));
+                } else {
+                    // A Plan task must not turn an unrecognized ACP permission
+                    // request into a user-overridable write approval.
+                    step.write.push(json!({"jsonrpc":"2.0","id":value["id"],"result":{"outcome":{"outcome":"cancelled"}}}));
+                }
+                return Ok(step);
             }
             // Read and search requests keep the ordinary approval path, as in Standard mode.
             if copilot
@@ -510,6 +543,14 @@ impl Protocol {
             // Command Code's ACP modes are its permission modes, so each Indocode
             // choice has exactly one, and a missing one must not widen access.
             &[super::commandcode::mode_id(&self.config.mode)]
+        } else if self.config.provider == "hermes" {
+            // Hermes' ACP modes are its edit-approval policies. Plan mode has no
+            // read-only session mode, so the session runs "default" (ask) and
+            // Indocode declines state-changing permission requests itself.
+            if self.config.mode == "plan" {
+                return self.acp_model(step);
+            }
+            &[super::hermes::mode_id(&self.config.mode)]
         } else if self.config.provider == "github-copilot" {
             let suffix = if self.config.mode == "plan" {
                 "#plan"

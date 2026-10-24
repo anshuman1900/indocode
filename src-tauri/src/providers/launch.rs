@@ -303,6 +303,12 @@ fn search_directories(windows: bool, env: &impl Fn(&str) -> Option<OsString>) ->
         ] {
             dirs.push(home.join(dir));
         }
+        if windows {
+            // The Hermes installer's launcher lives beside its bundled Python.
+            if let Some(local) = env("LOCALAPPDATA").filter(|value| !value.is_empty()).map(PathBuf::from) {
+                dirs.push(local.join("hermes/hermes-agent/.hermes/bin"));
+            }
+        }
     }
     dirs.extend(node_manager_dirs(windows, env, home.as_deref()));
     if windows {

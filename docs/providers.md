@@ -585,3 +585,29 @@ differences, read from omp 18.12's `modes/rpc/rpc-types.ts` and CLI flag table:
 
 Accounts, models and thinking levels are omp's own. Live check:
 `cargo test installed_omp -- --ignored`.
+
+## Hermes Agent
+
+Hermes Agent (`hermes`, Nous Research) runs over its own ACP stdio server:
+`hermes acp`. Provider credentials and model choice stay in Hermes (`hermes model`
+configures them); Indocode never stores a key and adds no sign-in flow. Discovery
+spawns `hermes acp`, sends `initialize` then `session/new`, and caches the
+advertised models in the ACP catalog; Hermes builds its full agent while opening
+that session, so the first refresh can take tens of seconds.
+
+- Modes map onto Hermes' session modes, which are its edit-approval policies:
+  Standard → `default` (ask before edits), Accept edits → `accept_edits`
+  (workspace policy), Full access → `dont_ask` (session policy).
+- Plan mode has no read-only session mode. The session runs `default` and
+  Indocode declines Hermes' edit and execute permission requests itself, allowing
+  only its `read`/`think` tool kinds (the same policy Grok's plan mode uses).
+- Hermes does not advertise `mcpCapabilities`, but it registers ACP-provided HTTP
+  MCP servers, so Indocode's app tools are offered to it; a failed registration
+  degrades to a session without app tools rather than a failed task.
+- No reasoning-effort override: Hermes does not advertise a thinking option over
+  ACP, so the picker keeps the CLI's configured reasoning.
+- Images ride ACP (`promptCapabilities.image`), resume uses `session/resume`, and
+  approval replies pick Hermes' `allow_once`/`reject_once` options.
+
+Settings → Providers carries a Hermes card with an executable override for
+installs the launcher search misses. Live check: `hermes acp --check`.

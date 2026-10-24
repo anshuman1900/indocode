@@ -13,7 +13,7 @@ use super::{sha256_hex, Kind, Scope, Written};
 /// Harnesses with file-based skills and instruction files.
 pub const FILE_HARNESSES: &[&str] = &["claude", "codex"];
 /// Every other Indocode harness; their skills and rules ride in the prompt.
-pub const PROMPT_HARNESSES: &[&str] = &["kimi", "opencode", "glm", "antigravity", "grok", "mimo", "pi", "deepseek", "commandcode", "omp"];
+pub const PROMPT_HARNESSES: &[&str] = &["kimi", "opencode", "glm", "antigravity", "grok", "mimo", "pi", "deepseek", "commandcode", "omp", "hermes"];
 
 pub enum Surface {
     /// A folder `<dir>/<id>/` holding the skill's files.

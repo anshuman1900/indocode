@@ -168,6 +168,7 @@ const catalogs: Record<ProviderId, ProviderModel[]> = {
     { id: 'moonshotai/Kimi-K3', name: 'Kimi K3', description: 'long-horizon coding & knowledge work with 1M context' },
   ],
   'github-copilot': [{ id: 'default', name: 'Default', description: 'Use the model configured in GitHub Copilot CLI.' }],
+  hermes: [{ id: 'openrouter:anthropic/claude-sonnet-5', name: 'OpenRouter · anthropic/claude-sonnet-5', description: 'Sample Hermes model from its configured provider.' }],
   opencode: openCodePreviewModels,
   glm: [{ id: 'glm-4.7', name: 'GLM-4.7', description: 'Z.ai Coding Plan via Claude Code.' }],
   mimo: [

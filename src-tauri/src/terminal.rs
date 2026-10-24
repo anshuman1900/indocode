@@ -281,7 +281,7 @@ fn harness_arguments(context: &HarnessContext<'_>) -> Result<Vec<String>, String
     if provider == "antigravity" {
         return Err("Antigravity's ACP server does not have an interactive console. Use its synced commands in the composer, or open the agy CLI separately.".into());
     }
-    if !matches!(provider, "codex" | "claude" | "kimi" | "glm" | "opencode" | "grok" | "mimo" | "pi" | "omp" | "github-copilot") {
+    if !matches!(provider, "codex" | "claude" | "kimi" | "glm" | "opencode" | "grok" | "mimo" | "pi" | "omp" | "github-copilot" | "hermes") {
         return Err("Choose a supported coding harness.".into());
     }
     if provider == "github-copilot" {
@@ -321,7 +321,7 @@ fn harness_arguments(context: &HarnessContext<'_>) -> Result<Vec<String>, String
         args.push(
             match provider {
                 "codex" => "resume",
-                "claude" | "glm" | "mimo" | "grok" => "--resume",
+                "claude" | "glm" | "mimo" | "grok" | "hermes" => "--resume",
                 _ => "--session",
             }
             .into(),
@@ -382,6 +382,16 @@ fn harness_arguments(context: &HarnessContext<'_>) -> Result<Vec<String>, String
                 crate::providers::grok_permission_mode(context.mode)
             };
             args.extend(["--no-auto-update".into(), "--permission-mode".into(), mode.into()]);
+        }
+        "hermes" => {
+            // The console runs Hermes' own approval config; only Full access has
+            // a CLI flag, and Plan mode has no read-only console equivalent.
+            if context.mode == "plan" {
+                return Err("Hermes' console has no read-only mode. Use task chat for Plan mode.".into());
+            }
+            if context.mode == "full" {
+                args.push("--yolo".into());
+            }
         }
         _ => {
             match context.mode {

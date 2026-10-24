@@ -341,6 +341,7 @@ fn cache() -> &'static HashMap<&'static str, CacheSlot> {
             "commandcode",
             "omp",
             "github-copilot",
+            "hermes",
         ]
         .into_iter()
         .map(|id| (id, CacheSlot::default()))
@@ -564,6 +565,7 @@ async fn fetch_provider(provider: &str) -> Usage {
         "deepseek" => Usage::empty(provider, "unsupported", "DeepSeek does not expose balance or limits through this agent. Check the DeepSeek platform."),
         "commandcode" => Usage::empty(provider, "unsupported", "Command Code does not expose credits or limits through this agent. Check Command Code Studio."),
         "github-copilot" => Usage::empty(provider, "unsupported", "GitHub Copilot CLI does not expose usage limits through this agent. Check your GitHub Copilot settings."),
+        "hermes" => Usage::empty(provider, "unsupported", "Hermes Agent uses the model provider you configured for it. Check that provider's dashboard for limits."),
         _ => Usage::empty(provider, "unsupported", "Usage limits are not available for this agent."),
     };
     if result.dashboard_url.is_none() {

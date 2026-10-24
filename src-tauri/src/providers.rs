@@ -38,6 +38,7 @@ mod commandcode;
 mod extra_models;
 mod github_copilot;
 mod glm;
+mod hermes;
 mod mimo;
 mod deepseek;
 mod kimi_models;
@@ -65,7 +66,7 @@ const TOOL_INPUT_LIMIT: usize = 4096;
 const TOOL_OUTPUT_LIMIT: usize = 8192;
 const TOOL_CACHE_LIMIT: usize = 64;
 const PREVIEW_TRUNCATED: &str = "\n[Preview truncated]";
-const PROVIDERS: [(&str, &str); 13] = [
+const PROVIDERS: [(&str, &str); 14] = [
     ("claude", "Claude Code"),
     ("codex", "Codex"),
     ("kimi", "Kimi Code"),
@@ -79,6 +80,7 @@ const PROVIDERS: [(&str, &str); 13] = [
     ("commandcode", "Command Code"),
     ("omp", "Oh My Pi"),
     ("github-copilot", "GitHub Copilot CLI"),
+    ("hermes", "Hermes Agent"),
 ];
 
 /// Claude Code tools that only report back to a session that stays open after its turn.
@@ -476,7 +478,7 @@ pub fn validate_reasoning_effort(provider: &str, effort: Option<&str>) -> Result
     let valid = match (provider, effort) {
         (
             "claude" | "codex" | "kimi" | "glm" | "opencode" | "antigravity" | "grok" | "mimo"
-            | "pi" | "deepseek" | "commandcode" | "omp" | "github-copilot",
+            | "pi" | "deepseek" | "commandcode" | "omp" | "github-copilot" | "hermes",
             None,
         ) => true,
         ("claude" | "glm" | "mimo", Some(value)) => {
@@ -716,6 +718,7 @@ pub(crate) async fn list_model_catalog(provider: &str) -> Result<Vec<ModelInfo>,
     let _permit = if matches!(
         provider,
         "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot"
+            | "hermes"
     ) {
         // Saving models refreshes both windows. Queue their bounded metadata
         // queries so one window does not cache incomplete ID-only fallbacks.
@@ -742,6 +745,7 @@ pub(crate) async fn list_model_catalog(provider: &str) -> Result<Vec<ModelInfo>,
         "deepseek" => deepseek::models(&path).await,
         "commandcode" => commandcode::models(&path).await,
         "github-copilot" => github_copilot::models(&path).await,
+        "hermes" => hermes::models(&path).await,
         _ => unreachable!(),
     }
 }
@@ -1662,7 +1666,8 @@ impl Protocol {
                     json!({"experimentalApi":true,"requestAttestation":false});
                 request
             }
-            "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot" => {
+            "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode"
+            | "github-copilot" | "hermes" => {
                 json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":1,"clientCapabilities":{},"clientInfo":{"name":"indocode","version":"0.1.0"}}})
             }
             _ => {
@@ -1694,7 +1699,8 @@ impl Protocol {
                 };
                 json!({"id":request["id"],"result":result})
             }
-            "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot" => {
+            "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode"
+            | "github-copilot" | "hermes" => {
                 let options = request["params"]["options"].as_array();
                 let kinds = if approved {
                     ["allow_once", "allow_always"]
@@ -1720,7 +1726,8 @@ impl Protocol {
             "codex" => {
                 json!({"id":900,"method":"turn/interrupt","params":{"threadId":self.remote_id,"turnId":self.turn_id}})
             }
-            "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot" => {
+            "kimi" | "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode"
+            | "github-copilot" | "hermes" => {
                 json!({"jsonrpc":"2.0","method":"session/cancel","params":{"sessionId":self.remote_id}})
             }
             _ => {
@@ -1749,7 +1756,8 @@ impl Protocol {
             "codex" => self.codex(value),
             "kimi" => self.kimi(value),
             "pi" | "omp" => self.pi(value),
-            "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot" => self.acp(value),
+            "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "github-copilot"
+            | "hermes" => self.acp(value),
             _ => self.claude(value),
         }
     }
@@ -2671,7 +2679,7 @@ fn configure_command(command: &mut Command, config: &RunConfig) {
             command.args(["app-server", "--enable", "goals"]);
         }
         "pi" | "omp" => pi::configure(command, config),
-        "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" => acp::configure(command, config),
+        "opencode" | "antigravity" | "grok" | "deepseek" | "commandcode" | "hermes" => acp::configure(command, config),
         "github-copilot" => acp::configure(command, config),
         "kimi" => {
             if use_model {
@@ -2748,6 +2756,7 @@ async fn run_inner(
         "commandcode",
         "omp",
         "github-copilot",
+        "hermes",
     ]
     .contains(&config.provider.as_str())
         && !config.provider.starts_with("direct:")
@@ -2911,7 +2920,7 @@ async fn run_process_with_tools(
         }
         (
             "claude" | "glm" | "mimo" | "kimi" | "opencode" | "antigravity" | "grok" | "pi"
-            | "deepseek" | "commandcode" | "omp" | "github-copilot",
+            | "deepseek" | "commandcode" | "omp" | "github-copilot" | "hermes",
             Some(host),
         ) => (
             None,
@@ -3123,6 +3132,30 @@ mod tests {
         assert_eq!(executable_name("github-copilot"), "copilot");
         assert!(validate_reasoning_effort("github-copilot", None).is_ok());
         assert!(validate_reasoning_effort("github-copilot", Some("high")).is_err());
+    }
+
+    #[test]
+    fn hermes_uses_the_hermes_executable_with_the_acp_subcommand_and_no_effort_override() {
+        assert!(PROVIDERS.contains(&("hermes", "Hermes Agent")));
+        assert_eq!(executable_name("hermes"), "hermes");
+        assert!(validate_reasoning_effort("hermes", None).is_ok());
+        assert!(validate_reasoning_effort("hermes", Some("high")).is_err());
+        let mut command = Command::new("hermes");
+        let config = config("hermes");
+        super::acp::configure(&mut command, &config);
+        let arguments: Vec<String> = command
+            .as_std()
+            .get_args()
+            .map(|argument| argument.to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(arguments, ["acp"]);
+    }
+
+    #[test]
+    fn hermes_maps_approval_modes_onto_its_session_modes() {
+        assert_eq!(hermes::mode_id("ask"), "default");
+        assert_eq!(hermes::mode_id("auto"), "accept_edits");
+        assert_eq!(hermes::mode_id("full"), "dont_ask");
     }
 
     pub(super) fn config(provider: &str) -> RunConfig {

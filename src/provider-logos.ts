@@ -1,6 +1,7 @@
 import type { ProviderId } from './types';
 import { escape } from './dom';
 import githubCopilotLogo from './assets/providers/github-copilot.svg?raw';
+import hermesLogo from './assets/providers/hermes.svg?raw';
 
 // Original provider assets; see docs/brand-assets.md for provenance.
 // Harnesses without an asset (omp) show no mark; their name stands alone.
@@ -23,6 +24,9 @@ export function providerLogo(id: ProviderId, cls = ''): string {
   const className = `provider-logo${cls ? ` ${escape(cls)}` : ''}`;
   if (id === 'github-copilot') {
     return githubCopilotLogo.replace('<svg ', `<svg class="${className}" data-provider="github-copilot" aria-hidden="true" focusable="false" `);
+  }
+  if (id === 'hermes') {
+    return hermesLogo.replace('<svg ', `<svg class="${className}" data-provider="hermes" aria-hidden="true" focusable="false" `);
   }
   const src = logos[id];
   if (!src) return '';

@@ -30,7 +30,7 @@ const PAGE_ROWS: i64 = 400;
 const MAX_BUFFER: usize = 4096;
 const CUT: &str = "\n…[cut on the host to fit a remote page]";
 /// Harness ids `providers.models` accepts (the same list `storage` allows).
-pub(crate) const PROVIDERS: [&str; 13] = ["claude", "codex", "kimi", "opencode", "glm", "antigravity", "grok", "mimo", "pi", "deepseek", "commandcode", "omp", "github-copilot"];
+pub(crate) const PROVIDERS: [&str; 14] = ["claude", "codex", "kimi", "opencode", "glm", "antigravity", "grok", "mimo", "pi", "deepseek", "commandcode", "omp", "github-copilot", "hermes"];
 
 pub(crate) fn untrusted(host_name: &str) -> String {
     format!("This computer isn't trusted on {host_name}. Trust it in Settings → Remote access on that computer.")

@@ -55,7 +55,7 @@ pub(super) async fn load(provider: &str, paths: &[PathBuf]) -> Result<Vec<Value>
             "claude" | "glm" | "mimo" => json!({"type":"image","source":{
                 "type":"base64","media_type":"image/png","data":STANDARD.encode(&bytes)
             }}),
-            "kimi" | "opencode" | "antigravity" | "grok" | "pi" | "deepseek" | "commandcode" | "omp" | "github-copilot" => {
+            "kimi" | "opencode" | "antigravity" | "grok" | "pi" | "deepseek" | "commandcode" | "omp" | "github-copilot" | "hermes" => {
                 json!({"type":"image","mimeType":"image/png","data":STANDARD.encode(&bytes)})
             }
             _ => return Err("This provider does not support screenshot attachments".into()),
